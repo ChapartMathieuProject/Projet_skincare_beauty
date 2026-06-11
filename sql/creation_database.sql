@@ -5,14 +5,25 @@ use Skincarebeauty;
 
 
 
+
 -- TABLE : roles utlisateur admin ou client 
+
+CREATE TABLE user_types (
+    user_type_id    INT PRIMARY KEY AUTO_INCREMENT,
+    user_type_name  VARCHAR(50) NOT NULL UNIQUE
+) engine= Innodb DEFAULT charset=utf8mb4;
+
 CREATE TABLE users(
     user_id INT PRIMARY KEY AUTO_INCREMENT,
     user_mail VARCHAR(50) not null,
-    user_type_account char(1)NOT NULL,
     user_password VARCHAR (20) NOT NULL,
-    UNIQUE (user_mail)
+    UNIQUE (user_mail),
+    user_type_id INT NOT NULL,
+    FOREIGN KEY (user_type_id) REFERENCES user_types(user_type_id)
 ) engine= Innodb DEFAULT charset=utf8mb4;
+
+
+
 
 
 -- TABLE : genre 
@@ -20,6 +31,8 @@ CREATE TABLE genders (
     gender_id      INT PRIMARY KEY AUTO_INCREMENT,
     gender_name     VARCHAR(50) NOT NULL UNIQUE
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;    
+
+
 
 
 -- table entreprise 
@@ -216,15 +229,16 @@ CREATE TABLE lien_product_type(
 )engine= Innodb Default charset=utf8mb4;
 
 
+INSERT INTO user_types (user_type_name) VALUES
+    ('Client'),
+    ('Administrateur');
 
 
-
-
-INSERT INTO users (user_mail, user_type_account, user_password) VALUES
-    ('admin@skincare.com',      'A', 'Admin1234!'),
-    ('sophie.martin@email.com', 'C', 'Client1234!'),
-    ('lucas.dupont@email.com',  'C', 'Client1234!'),
-    ('emma.bernard@email.com',  'C', 'Client1234!');
+INSERT INTO users (user_mail, user_type_id, user_password) VALUES
+    ('admin@skincare.com',      '2', 'Admin1234!'),
+    ('sophie.martin@email.com', '1', 'Client1234!'),
+    ('lucas.dupont@email.com',  '1', 'Client1234!'),
+    ('emma.bernard@email.com',  '1', 'Client1234!');
 
 INSERT INTO genders (gender_name) VALUES
     ('Monsieur'), ('Madame'), ('Docteur');
@@ -250,6 +264,9 @@ INSERT INTO order_status (order_type_name) VALUES
 
 INSERT INTO producers (producer_name) VALUES
     ('Roche-posay'), ("L'Oréal");
+
+
+
 
 INSERT INTO brands (brand_name, producer_id) VALUES
     ('La Roche-posay',      1),
