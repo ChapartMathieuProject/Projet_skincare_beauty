@@ -1,39 +1,186 @@
 :root {
-    --rose: #d4a5a5;
-    /* couleur principale (rose poudré) */
-    --beige: #f5ebe0;
-    /* secondaire (beige doux)          */
-    --accent: #e8c4b8;
-    /* accent                           */
-    --texte: #2d2d2d;
-    /* texte courant                    */
-    --border-rose: rgba(212, 165, 165, .2);
-    /* bordures discrètes du header     */
+  --rose: #d4a5a5;
+  /* couleur principale (rose poudré) */
+  --rose-fonce: #c49595;
+  /* survol des boutons roses         */
+  --beige: #f5ebe0;
+  /* secondaire (beige doux)          */
+  --accent: #e8c4b8;
+  /* accent                           */
+  --texte: #2d2d2d;
+  /* texte courant                    */
+  --border-rose: rgba(212, 165, 165, .2);
+}
+
+body{
+  color: var(--texte);
 }
 
 .navbar {
-    border-bottom: 1px solid var(--border-rose);
+  border-bottom: 1px solid var(--border-rose);
 }
 
 .navbar .nav-link {
-      color: #495057;
-      font-size: .9rem;
-    }
-    .navbar .nav-link:hover,
-    .navbar .nav-link:focus {
-      color: var(--rose);
-    }
-    .btn-icon {
-      border: none;
-      background: transparent;
-      color: #495057;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.15rem;
-      transition: background-color .15s ease;
-    }
-    .btn-icon:hover { background-color: #f1f1f1; }
+  color: #495057;
+  font-size: .9rem;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  color: var(--rose);
+}
+
+.btn-icon {
+  border: none;
+  background: transparent;
+  color: #495057;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  transition: background-color .15s ease;
+}
+
+.btn-icon:hover {
+  background-color: #f1f1f1;
+}
+
+
+/* Index */
+.hero{
+  background: linear-gradient(to bottom right, var(--beige), #fff);
+}
+
+.hero-title{
+  font-weight: 600;
+  font-size: 2.25rem;
+}
+
+.advantage i{
+  color: var(--rose);
+}
+
+
+/* Carrousel */
+.flash-title {
+  color: var(--rose);
+}
+
+.flash-track {
+  display: inline-flex; 
+  white-space: nowrap;   
+  will-change: transform; 
+}
+
+.flash-item {
+  width: 280px;  
+  padding: 0 .5rem; 
+}
+
+.flash-item img {
+  width: 100%;
+  height: 12rem;
+  object-fit: cover; 
+  border-radius: .5rem;
+}
+
+.badge-flash {
+  background-color: #dc3545; 
+}
+
+/* Filtre catégorie produits */
+.filter-btn{
+  border: none;
+  border-radius: 50rem;
+  padding: .5rem 1.5rem;
+  background-color: var(--beige);
+  color: #495057;
+  transition: all .15s ease;
+}
+
+.filter-btn:hover{
+  background-color: var(--accent);
+}
+
+.filter-btn.actif{
+  background-color: var(--rose);
+  color: #fff;
+}
+
+
+/* Les produits */
+.section-products{
+  background-color: #fafafa;
+}
+
+.card-product{
+  border-radius: .5rem;
+  overflow: hidden;
+  transition: box-shadow .2s ease;
+}
+
+.card-product:hover{
+  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, 1) !important;
+}
+
+.card-picture{
+  overflow: hidden;
+}
+
+.card-picture img{
+  height: 16rem;
+  object-fit: contain;
+  transition: transform .3s ease;
+}
+
+.card-product:hover
+.card-picture img{
+  transform: scale(1.05);
+}
+
+.badge-promo{
+  background-color: #dc3545;
+}
+
+.brand{
+  font-size: .75rem;
+  color: #6c757d;
+}
+
+.name-product{
+  color: #343a40;
+}
+
+.note i{
+  color: #ffc107;
+}
+
+.price{
+  color: var(--rose);
+  font-size: 1.1rem;
+}
+
+.ancient-price{
+  color: #adb5bd;
+  text-decoration: line-through;
+  font-size: .85rem;
+}
+
+.btn-bag{
+  background-color: var(--rose);
+  color: #fff;
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  transition: background-color .15s ease;
+}
+
+.btn-bag:hover {background-color: var(--rose-fonce);
+}
+
+
+
