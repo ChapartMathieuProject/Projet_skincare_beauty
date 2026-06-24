@@ -1,0 +1,22 @@
+:root {
+    --rose: #d4a5a5;
+    /* couleur principale (rose poudré) */
+}
+
+body {
+    color: var(--texte);
+}
+
+.promo-banner {
+    background-color: var(--rose);
+}
+
+.promo-text {
+    padding: 0 2rem;
+}
+
+.promo-track {
+    display: inline-flex;
+    white-space: nowrap;
+    will-change: transform;
+}
