@@ -10,12 +10,14 @@
     <link rel="apple-touch-icon" href="favicon.png">
      <link rel="stylesheet" href="public/css/banner.css">
      <link rel="stylesheet" href="public/css/header.css">
+     <link rel="stylesheet" href="public/css/footer.css"> 
    
 </head>
 
 <body>
     <?php
     include "banner.php";
+    
     ?>
 
     <nav class="navbar navbar-expand-lg bg-white sticky-top shadow-sm">

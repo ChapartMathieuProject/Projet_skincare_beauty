@@ -1,24 +1,32 @@
-// Fonction de défilement réutilisable (bannière + carrousel)
-function defilement(track, zoneSurvol, vitesse) {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    let position = 0;
-    let widthCopy = 0;
+// Principalement fait avec le travail réalisé sur ma bibliothèque SASS/SCSS
+(function () {
+    const banner = document.querySelector(".promo-banner");
+    const track = document.querySelector(".promo-track");
+
+    // Cela permet de désactiver l'animation si l'utilisateur à réglé "réduire les animations" dans ses paramètres
+    const reduct = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduct.matches) return;
+
+    let position = 0;       // décalage horizontal en pixels
+    let widthCopy = 0;      // largeur d'une copie du message
+    const vitesse = 0.8;    // pixels par frame (49px/s à 60fps)
     let pause = false;
 
+    //J'ai mis 2 copies de la bannière de sorte qu'il y ait un roulement, c'était plus simple pour le responsive de la bibliothèque SASS/SCSS
     function measure() {
-        widthCopy = track.scrollWidth / 2;
+        widthCopy = track.scrollWidth / 2; 
     }
     measure();
     window.addEventListener("resize", measure);
-    window.addEventListener("load", measure);
 
-    zoneSurvol.addEventListener("mouseenter", () => { pause = true; });
-    zoneSurvol.addEventListener("mouseleave", () => { pause = false; });
+    //Pause au survol
+    banner.addEventListener("mouseenter", () => { pause = true; });
+    banner.addEventListener("mouseleave", () => { pause = false; });
 
     function animate() {
-        if (!pause && widthCopy > 0) {
-            position -= vitesse;
+        if (!pause) {
+            position -= vitesse; //Lorsque l'on a défilé une copie ça remet à 0; avec la 2nd ça fait un semblant de boucle invisible
             if (Math.abs(position) >= widthCopy) {
                 position = 0;
             }
@@ -27,19 +35,4 @@ function defilement(track, zoneSurvol, vitesse) {
         requestAnimationFrame(animate);
     }
     requestAnimationFrame(animate);
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    // --- Bannière du haut ---
-    const promoTrack = document.querySelector(".promo-track");
-    if (promoTrack) {
-        defilement(promoTrack, document.querySelector(".promo-banner"), 0.8);
-    }
-
-    // --- Carrousel Promotions Flash ---
-    const flashTrack = document.querySelector(".flash-track");
-    if (flashTrack) {
-        defilement(flashTrack, flashTrack, 0.4);
-    }
-});
+})();
