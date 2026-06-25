@@ -9,8 +9,7 @@
     <title>Document</title>
     <link rel="apple-touch-icon" href="favicon.png">
      <link rel="stylesheet" href="public/css/banner.css">
-     <link rel="stylesheet" href="public/css/header.css">
-     <link rel="stylesheet" href="public/css/footer.css"> 
+     <link rel="stylesheet" href="public/css/style.css">
    
 </head>
 
