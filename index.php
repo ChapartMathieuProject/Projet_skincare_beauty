@@ -1,7 +1,6 @@
 
 <?php
 include "public/includes/header.php";
-
 ?>
 
 
@@ -88,11 +87,11 @@ include "public/includes/header.php";
 <div class="py-4 bg-white">
   <div class="container">
     <div class="d-flex flex-wrap justify-content-center gap-2" id="filter">
-      <button class="filtre actif" data-filtre="tous">Tous</button>
-      <button class="filtre actif" data-filtre="tous">Sérums</button>
-      <button class="filtre actif" data-filtre="tous">Crèmes</button>
-      <button class="filtre actif" data-filtre="tous">Parfums</button>
-      <button class="filtre actif" data-filtre="tous">Promotions</button>
+      <button class="filtre actif" data-filter="tous">Tous</button>
+      <button class="filtre actif" data-filter="tous">Sérums</button>
+      <button class="filtre actif" data-filter="tous">Crèmes</button>
+      <button class="filtre actif" data-filter="tous">Parfums</button>
+      <button class="filtre actif" data-filter="tous">Promotions</button>
     </div>
   </div>
 </div>
@@ -163,6 +162,3 @@ include "public/includes/header.php";
   </div>
 </section>
  <?php include "public/includes/footer.php"; ?>
-</body>
-
-</html>
