@@ -1,0 +1,40 @@
+<?php
+$menu_actif = $menu_actif ?? '';
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Création produit ADMIN</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="public/css/style.css">
+</head>
+
+<body class="admin">
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <div class="brand">SkinCareBeauty</div>
+                <div class="sub">Espace Administrateur</div>
+            </div>
+            <nav class="admin-nav">
+                <a href="dashboard.php" class="<?= $menu_actif === 'dashboard'  ? 'active' : '' ?>">Tableau de bord</a>
+                <a href="add_product.php" class="<?= $menu_actif === 'produits'   ? 'active' : '' ?>">Produits</a>
+                <a href="commandes.php" class="<?= $menu_actif === 'commandes'  ? 'active' : '' ?>">Commandes</a>
+                <a href="clients.php" class="<?= $menu_actif === 'clients'    ? 'active' : '' ?>">Clients</a>
+                <a href="promotions.php" class="<?= $menu_actif === 'promotions' ? 'active' : '' ?>">Promotions</a>
+                <a href="reglages.php" class="<?= $menu_actif === 'reglages'   ? 'active' : '' ?>">Réglages</a>
+            </nav>
+            <div class="admin-user">
+                <span class="avatar">AL</span>
+                <div>
+                    <div class="name-admin">Camil CR7</div>
+                    <div class="role">Gérant</div>
+                </div>
+            </div>
+        </aside>
