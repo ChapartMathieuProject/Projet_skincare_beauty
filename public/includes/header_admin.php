@@ -23,7 +23,7 @@ $menu_actif = $menu_actif ?? '';
                 <div class="sub">Espace Administrateur</div>
             </div>
             <nav class="admin-nav">
-                <a href="dashboard.php" class="<?= $menu_actif === 'dashboard'  ? 'active' : '' ?>">Tableau de bord</a>
+                <a href="admin_dashboard.php" class="<?= $menu_actif === 'dashboard'  ? 'active' : '' ?>">Tableau de bord</a>
                 <a href="admin_add_product.php" class="<?= $menu_actif === 'produits'   ? 'active' : '' ?>">Produits</a>
                 <a href="admin_commandes.php" class="<?= $menu_actif === 'commandes'  ? 'active' : '' ?>">Commandes</a>
                 <a href="admin_clients.php" class="<?= $menu_actif === 'clients'    ? 'active' : '' ?>">Clients</a>
