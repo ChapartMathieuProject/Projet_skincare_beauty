@@ -2207,3 +2207,13 @@ select.input-admin {
   .chart-bars { gap: .4rem; }
   .chart-val { font-size: .68rem; }
 }
+
+
+/* ============ ADMIN REGLAGES ============ */
+
+.toggle-row .label i {
+  width: 1.5rem;
+  margin-right: .4rem;
+  text-align: center;
+  color: var(--admin-muted);
+}
