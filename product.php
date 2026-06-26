@@ -39,7 +39,7 @@ include "public/includes/header.php";
             <div class="d-flex align-items-baseline gap-3 mb-1">
                 <span class="actual-price" id="actual-price">39.90€</span>
                 <span class="strike-price fs-5" id="strike-price">54.90€</span>
-                <span class="promotion-badge-reduction badge rounded px-2 py-1" id="promotion-badge">-27%</span>
+                <span class="promotion-badge-reduction badge-product rounded px-2 py-1" id="promotion-badge">-27%</span>
             </div>
             <p class="saving small mb-4" id="saving">Vous économisez 15.00€</p>
 
@@ -135,7 +135,7 @@ include "public/includes/header.php";
                     <span class="brand">PureBeauty</span>
                     <span class="name my-1">Crème Hydratante Rose</span>
                     <div class="mt-auto d-flex align-items-center justify-content-between">
-                        <span><span class="price-prom-badge fw-bold"">45,00 €</span>
+                        <span><span class="price-prom-badge fw-bold">45,00 €</span>
                             <span class=" strike-price small ms-1">59,00 €</span></span>
                         <button class="btn-rose btn-bag rounded-circle d-flex align-items-center 
                         justify-content-center" aria-label="Ajouter au panier">
@@ -156,7 +156,7 @@ include "public/includes/header.php";
                     <span class="name my-1">Parfum Fleur de Cerisier</span>
                     <span class="note small mb-3"><i class="fa-solid fa-star"></i> 4,7</span>
                     <div class="mt-auto d-flex align-items-center justify-content-between">
-                        <span><span class="price-prom-badge fw-bold" ">89,90 €</span>
+                        <span><span class="price-prom-badge fw-bold" >89,90 €</span>
                             <span class="strike-price small ms-1">119,00 €</span></span>
                         <button class="btn-rose btn-bag rounded-circle d-flex align-items-center justify-content-center"
                              aria-label="Ajouter au panier">
@@ -177,7 +177,7 @@ include "public/includes/header.php";
                     <span class="name my-1">Parfum Fleur de Cerisier</span>
                     <span class="note small mb-3"><i class="fa-solid fa-star"></i> 4,7</span>
                     <div class="mt-auto d-flex align-items-center justify-content-between">
-                        <span><span class=".price-prom-badge fw-bold" ">89,90 €</span>
+                        <span><span class=".price-prom-badge fw-bold" >89,90 €</span>
                             <span class="strike-price small ms-1">119,00 €</span></span>
                         <button class="btn-rose btn-bag rounded-circle d-flex align-items-center justify-content-center"
                              aria-label="Ajouter au panier">
