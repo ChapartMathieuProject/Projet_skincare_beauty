@@ -1,4 +1,3 @@
-
 <?php
 include "public/includes/header.php";
 ?>
@@ -32,57 +31,57 @@ include "public/includes/header.php";
 
 <section>
   <!-- Caroussel -->
-   <section class="py-4 bg-white">
-  <div class="container">
-    <h2 class="flash-title h4 text-center mb-4">⚡ Promotions Flash</h2>
+  <section class="py-4 bg-white">
+    <div class="container">
+      <h2 class="flash-title h4 text-center mb-4">⚡ Promotions Flash</h2>
 
-    <div class="overflow-hidden">
-      <div class="flash-track">
+      <div class="overflow-hidden">
+        <div class="flash-track">
 
-        <!-- Série 1 -->
-        <div class="flash-item">
-          <div class="position-relative">
-            <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
-            <span class="badge badge-flash position-absolute top-0 end-0 m-2">-30%</span>
+          <!-- Série 1 -->
+          <div class="flash-item">
+            <div class="position-relative">
+              <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
+              <span class="badge badge-flash position-absolute top-0 end-0 m-2">-30%</span>
+            </div>
           </div>
-        </div>
-        <div class="flash-item">
-          <div class="position-relative">
-            <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
-            <span class="badge badge-flash position-absolute top-0 end-0 m-2">-25%</span>
+          <div class="flash-item">
+            <div class="position-relative">
+              <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
+              <span class="badge badge-flash position-absolute top-0 end-0 m-2">-25%</span>
+            </div>
           </div>
-        </div>
-        <div class="flash-item">
-          <div class="position-relative">
-            <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
-            <span class="badge badge-flash position-absolute top-0 end-0 m-2">-20%</span>
+          <div class="flash-item">
+            <div class="position-relative">
+              <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
+              <span class="badge badge-flash position-absolute top-0 end-0 m-2">-20%</span>
+            </div>
           </div>
-        </div>
 
-        <!-- Série 2 : copie EXACTE de la série 1, pour la boucle continue -->
-        <div class="flash-item">
-          <div class="position-relative">
-            <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
-            <span class="badge badge-flash position-absolute top-0 end-0 m-2">-30%</span>
+          <!-- Série 2 : copie EXACTE de la série 1, pour la boucle continue -->
+          <div class="flash-item">
+            <div class="position-relative">
+              <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
+              <span class="badge badge-flash position-absolute top-0 end-0 m-2">-30%</span>
+            </div>
           </div>
-        </div>
-        <div class="flash-item">
-          <div class="position-relative">
-            <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
-            <span class="badge badge-flash position-absolute top-0 end-0 m-2">-25%</span>
+          <div class="flash-item">
+            <div class="position-relative">
+              <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
+              <span class="badge badge-flash position-absolute top-0 end-0 m-2">-25%</span>
+            </div>
           </div>
-        </div>
-        <div class="flash-item">
-          <div class="position-relative">
-            <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
-            <span class="badge badge-flash position-absolute top-0 end-0 m-2">-20%</span>
+          <div class="flash-item">
+            <div class="position-relative">
+              <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Produit en promotion">
+              <span class="badge badge-flash position-absolute top-0 end-0 m-2">-20%</span>
+            </div>
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 </section>
 <div class="py-4 bg-white">
   <div class="container">
@@ -108,23 +107,26 @@ include "public/includes/header.php";
 
       <!-- UNE carte = UNE colonne -->
       <div class="product-col col-12 col-sm-6 col-lg-3">
-        <div class="card card-product h-100 border-0 shadow-sm">
+        <div class="card card-product h-100 border-0 shadow-sm position-relative">
           <div class="card-picture position-relative">
             <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Sérum C E Ferulic" class="card-img-top">
             <span class="badge badge-promo position-absolute top-0 start-0 m-2">-27%</span>
           </div>
           <div class="card-body">
             <p class="brand mb-1">SkinCeuticals</p>
-            <h3 class="name-product h6 mb-2">Sérum C E Ferulic</h3>
+            <h3 class="name-product h6 mb-2">
+              <a href="product.php" class="stretched-link text-decoration-none text-reset">
+                Sérum C E Ferulic
+              </a>
+            </h3>
             <div class="note small mb-3"><i class="fa-solid fa-star"></i> 4.8</div>
 
-            <!-- le d-flex enveloppe le prix ET le bouton -->
             <div class="d-flex align-items-center justify-content-between">
               <div>
                 <span class="price">39,90€</span>
                 <span class="ancient-price ms-2">54,90€</span>
               </div>
-              <button class="btn-bag" type="button" aria-label="Ajouter au panier">
+              <button class="btn-bag position-relative" type="button" aria-label="Ajouter au panier">
                 <i class="fa-solid fa-cart-shopping"></i>
               </button>
             </div>
@@ -134,21 +136,26 @@ include "public/includes/header.php";
 
       <!-- Carte 2 : on recopie tout le bloc .product-col et on change le contenu -->
       <div class="product-col col-12 col-sm-6 col-lg-3">
-        <div class="card card-product h-100 border-0 shadow-sm">
+        <div class="card card-product h-100 border-0 shadow-sm position-relative">
           <div class="card-picture position-relative">
-            <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Crème hydratante" class="card-img-top">
-            <span class="badge badge-promo position-absolute top-0 start-0 m-2">-24%</span>
+            <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="Sérum C E Ferulic" class="card-img-top">
+            <span class="badge badge-promo position-absolute top-0 start-0 m-2">-27%</span>
           </div>
           <div class="card-body">
-            <p class="brand mb-1">PureBeauty</p>
-            <h3 class="name-product h6 mb-2">Crème Hydratante Rose</h3>
-            <div class="note small mb-3"><i class="fa-solid fa-star"></i> 4.9</div>
+            <p class="brand mb-1">SkinCeuticals</p>
+            <h3 class="name-product h6 mb-2">
+              <a href="produit.html" class="stretched-link text-decoration-none text-reset">
+                Sérum C E Ferulic
+              </a>
+            </h3>
+            <div class="note small mb-3"><i class="fa-solid fa-star"></i> 4.8</div>
+
             <div class="d-flex align-items-center justify-content-between">
               <div>
-                <span class="price">45,00€</span>
-                <span class="ancient-price ms-2">59,00€</span>
+                <span class="price">39,90€</span>
+                <span class="ancient-price ms-2">54,90€</span>
               </div>
-              <button class="btn-bag" type="button" aria-label="Ajouter au panier">
+              <button class="btn-bag position-relative" type="button" aria-label="Ajouter au panier">
                 <i class="fa-solid fa-cart-shopping"></i>
               </button>
             </div>
@@ -156,9 +163,7 @@ include "public/includes/header.php";
         </div>
       </div>
 
-      <!-- … duplique le bloc .product-col pour chaque produit … -->
-
     </div>
   </div>
 </section>
- <?php include "public/includes/footer.php"; ?>
+<?php include "public/includes/footer.php"; ?>
