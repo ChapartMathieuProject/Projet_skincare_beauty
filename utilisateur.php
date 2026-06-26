@@ -42,10 +42,10 @@ $userInitials = getUserInitials($currentUser['user_name']);
 // Définition des 5 cartes de navigation du profil
 $profileCards = [
     [
-        'id' => 'orders',
+        'id' => 'commandes',
         'title' => 'Vos Commandes',
         'desc' => 'Suivez vos colis, consultez votre historique et téléchargez vos factures.',
-        'link' => 'orders.php',
+        'link' => 'commandes.php',
         'icon' => 'fa-solid fa-box',
     ],
     [
