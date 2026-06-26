@@ -24,8 +24,8 @@ $menu_actif = $menu_actif ?? '';
             </div>
             <nav class="admin-nav">
                 <a href="dashboard.php" class="<?= $menu_actif === 'dashboard'  ? 'active' : '' ?>">Tableau de bord</a>
-                <a href="add_product.php" class="<?= $menu_actif === 'produits'   ? 'active' : '' ?>">Produits</a>
-                <a href="commandes.php" class="<?= $menu_actif === 'commandes'  ? 'active' : '' ?>">Commandes</a>
+                <a href="admin_add_product.php" class="<?= $menu_actif === 'produits'   ? 'active' : '' ?>">Produits</a>
+                <a href="admin_commandes.php" class="<?= $menu_actif === 'commandes'  ? 'active' : '' ?>">Commandes</a>
                 <a href="clients.php" class="<?= $menu_actif === 'clients'    ? 'active' : '' ?>">Clients</a>
                 <a href="promotions.php" class="<?= $menu_actif === 'promotions' ? 'active' : '' ?>">Promotions</a>
                 <a href="reglages.php" class="<?= $menu_actif === 'reglages'   ? 'active' : '' ?>">Réglages</a>

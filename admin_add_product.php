@@ -177,5 +177,5 @@
     </div>
 
 
-
-    <!-- <?php include "public/includes/footer.php"; ?> -->
+</body>
+</html>
