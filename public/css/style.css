@@ -1891,6 +1891,146 @@ select.input-admin {
   text-align: center;
 }
 
+/* ============ ADMIN CLIENT MODAL ============ */
+
+.toggle-row .label i {
+  width: 1.5rem;
+  margin-right: .4rem;
+  text-align: center;
+  color: var(--admin-muted);
+}
+
+.client-modal {
+  border: none;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+ 
+.client-modal .modal-header {
+  align-items: center;
+  border-bottom: 1px solid var(--admin-border);
+  padding: 1.1rem 1.25rem;
+}
+
+.client-modal-head {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+}
+
+.client-avatar.lg {
+  width: 52px;
+  height: 52px;
+  font-size: 1rem;
+}
+.client-modal .modal-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--texte);
+}
+.client-modal-mail {
+  font-size: .85rem;
+  color: var(--admin-muted);
+}
+ 
+.client-modal .modal-body { 
+  padding: .5rem 1.25rem 1rem; 
+}
+ 
+.client-section {
+  padding: 1.1rem 0;
+  border-top: 1px solid #f1ece8;
+}
+.client-section:first-child {
+  border-top: none;
+  padding-top: .5rem;
+}
+
+.client-section-title {
+  margin: 0 0 .85rem;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--admin-muted);
+}
+ 
+.client-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: .85rem 1.5rem;
+}
+
+.info-item { 
+  display: flex; 
+  flex-direction: column; 
+  gap: .15rem; 
+}
+
+.info-label { 
+  font-size: .78rem; 
+  color: var(--admin-muted); 
+}
+
+.info-value { 
+  font-weight: 600; 
+  color: var(--texte); 
+}
+ 
+.role-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  max-width: 440px;
+}
+
+.role-row .input-admin { 
+  flex: 1; 
+}
+ 
+.address-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.address-block {
+  border: 1px solid var(--admin-border);
+  border-radius: .7rem;
+  padding: .85rem 1rem;
+}
+
+.address-tag {
+  display: inline-block;
+  margin-bottom: .5rem;
+  padding: .15rem .6rem;
+  border-radius: 50rem;
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--admin-rose-fonce);
+  background: var(--admin-rose-soft);
+}
+
+.address-block p {
+  margin: 0;
+  font-size: .88rem;
+  line-height: 1.5;
+  color: #555;
+}
+ 
+.client-modal .modal-footer {
+  border-top: 1px solid var(--admin-border);
+  padding: 1rem 1.25rem;
+}
+ 
+@media (max-width: 540px) {
+  .client-info-grid,
+  .address-list { grid-template-columns: 1fr; }
+}
+
 
 /* ============ PAGE PROMOTIONS ADMIN ============ */
 
@@ -2209,11 +2349,5 @@ select.input-admin {
 }
 
 
-/* ============ ADMIN REGLAGES ============ */
 
-.toggle-row .label i {
-  width: 1.5rem;
-  margin-right: .4rem;
-  text-align: center;
-  color: var(--admin-muted);
-}
+ 
