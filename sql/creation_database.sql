@@ -472,55 +472,40 @@ DELIMITER ;
 --
 -- Déclencheurs `products`
 --
-DROP TRIGGER IF EXISTS `before_insert_products`;
+DROP TRIGGER IF EXISTS before_insert_products;
 DELIMITER $$
-CREATE TRIGGER `before_insert_products` BEFORE INSERT ON `products` FOR EACH ROW BEGIN
+CREATE TRIGGER before_insert_products BEFORE INSERT ON products FOR EACH ROW BEGIN
     DECLARE base_slug VARCHAR(250);
     DECLARE unique_slug VARCHAR(250);
     DECLARE counter INT DEFAULT 0;
-
-    -- Générer un slug de base
     SET base_slug = generate_slug(NEW.product_name);
-
-    -- Vérifier l'unicité et ajuster si nécessaire
     SET unique_slug = base_slug;
-    WHILE EXISTS (SELECT 1 FROM product_types WHERE product_slug = unique_slug) DO
+    WHILE EXISTS (SELECT 1 FROM products WHERE product_slug = unique_slug) DO
         SET counter = counter + 1;
         SET unique_slug = CONCAT(base_slug, '-', counter);
     END WHILE;
-
-    -- Attribuer le slug unique à la nouvelle ligne
     SET NEW.product_slug = unique_slug;
-END
-$$
+END$$
 DELIMITER ;
 
 
 
-DROP TRIGGER IF EXISTS `before_update_products`;
+DROP TRIGGER IF EXISTS before_update_products;
 DELIMITER $$
-CREATE TRIGGER `before_update_products` BEFORE UPDATE ON `products` FOR EACH ROW BEGIN
+CREATE TRIGGER before_update_products BEFORE UPDATE ON products FOR EACH ROW BEGIN
     DECLARE base_slug VARCHAR(250);
     DECLARE unique_slug VARCHAR(250);
     DECLARE counter INT DEFAULT 0;
-
-    -- Vérifier si Nom_categorie a changé
     IF OLD.product_name <> NEW.product_name THEN
-        -- Générer un slug de base
         SET base_slug = generate_slug(NEW.product_name);
-
-        -- Vérifier l'unicité et ajuster si nécessaire
         SET unique_slug = base_slug;
-        WHILE EXISTS (SELECT 1 FROM product_type WHERE product_slug = unique_slug AND product_id <> OLD.product_id) DO
+        WHILE EXISTS (SELECT 1 FROM products WHERE product_slug = unique_slug AND product_id <> OLD.product_id) DO
             SET counter = counter + 1;
             SET unique_slug = CONCAT(base_slug, '-', counter);
         END WHILE;
-
-        -- Attribuer le slug unique à la ligne mise à jour
         SET NEW.product_slug = unique_slug;
-  END IF;
-END
-$$
+    END IF;
+END$$
 DELIMITER ;
 
 

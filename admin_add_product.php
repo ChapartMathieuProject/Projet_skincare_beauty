@@ -4,6 +4,8 @@
 
 
 
+
+
         <div class="admin-main">
             <header class="admin-topbar">
                 <nav class="breadcrumb-admin">
@@ -47,8 +49,8 @@
                             </select>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label-admin" for="sku">Référence (SKU)</label>
-                            <input class="input-admin" id="sku" type="text" name="sku" value="GL-SVC-50">
+                            <label class="form-label-admin" for="ean">Référence (EAN)</label>
+                            <input class="input-admin" id="ean" type="text" name="ean" value="GL-SVC-50">
                         </div>
                         <div class="col-12">
                             <label class="form-label-admin" for="benefices">
