@@ -1054,6 +1054,72 @@
   color: var(--accent);
 }
 
+/* ============ PAGE CONTACT ============ */
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  margin-bottom: 3rem;
+}
+
+.form-textarea-profile {
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background-color: #ffffff;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e0db;
+}
+
+.contact-info-card i {
+  font-size: 1.3rem;
+  color: var(--rose);
+  margin-top: 0.2rem;
+}
+
+.contact-info-card h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--texte);
+  margin: 0 0 0.35rem;
+}
+
+.contact-info-card p {
+  font-size: 0.85rem;
+  color: var(--footer-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.contact-info-card a {
+  color: var(--rose);
+  text-decoration: none;
+}
+
+.contact-info-card a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* ============ COMPTE ADMIN - CREATION PRODUIT ============ */
 
