@@ -480,7 +480,7 @@ CREATE TRIGGER before_insert_products BEFORE INSERT ON products FOR EACH ROW BEG
     DECLARE counter INT DEFAULT 0;
     SET base_slug = generate_slug(NEW.product_name);
     SET unique_slug = base_slug;
-    WHILE EXISTS (SELECT 1 FROM products WHERE product_slug = unique_slug) DO
+    WHILE EXISTS (SELECT 1 FROM products WHERE product_slug COLLATE utf8mb4_unicode_ci = unique_slug) DO
         SET counter = counter + 1;
         SET unique_slug = CONCAT(base_slug, '-', counter);
     END WHILE;
