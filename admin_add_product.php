@@ -12,13 +12,13 @@ $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     $product_id     = !empty($_POST['product_id']) ? (int) $_POST['product_id'] : null;
-    $name           = trim($_POST['nom'] ?? '');
-    $ean            = trim($_POST['ean'] ?? '');
-    $composition    = trim($_POST['composition'] ?? '');
-    $description    = trim($_POST['description'] ?? ''); 
-    $buy_price      = str_replace(',', '.', trim($_POST['prix_achat'] ?? ''));
-    $margin         = (int) ($_POST['marge'] ?? 0);
-    $quantity       = (int) ($_POST['stock'] ?? 0);
+    $name           = htmlspecialchars(trim($_POST['nom'] ?? ''));
+    $ean            = htmlspecialchars(trim($_POST['ean'] ?? ''));
+    $composition    = htmlspecialchars(trim($_POST['composition'] ?? ''));
+    $description    = htmlspecialchars(trim($_POST['description'] ?? '')); 
+    $buy_price      = htmlspecialchars(str_replace(',', '.', trim($_POST['prix_achat'] ?? '')));
+    $margin         = htmlspecialchars((int) ($_POST['marge'] ?? 0));
+    $quantity       = htmlspecialchars((int) ($_POST['stock'] ?? 0));
     $alert          = ($_POST['alerte'] ?? '') === '' ? null : (int) $_POST['alerte'];
     $brand_id       = (int) ($_POST['brand_id'] ?? 0);
     $type_id        = (int) ($_POST['product_type_id'] ?? 0);

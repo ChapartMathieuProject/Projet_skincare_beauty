@@ -151,6 +151,15 @@ CREATE TABLE products (
     foreign key (company_id_account) references companies(company_id_account)
 )engine= Innodb Default charset=utf8mb4;
 
+CREATE TABLE promotions (
+    promotion_id        INT PRIMARY KEY AUTO_INCREMENT,
+    product_id          INT NOT NULL,
+    promotion_percent   INT NOT NULL,
+    promotion_is_active BOOLEAN NOT NULL DEFAULT 1,
+    UNIQUE (product_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 -- table images produits 
 CREATE TABLE pictures(
@@ -349,6 +358,11 @@ INSERT INTO bills (bill_number, bill_delivery_date, bill_number_delivery, delive
 -- Contenu des commandes
 INSERT INTO contains (product_id, order_id) VALUES
     (1, 1), (4, 1), (16, 2);
+
+-- Contenu des promotions
+INSERT INTO promotions (product_id, promotion_percent, promotion_is_active) VALUES
+    (1, 20, 1),
+    (4, 27, 1);
 
 
 
