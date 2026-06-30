@@ -114,7 +114,7 @@ include 'public/includes/header.php';
           </address>
           <div class="address-card__actions">
             <a href="#" class="address-card__link">Modifier</a>
-            <form method="POST" action="addresses.php" class="d-inline"
+            <form method="POST" action="adresses.php" class="d-inline"
               onsubmit="return confirm('Supprimer cette adresse ?')">
               <input type="hidden" name="action" value="delete_address">
               <input type="hidden" name="address_id" value="<?= (int) $address['id'] ?>">
@@ -140,7 +140,7 @@ include 'public/includes/header.php';
 
         <form
           method="POST"
-          action="addresses.php"
+          action="adresses.php"
           id="formAddAddress"
           class="address-form"
           novalidate
