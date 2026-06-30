@@ -1054,6 +1054,52 @@
   color: var(--accent);
 }
 
+/* ============ PAGE SÉCURITÉ ============ */
+
+.security-grid {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+}
+
+.security-card {
+  width: 100%;
+  max-width: 560px;
+  background-color: #ffffff;
+  padding: 2.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e0db;
+}
+
+.security-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--texte);
+  margin: 0 0 1.75rem;
+}
+
+.security-card__title i {
+  color: var(--rose);
+  font-size: 1.2rem;
+}
+
+/* Texte d'aide sous un champ : on évite de surcharger le label lui-même */
+.form-hint {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--footer-muted);
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 768px) {
+  .security-card {
+    padding: 1.75rem;
+  }
+}
+
 
 /* ============ COMPTE ADMIN - CREATION PRODUIT ============ */
 
