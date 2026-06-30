@@ -1114,6 +1114,34 @@
 .payment-card {
   display: flex;
   flex-direction: column;
+}
+
+/* ============ PAGE CONTACT ============ */
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  margin-bottom: 3rem;
+}
+
+.form-textarea-profile {
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
   background-color: #ffffff;
   padding: 1.25rem 1.5rem;
   border-radius: 0.5rem;
