@@ -23,10 +23,10 @@ $menu_actif = $menu_actif ?? '';
                 <div class="brand">SkinCareBeauty</div>
                 <div class="sub">Espace Administrateur</div>
             </div>
-            <nav class="admin-nav">
+            <nav class="admin-nav"> 
                 <a href="admin_dashboard.php" class="<?= $menu_actif === 'dashboard'  ? 'active' : '' ?>">Tableau de bord</a>
-                <a href="admin_products.php" class="<?= $menu_actif === 'Ajouter un produits'   ? 'active' : '' ?>">Produits</a>
-                <a href="admin_add_product.php" class="<?= $menu_actif === 'Ajouter un produits'   ? 'active' : '' ?>">Ajouter un produit</a>
+                <a href="admin_products.php" class="<?= $menu_actif === 'produits'   ? 'active' : '' ?>">Produits</a>
+                <a href="admin_add_product.php" class="<?= $menu_actif === 'ajouter un produits'   ? 'active' : '' ?>">Ajouter un produit</a>
                 <a href="admin_orders.php" class="<?= $menu_actif === 'commandes'  ? 'active' : '' ?>">Commandes</a>
                 <a href="admin_users.php" class="<?= $menu_actif === 'clients'    ? 'active' : '' ?>">Clients</a>
                 <a href="admin_promotions.php" class="<?= $menu_actif === 'promotions' ? 'active' : '' ?>">Promotions</a>

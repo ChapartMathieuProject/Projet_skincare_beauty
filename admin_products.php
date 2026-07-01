@@ -22,7 +22,7 @@ if ($q !== '') {
     $params[] = '%' . $q . '%';
 }
 $sql = $sql . " ORDER BY p.product_name";
-
+ 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $products = $stmt->fetchAll();
