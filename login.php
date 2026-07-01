@@ -1,15 +1,17 @@
 <?php
-// On redirige un utilisateur déjà connecté : pas de raison de lui remontrer le formulaire.
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_once 'public/includes/db.php';
 
 if (isset($_SESSION['user_id'])) {
-    header('Location: profile.php');
+    header('Location: index.php');
     exit;
 }
 
 $errorMessage = '';
 $email        = '';
-
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'login') {
@@ -20,10 +22,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if (empty($email) || empty($password)) {
             $errorMessage = 'Veuillez renseigner votre e-mail et votre mot de passe.';
         } else {
-            // TODO (CB) : vérifier les identifiants en BDD (hash du mot de passe) et démarrer la session utilisateur
-            // TODO (CB) : si $rememberMe est vrai, poser un cookie longue durée pour la reconnexion automatique
-            // On reste volontairement vague : on ne précise jamais si c'est l'e-mail ou le mot de passe
-            // qui est faux, pour ne pas faciliter l'énumération des comptes existants.
+            $stmt = $pdo->prepare(
+                'SELECT user_id, user_mail, user_password, user_type_id
+                 FROM users
+                 WHERE user_mail = :email'
+            );
+            $stmt->execute(['email' => $email]);
+            $user = $stmt->fetch();
+
+            if ($user && password_verify($password, $user['user_password'])) {
+                session_regenerate_id(true);
+
+                $_SESSION['user_id']      = $user['user_id'];
+                $_SESSION['user_mail']    = $user['user_mail'];
+                $_SESSION['user_type_id'] = $user['user_type_id'];
+
+                if ($rememberMe) {
+                    // TODO (CB) : générer un token aléatoire, le stocker en BDD (table remember_tokens)
+                    // et poser un cookie longue durée contenant ce token (jamais le mot de passe)
+                }
+
+                header('Location: index.php');
+                exit;
+            }
+
             $errorMessage = 'E-mail ou mot de passe incorrect.';
         }
     }
@@ -35,7 +57,6 @@ include 'public/includes/header.php';
 <main class="auth-section">
   <div class="container">
 
-    
       <h1 class="auth-card__title">Connexion</h1>
       <p class="auth-card__subtitle">Accédez à votre compte SkinCareBeauty.</p>
 
@@ -75,7 +96,6 @@ include 'public/includes/header.php';
         </div>
 
         <div class="auth-options">
-          
           <a href="forgot-password.php" class="auth-link">Mot de passe oublié ?</a>
         </div>
 
