@@ -140,7 +140,7 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
 
 
 <?php include "public/includes/header_admin.php"; ?>
-<?php $menu_actif = 'produits'; ?> <!-- Changer le 'produits' en fonction de la page -->
+<?php $menu_actif = 'ajouter un produit'; ?> <!-- Changer le 'ajouter un produit' en fonction de la page -->
 <div class="admin-main">
     <header class="admin-topbar">
         <nav class="breadcrumb-admin">
