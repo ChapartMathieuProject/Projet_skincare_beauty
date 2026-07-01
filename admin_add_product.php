@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
 /* ---------- CHARGEMENT POUR L'AFFICHAGE ---------- */
 
-$menu_actif = "produits";
+$menu_actif = "ajouter un produits";
 
 $brands = $pdo->query("SELECT brand_id, brand_name FROM brands ORDER BY brand_name")->fetchAll();
 $types = $pdo->query("SELECT product_type_id, product_type_name FROM product_types ORDER BY product_type_name")->fetchAll();

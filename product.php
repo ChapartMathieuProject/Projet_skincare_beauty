@@ -1,7 +1,40 @@
 <?php
 require_once "public/includes/db.php"; 
-include "public/includes/header.php";
 
+// 1. CHARGEMENT DES DICTIONNAIRES (Même logique que ton index.php)
+$brands = [];
+foreach ($pdo->query("SELECT brand_id, brand_name FROM brands") as $row) {
+    $brands[$row["brand_id"]] = $row["brand_name"];
+}
+
+$product_types = [];
+foreach ($pdo->query("SELECT product_type_id, product_type_name, product_type_slug FROM product_types") as $row) {
+    $product_types[$row["product_type_id"]] = [
+        "name" => $row["product_type_name"],
+        "slug" => $row["product_type_slug"],
+    ];
+}
+
+$product_type_of = [];
+foreach ($pdo->query("SELECT product_id, product_type_id FROM lien_product_type") as $row) {
+    $product_type_of[$row["product_id"]] = $row["product_type_id"];
+}
+
+$promotions = [];
+foreach ($pdo->query("SELECT product_id, promotion_percent FROM promotions WHERE promotion_is_active = 1") as $row) {
+    $promotions[$row['product_id']] = $row['promotion_percent'];
+}
+
+$pictures = [];
+foreach ($pdo->query("SELECT product_id, picture_path FROM pictures") as $row) {
+    if (!isset($pictures[$row["product_id"]])) {
+        $pictures[$row["product_id"]] = $row["picture_path"];
+    }
+}
+
+$default_image = 'images/_C-E-Ferulic-30ml_SkinCeuticals.jpg';
+
+// 2. RÉCUPÉRATION DU PRODUIT PRINCIPAL (Sans JOIN)
 $slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
 
 if ($slug === '') {
@@ -10,17 +43,7 @@ if ($slug === '') {
     exit;
 }
 
-$query = "
-    SELECT p.*, b.brand_name, pt.product_type_name, pro.promotion_percent 
-    FROM products p
-    LEFT JOIN brands b ON p.brand_id = b.brand_id
-    LEFT JOIN lien_product_type lpt ON p.product_id = lpt.product_id
-    LEFT JOIN product_types pt ON lpt.product_type_id = pt.product_type_id
-    LEFT JOIN promotions pro ON p.product_id = pro.product_id AND pro.promotion_is_active = 1
-    WHERE p.product_slug = :slug
-";
-
-$stmt = $pdo->prepare($query);
+$stmt = $pdo->prepare("SELECT * FROM products WHERE product_slug = :slug LIMIT 1");
 $stmt->execute(['slug' => $slug]);
 $product = $stmt->fetch();
 
@@ -30,43 +53,50 @@ if (!$product) {
     exit;
 }
 
+// 3. TRAITEMENT DES INFOS DU PRODUIT PRINCIPAL
+$current_id = $product['product_id'];
+$brand_name = $brands[$product['brand_id']] ?? 'Marque';
+
+$type_id    = $product_type_of[$current_id] ?? null;
+$type_name  = $type_id !== null ? ($product_types[$type_id]['name'] ?? 'Catégorie') : 'Catégorie';
+
+$promo_percent = $promotions[$current_id] ?? null;
+$has_promo     = $promo_percent !== null;
+$img_main      = $pictures[$current_id] ?? $default_image;
+
 $coefficient_marge = 1 + ($product['product_margin'] / 100);
 $base_price = $product['product_buy_price'] * $coefficient_marge;
 
-$has_promo = !empty($product['promotion_percent']);
 $final_price = $base_price;
 $saving = 0;
 
 if ($has_promo) {
-    $reduction = $base_price * ($product['promotion_percent'] / 100);
+    $reduction = $base_price * ($promo_percent / 100);
     $final_price = $base_price - $reduction;
     $saving = $reduction;
 }
 
+// 4. RÉCUPÉRATION DES PRODUITS SIMILAIRES (Sans JOIN)
+// On prend tous les produits actifs hors produit courant
+$all_products = $pdo->query("SELECT * FROM products WHERE product_is_status = 1")->fetchAll();
 
-$query_similar = "
-    SELECT DISTINCT p.*, b.brand_name, pro.promotion_percent
-    FROM products p
-    INNER JOIN lien_product_type lpt ON p.product_id = lpt.product_id
-    LEFT JOIN brands b ON p.brand_id = b.brand_id
-    LEFT JOIN promotions pro ON p.product_id = pro.product_id AND pro.promotion_is_active = 1
-    WHERE lpt.product_type_id = (
-        SELECT product_type_id FROM lien_product_type WHERE product_id = ? LIMIT 1
-    )
-    AND p.product_id != ?
-    AND p.product_is_status = 1
-    ORDER BY RAND()
-    LIMIT 4
-";
+$similar_products = [];
+foreach ($all_products as $p) {
+    // S'il appartient à la même catégorie et que ce n'est pas le produit lui-même
+    if ($p['product_id'] !== $current_id && isset($product_type_of[$p['product_id']]) && $product_type_of[$p['product_id']] === $type_id) {
+        $similar_products[] = $p;
+    }
+}
+// On mélange le tableau pour avoir un affichage aléatoire (comme le ORDER BY RAND()) et on limite à 4
+shuffle($similar_products);
+$similar_products = array_slice($similar_products, 0, 4);
 
-$stmt_similar = $pdo->prepare($query_similar);
-$stmt_similar->execute([$product["product_id"], $product["product_id"]]);
-$similar_product = $stmt_similar->fetchAll();
+include "public/includes/header.php";
 ?>
 
 <div class="ariadne container small text-secondary pt-4 pb-1 d-flex gap-2">
     <a href="index.php">Accueil</a><span>></span>
-    <a href="#"><?= htmlspecialchars($product['product_type_name'] ?? 'Catégorie') ?></a><span>></span>
+    <a href="#"><?= htmlspecialchars($type_name) ?></a><span>></span>
     <span class="ariadne-product"><?= htmlspecialchars($product['product_name']) ?></span>
 </div>
 
@@ -76,7 +106,7 @@ $similar_product = $stmt_similar->fetchAll();
             <div class="gallery-sticky">
                 <div class="img-main position-relative d-flex align-items-end justify-content-center">
                     <?php if ($has_promo): ?>
-                        <span class="badge-reduction position-absolute top-0 start-0 m-3">-<?= $product['promotion_percent'] ?>%</span>
+                        <span class="badge-reduction position-absolute top-0 start-0 m-3">-<?= (int)$promo_percent ?>%</span>
                     <?php endif; ?>
                     
                     <button id="btn-wishlist" type="button" aria-label="Ajouter à la wishlist"
@@ -84,7 +114,7 @@ $similar_product = $stmt_similar->fetchAll();
                         <i class="test fa-reg-he fa-regular fa-heart"></i>
                     </button>
                     
-                    <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="<?= htmlspecialchars($product['product_name']) ?>">
+                    <img src="<?= htmlspecialchars($img_main) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>">
                 </div>
                 <div class="d-flex gap-2 mt-3">
                     <button class="vignette active" data-titre="flacon — vue face"></button>
@@ -96,7 +126,7 @@ $similar_product = $stmt_similar->fetchAll();
         </div>
         
         <div class="col-12 col-lg-6">
-            <p class="overtitle-brand mb-2"><?= htmlspecialchars($product['brand_name'] ?? 'Marque') ?></p>
+            <p class="overtitle-brand mb-2"><?= htmlspecialchars($brand_name) ?></p>
             <h1 class="title-product h2 mb-3"><?= htmlspecialchars($product['product_name']) ?></h1>
             
             <ul class="atouts-paper list-unstyled d-flex flex-column gap-2 mb-4">
@@ -108,7 +138,7 @@ $similar_product = $stmt_similar->fetchAll();
                 <span class="actual-price" id="actual-price"><?= number_format($final_price, 2, ',', ' ') ?>€</span>
                 <?php if ($has_promo): ?>
                     <span class="strike-price fs-5" id="strike-price"><?= number_format($base_price, 2, ',', ' ') ?>€</span>
-                    <span class="promotion-badge-reduction badge-product rounded px-2 py-1" id="promotion-badge">-<?= $product['promotion_percent'] ?>%</span>
+                    <span class="promotion-badge-reduction badge-product rounded px-2 py-1" id="promotion-badge">-<?= (int)$promo_percent ?>%</span>
                 <?php endif; ?>
             </div>
             
@@ -173,37 +203,37 @@ $similar_product = $stmt_similar->fetchAll();
     </div>
 </section>
 
-
-<?php if (!empty($similar_product)): ?>
+<?php if (!empty($similar_products)): ?>
 <section class="container py-5">
     <h2 class="h3 text-center mb-4">Vous aimerez aussi</h2>
     <div class="row g-4">
-        <?php foreach($similar_product as $sp):
-            // CORRECTION : $stp -> $sp et ajout du $ manquant devant coef_marge_sp
+        <?php foreach($similar_products as $sp):
+            $brand_name_sp = $brands[$sp['brand_id']] ?? 'Marque';
+            $promo_percent_sp = $promotions[$sp['product_id']] ?? null;
+            $has_promo_sp     = $promo_percent_sp !== null;
+            $img_sp           = $pictures[$sp['product_id']] ?? $default_image;
+
             $coef_marge_sp = 1 + ($sp["product_margin"] / 100);
             $base_price_sp = $sp["product_buy_price"] * $coef_marge_sp;
 
-            $has_promo_sp = !empty($sp["promotion_percent"]);
             $final_price_sp = $base_price_sp;
-
             if ($has_promo_sp) {
-                $reduction_sp = $base_price_sp * ($sp["promotion_percent"] / 100);
-                $final_price_sp = $base_price_sp - $reduction_sp;
+                $final_price_sp = $base_price_sp - ($base_price_sp * ($promo_percent_sp / 100));
             }
         ?>
         <div class="col-12 col-sm-6 col-lg-3">
             <div class="card-bind h-100 d-flex flex-column">
                 <div class="visual position-relative">
                     <a href="product.php?slug=<?= urlencode($sp["product_slug"]) ?>">
-                        <img src="images/_C-E-Ferulic-30ml_SkinCeuticals.jpg" alt="<?= htmlspecialchars($sp["product_name"]) ?>">
+                        <img src="<?= htmlspecialchars($img_sp) ?>" alt="<?= htmlspecialchars($sp["product_name"]) ?>">
                     </a>
                     <?php if ($has_promo_sp): ?>
-                        <span class="badge-reduction position-absolute top-0 start-0 m-2">-<?= $sp["promotion_percent"] ?>%</span>
+                        <span class="badge-reduction position-absolute top-0 start-0 m-2">-<?= (int)$promo_percent_sp ?>%</span>
                     <?php endif; ?>
                 </div>
 
                 <div class="p-3 d-flex flex-column flex-fill">
-                    <span class="brand"><?= htmlspecialchars($sp["brand_name"] ?? "Marque") ?></span>
+                    <span class="brand"><?= htmlspecialchars($brand_name_sp) ?></span>
                     <a href="product.php?slug=<?= urlencode($sp["product_slug"]) ?>" class="text-decoration-none text-dark">
                         <span class="name my-1 fw-semibold d-block"><?= htmlspecialchars($sp["product_name"]) ?></span>
                     </a>

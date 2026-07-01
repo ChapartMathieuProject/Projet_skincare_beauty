@@ -21,7 +21,7 @@
 
     <nav class="navbar navbar-expand-lg bg-white sticky-top shadow-sm">
         <div class="container">
-            <a class="navbar-brand brand-logo" href="">SkinCareBeauty</a>
+            <a class="navbar-brand brand-logo" href="index.php">SkinCareBeauty</a>
             <div class="d-flex align-items-center order-lg-last">
                 <button class="btn-icon" type="button" aria-label="Rechercher">
                     <i class="fa-solid fa-magnifying-glass"></i>
