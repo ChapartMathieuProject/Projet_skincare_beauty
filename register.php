@@ -1,11 +1,15 @@
 <?php
 // On redirige un utilisateur déjà connecté : pas de raison de lui remontrer le formulaire.
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-//require 'config/database.php';
 
-//if (isset($_SESSION['user_id'])) {
-    //header('Location: profile.php');
+
+require 'public/includes/db.php';
+
+ //if (isset($_SESSION['user_id'])) {
+   // header('Location: register.php');
     //exit;
 //}
 
@@ -75,10 +79,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 ]);
 
                 // Inscription réussie : on connecte directement l'utilisateur.
-                $_SESSION['user_id']      = $newUserId;
-                $_SESSION['user_type_id'] = 1;
+               
 
-                header('Location: profile.php');
+                header('Location: login.php');
                 exit;
             }
         }
