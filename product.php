@@ -1,7 +1,7 @@
 <?php
 include "public/includes/header.php";
 ?>
-
+<!-- product.php -->
 <div class="ariadne container small text-secondary pt-4 pb-1 d-flex gap-2">
     <a href="#">Accueil</a><span>></span>
     <a href="#">Sérums</a><span>></span>

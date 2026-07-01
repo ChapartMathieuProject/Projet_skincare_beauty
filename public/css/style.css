@@ -1054,6 +1054,137 @@
   color: var(--accent);
 }
 
+/* ============ PAGE SÉCURITÉ ============ */
+
+.security-grid {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+}
+
+.security-card {
+  width: 100%;
+  max-width: 560px;
+  background-color: #ffffff;
+  padding: 2.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e0db;
+}
+
+.security-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--texte);
+  margin: 0 0 1.75rem;
+}
+
+.security-card__title i {
+  color: var(--rose);
+  font-size: 1.2rem;
+}
+
+/* Texte d'aide sous un champ : on évite de surcharger le label lui-même */
+.form-hint {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--footer-muted);
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 768px) {
+  .security-card {
+    padding: 1.75rem;
+  }
+}
+
+
+/*============ PAGE PAYMENTS =============*/
+
+
+.payment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.payment-card {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e0db;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.payment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+}
+
+.payment-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.payment-card__brand-icon {
+  font-size: 1.75rem;
+  color: var(--rose);
+}
+
+.payment-card__number {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--texte);
+  margin: 0 0 0.25rem;
+}
+
+.payment-card__expiry {
+  font-size: 0.85rem;
+  color: var(--footer-muted);
+  margin: 0 0 0.75rem;
+}
+
+/* Bloc d'ajout de carte : on rassure sur la sécurité avant de renvoyer vers le prestataire */
+.payment-add-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: var(--beige);
+  border: 1px dashed var(--rose);
+  border-radius: 0.5rem;
+}
+
+.payment-add-block__note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--footer-muted);
+  margin: 0;
+}
+
+.payment-add-block__note i {
+  color: var(--rose);
+}
+
+.payment-add-block .btn-rose-sm {
+  width: auto;
+  padding: 0.6rem 1.5rem;
+}
+
+
 
 /* ============ COMPTE ADMIN - CREATION PRODUIT ============ */
 
