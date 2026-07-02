@@ -38,25 +38,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
  
-/* ---------- CHARGEMENT POUR L'AFFICHAGE ---------- */
-$menu_actif = 'promotions';
- 
+/* ---------- CHARGEMENT POUR L'AFFICHAGE (SANS JOIN) ---------- */
+
+// 1. CHARGEMENT DES DICTIONNAIRES (Marques et Produits complets)
+$brands = [];
+foreach ($pdo->query("SELECT brand_id, brand_name FROM brands") as $row) {
+    $brands[$row["brand_id"]] = $row["brand_name"];
+}
+
+$products_dict = [];
+$all_products = []; // Pour remplir le select de la modale
+foreach ($pdo->query("SELECT * FROM products ORDER BY product_name") as $row) {
+    $products_dict[$row["product_id"]] = $row;
+    $all_products[] = [
+        'product_id'   => $row['product_id'],
+        'product_name' => $row['product_name']
+    ];
+}
+
+// 2. RÉCUPÉRATION DES PROMOTIONS UNIQUEMENT
 $where = '';
-if ($statut === 'actives')      $where = 'WHERE pr.promotion_is_active = 1';
-if ($statut === 'desactivees')  $where = 'WHERE pr.promotion_is_active = 0';
+if ($statut === 'actives')      $where = 'WHERE promotion_is_active = 1';
+if ($statut === 'desactivees')  $where = 'WHERE promotion_is_active = 0';
  
-$sql = "SELECT pr.promotion_id, pr.promotion_percent, pr.promotion_is_active,
-               p.product_id, p.product_name, p.product_slug,
-               p.product_buy_price, p.product_margin,
-               b.brand_name
-        FROM promotions pr
-        JOIN products p ON p.product_id = pr.product_id
-        JOIN brands   b ON b.brand_id   = p.brand_id
-        $where
-        ORDER BY pr.promotion_id DESC";
+$sql = "SELECT promotion_id, product_id, promotion_percent, promotion_is_active 
+        FROM promotions 
+        $where 
+        ORDER BY promotion_id DESC";
 $promos = $pdo->query($sql)->fetchAll();
- 
-$all_products = $pdo->query("SELECT product_id, product_name FROM products ORDER BY product_name")->fetchAll();
 
 
 function euro($n)
@@ -72,14 +81,10 @@ function prix_vente($buy, $margin)
     return (float) $buy * (1 + (int) $margin / 100);
 }
 
+$menu_actif = 'promotions';
 ?>
 
-
-
-
-<?php $menu_actif = 'promotions'; ?> <!-- Changer le 'promotions' en fonction de la page -->
 <?php include "public/includes/header_admin.php"; ?>
-
 
 <div class="admin-main">
     <header class="admin-topbar">
@@ -89,7 +94,6 @@ function prix_vente($buy, $margin)
         <h1>Promotions</h1>
  
         <div class="topbar-actions">
-            <!-- ouvre la modale de création (Bootstrap) -->
             <button type="button" class="btn-admin-primary" data-bs-toggle="modal" data-bs-target="#promo-create-modal">
                 <i class="fa-solid fa-plus"></i> Créer une promo
             </button>
@@ -98,7 +102,6 @@ function prix_vente($buy, $margin)
  
     <div class="admin-content">
  
-        <!-- Filtres (liens : rechargent la page avec ?statut=) -->
         <div class="orders-toolbar">
             <div class="filter-pills">
                 <a class="filter-chip <?= $statut === 'toutes' ? 'active' : '' ?>" href="?statut=toutes">Toutes</a>
@@ -117,8 +120,13 @@ function prix_vente($buy, $margin)
         <?php else: ?>
  
         <div class="promo-grid">
-            <?php foreach ($promos as $promo):
-                $vente  = prix_vente($promo['product_buy_price'], $promo['product_margin']);
+            <?php foreach ($promos as $promo): 
+                $associated_product = $products_dict[$promo['product_id']] ?? null;
+            
+                if (!$associated_product) continue;
+                $brand_name   = $brands[$associated_product['brand_id']] ?? 'Marque inconnue';
+                $product_name = $associated_product['product_name'];
+                $vente  = prix_vente($associated_product['product_buy_price'], $associated_product['product_margin']);
                 $remise = $vente * (1 - (int) $promo['promotion_percent'] / 100);
                 $actif  = (int) $promo['promotion_is_active'] === 1;
             ?>
@@ -133,8 +141,8 @@ function prix_vente($buy, $margin)
                 </div>
  
                 <div class="promo-body">
-                    <span class="promo-brand"><?= e($promo['brand_name']) ?></span>
-                    <h3 class="promo-name"><?= e($promo['product_name']) ?></h3>
+                    <span class="promo-brand"><?= e($brand_name) ?></span>
+                    <h3 class="promo-name"><?= e($product_name) ?></h3>
                     <div class="promo-prices">
                         <span class="promo-new"><?= euro($remise) ?></span>
                         <span class="strike-price"><?= euro($vente) ?></span>
@@ -142,7 +150,6 @@ function prix_vente($buy, $margin)
                 </div>
  
                 <div class="promo-footer">
-                    <!-- Interrupteur : un mini-formulaire par carte, soumis au changement -->
                     <form method="post" class="d-flex align-items-center gap-2 m-0">
                         <input type="hidden" name="action" value="toggle">
                         <input type="hidden" name="promotion_id" value="<?= (int) $promo['promotion_id'] ?>">
@@ -155,7 +162,6 @@ function prix_vente($buy, $margin)
                         <span class="promo-toggle-label"><?= $actif ? 'Activée' : 'Désactivée' ?></span>
                     </form>
  
-                    <!-- Suppression : autre mini-formulaire -->
                     <div class="promo-actions">
                         <form method="post" class="m-0"
                               onsubmit="return confirm('Supprimer cette promotion ?');">
@@ -174,13 +180,9 @@ function prix_vente($buy, $margin)
  
         <?php endif; ?>
  
-    </div><!-- /.admin-content -->
-</div><!-- /.admin-main -->
+    </div>
+</div>
  
- 
-<!-- ===================================================================
-     MODALE : Créer / mettre à jour une promotion
-     =================================================================== -->
 <div class="modal fade" id="promo-create-modal" tabindex="-1" aria-labelledby="promo-create-label" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content client-modal">
@@ -221,8 +223,7 @@ function prix_vente($buy, $margin)
     </div>
 </div>
  
-</div><!-- /.admin-layout (ouverte dans header_admin.php) -->
+</div>
  
 </body>
 </html>
- 
