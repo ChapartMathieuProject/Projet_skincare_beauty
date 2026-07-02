@@ -172,7 +172,7 @@ CREATE TABLE pictures(
 -- TABLE : statut de la commande
 CREATE TABLE deliveries (
     delivery_id              INT PRIMARY KEY AUTO_INCREMENT,
-    delivery_number          INT NOT NULL UNIQUE,
+    delivery_number VARCHAR(20) NOT NULL UNIQUE,
     delivery_cost            DECIMAL(10,2) NOT NULL,
     delivery_tracking_number VARCHAR(50) NOT NULL,
     delivery_date            DATETIME NOT NULL,
@@ -207,10 +207,12 @@ CREATE TABLE orders (
 CREATE TABLE bills(
     bill_id INT AUTO_INCREMENT PRIMARY KEY,
     bill_number VARCHAR(10) NOT NULL,
-    bill_delivery_date DATE NOT NULL,
-    bill_number_delivery VARCHAR(50) NOT NULL,
-    delivery_id INT NOT NULL,
+    bill_delivery_date DATE, 
+    bill_number_delivery VARCHAR(50),    
+    order_id INT NOT NULL,  
+    delivery_id INT,       
     UNIQUE (bill_number),
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
     FOREIGN KEY (delivery_id) REFERENCES deliveries(delivery_id)
 )engine= Innodb Default charset=utf8mb4;
 
@@ -236,6 +238,227 @@ CREATE TABLE lien_product_type(
     FOREIGN KEY (product_id) REFERENCES products(product_id),
     FOREIGN KEY (product_type_id) REFERENCES product_types(product_type_id)
 )engine= Innodb Default charset=utf8mb4;
+
+
+DELIMITER $$
+--
+-- Fonctions
+--
+DROP FUNCTION IF EXISTS `generate_slug`$$
+CREATE DEFINER=`root`@`localhost` FUNCTION `generate_slug` (`input_text` VARCHAR(250)) RETURNS VARCHAR(250) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci DETERMINISTIC BEGIN
+    DECLARE slug VARCHAR(250);
+
+    -- Remplacer les caractères accentués manuellement
+    SET slug = input_text;
+    SET slug = REPLACE(slug, 'à', 'a');
+    SET slug = REPLACE(slug, 'á', 'a');
+    SET slug = REPLACE(slug, 'â', 'a');
+    SET slug = REPLACE(slug, 'ä', 'a');
+    SET slug = REPLACE(slug, 'ã', 'a');
+    SET slug = REPLACE(slug, 'å', 'a');
+    SET slug = REPLACE(slug, 'è', 'e');
+    SET slug = REPLACE(slug, 'é', 'e');
+    SET slug = REPLACE(slug, 'ê', 'e');
+    SET slug = REPLACE(slug, 'ë', 'e');
+    SET slug = REPLACE(slug, 'ì', 'i');
+    SET slug = REPLACE(slug, 'í', 'i');
+    SET slug = REPLACE(slug, 'î', 'i');
+    SET slug = REPLACE(slug, 'ï', 'i');
+    SET slug = REPLACE(slug, 'ò', 'o');
+    SET slug = REPLACE(slug, 'ó', 'o');
+    SET slug = REPLACE(slug, 'ô', 'o');
+    SET slug = REPLACE(slug, 'ö', 'o');
+    SET slug = REPLACE(slug, 'õ', 'o');
+    SET slug = REPLACE(slug, 'ù', 'u');
+    SET slug = REPLACE(slug, 'ú', 'u');
+    SET slug = REPLACE(slug, 'û', 'u');
+    SET slug = REPLACE(slug, 'ü', 'u');
+    SET slug = REPLACE(slug, 'ç', 'c');
+    SET slug = REPLACE(slug, 'ñ', 'n');
+    SET slug = REPLACE(slug, 'ý', 'y');
+    SET slug = REPLACE(slug, 'ÿ', 'y');
+
+    -- Convertir en minuscules
+    SET slug = LOWER(slug);
+
+    -- Remplacer les espaces et tirets multiples par un seul tiret
+    SET slug = REPLACE(slug, ' ', '-');
+
+    -- Supprimer les caractères non alphanumériques ou tirets
+    SET slug = REGEXP_REPLACE(slug, '[^a-z0-9-]', '');
+
+    RETURN slug;
+END$$
+
+DELIMITER ;
+
+
+
+--
+-- Déclencheurs `product_types`
+--
+DROP TRIGGER IF EXISTS `before_insert_product_types`;
+DELIMITER $$
+CREATE TRIGGER `before_insert_product_types` BEFORE INSERT ON `product_types` FOR EACH ROW BEGIN
+    DECLARE base_slug VARCHAR(250);
+    DECLARE unique_slug VARCHAR(250);
+    DECLARE counter INT DEFAULT 0;
+
+    -- Générer un slug de base
+    SET base_slug = generate_slug(NEW.product_type_name);
+
+    -- Vérifier l'unicité et ajuster si nécessaire
+    SET unique_slug = base_slug;
+    WHILE EXISTS (SELECT 1 FROM product_types WHERE product_type_slug COLLATE utf8mb4_unicode_ci = unique_slug) DO
+        SET counter = counter + 1;
+        SET unique_slug = CONCAT(base_slug, '-', counter);
+    END WHILE;
+
+    -- Attribuer le slug unique à la nouvelle ligne
+    SET NEW.product_type_slug = unique_slug;
+END
+$$
+DELIMITER ;
+
+
+
+DROP TRIGGER IF EXISTS `before_update_product_types`;
+DELIMITER $$
+CREATE TRIGGER `before_update_product_types` BEFORE UPDATE ON `product_types` FOR EACH ROW BEGIN
+    DECLARE base_slug VARCHAR(250);
+    DECLARE unique_slug VARCHAR(250);
+    DECLARE counter INT DEFAULT 0;
+
+    -- Vérifier si Nom_categorie a changé
+    IF OLD.product_type_name <> NEW.product_type_name THEN
+        -- Générer un slug de base
+        SET base_slug = generate_slug(NEW.product_type_name);
+
+        -- Vérifier l'unicité et ajuster si nécessaire
+        SET unique_slug = base_slug;
+        WHILE EXISTS (SELECT 1 FROM product_types WHERE product_type_slug COLLATE utf8mb4_unicode_ci = unique_slug) DO
+            SET counter = counter + 1;
+            SET unique_slug = CONCAT(base_slug, '-', counter);
+        END WHILE;
+
+        -- Attribuer le slug unique à la ligne mise à jour
+        SET NEW.product_type_slug = unique_slug;
+  END IF;
+END
+$$
+DELIMITER ;
+
+
+
+
+
+--
+-- Déclencheurs `products`
+--
+DROP TRIGGER IF EXISTS before_insert_products;
+DELIMITER $$
+CREATE TRIGGER before_insert_products BEFORE INSERT ON products FOR EACH ROW BEGIN
+    DECLARE base_slug VARCHAR(250);
+    DECLARE unique_slug VARCHAR(250);
+    DECLARE counter INT DEFAULT 0;
+    SET base_slug = generate_slug(NEW.product_name);
+    SET unique_slug = base_slug;
+    WHILE EXISTS (SELECT 1 FROM products WHERE product_slug COLLATE utf8mb4_unicode_ci = unique_slug) DO
+        SET counter = counter + 1;
+        SET unique_slug = CONCAT(base_slug, '-', counter);
+    END WHILE;
+    SET NEW.product_slug = unique_slug;
+END$$
+DELIMITER ;
+
+
+
+DROP TRIGGER IF EXISTS before_update_products;
+DELIMITER $$
+CREATE TRIGGER before_update_products BEFORE UPDATE ON products FOR EACH ROW BEGIN
+    DECLARE base_slug VARCHAR(250);
+    DECLARE unique_slug VARCHAR(250);
+    DECLARE counter INT DEFAULT 0;
+    IF OLD.product_name <> NEW.product_name THEN
+        SET base_slug = generate_slug(NEW.product_name);
+        SET unique_slug = base_slug;
+        WHILE EXISTS (SELECT 1 FROM products WHERE product_slug = unique_slug AND product_id <> OLD.product_id) DO
+            SET counter = counter + 1;
+            SET unique_slug = CONCAT(base_slug, '-', counter);
+        END WHILE;
+        SET NEW.product_slug = unique_slug;
+    END IF;
+END$$
+DELIMITER ;
+
+
+
+--
+-- Déclencheurs `orders`
+--
+
+DROP TRIGGER IF EXISTS `before_generate_num_orders`;
+DELIMITER $$
+CREATE TRIGGER `before_num_orders` BEFORE INSERT ON `orders` FOR EACH ROW BEGIN
+    DECLARE prefix CHAR(3) DEFAULT 'CMD';
+    DECLARE num INT;
+
+    SELECT COUNT(*) INTO num FROM orders;
+    SET num = num + 1;
+
+    SET NEW.order_number = CONCAT(prefix, LPAD(num, 7, '0'));
+END
+$$
+DELIMITER ;
+
+
+DROP TRIGGER IF EXISTS `after_insert_orders_create_bill`;
+DELIMITER $$
+CREATE TRIGGER `after_insert_orders_create_bill` AFTER INSERT ON `orders` FOR EACH ROW BEGIN
+    INSERT INTO bills (order_id) VALUES (NEW.order_id);
+END$$
+DELIMITER ;
+
+
+
+
+
+--
+-- Déclencheurs `deliveries`
+--
+DROP TRIGGER IF EXISTS `before_generate_num_deliveries`;
+DELIMITER $$
+CREATE TRIGGER `before_generate_num_deliveries` BEFORE INSERT ON `deliveries` FOR EACH ROW BEGIN
+    DECLARE prefix CHAR(3) DEFAULT 'EXP';
+    DECLARE num INT;
+
+    SELECT COUNT(*) INTO num FROM deliveries;
+    SET num = num + 1;
+
+    SET NEW.delivery_number= CONCAT(prefix, LPAD(num, 7, '0'));
+END
+$$
+DELIMITER ;
+
+
+
+
+--
+-- Déclencheurs `bills`
+--
+DROP TRIGGER IF EXISTS `before_generate_num_bills`;
+DELIMITER $$
+CREATE TRIGGER `before_generate_num_bills` BEFORE INSERT ON `bills` FOR EACH ROW BEGIN
+    DECLARE prefix CHAR(3) DEFAULT 'FAC';
+    DECLARE num INT;
+
+    SELECT COUNT(*) INTO num FROM bills;
+    SET num = num + 1;
+
+    SET NEW.bill_number = CONCAT(prefix, LPAD(num, 7, '0'));
+END
+$$
+DELIMITER ;
 
 
 INSERT INTO user_types (user_type_name) VALUES
@@ -351,10 +574,6 @@ INSERT INTO orders
     ('CMD-2026-001', '2026-05-09 09:15:00', NULL, NULL, 1, 1, 1, 1, 1),
     ('CMD-2026-002', '2026-05-11 16:40:00', NULL, 10,   2, 3, 1, 2, 2);
 
--- Factures
-INSERT INTO bills (bill_number, bill_delivery_date, bill_number_delivery, delivery_id) VALUES
-    ('F0001', '2026-05-10', 'BL-0001', 1);
-
 -- Contenu des commandes
 INSERT INTO contains (product_id, order_id) VALUES
     (1, 1), (4, 1), (16, 2);
@@ -371,225 +590,3 @@ INSERT INTO promotions (product_id, promotion_percent, promotion_is_active) VALU
 
 
 
-DELIMITER $$
---
--- Fonctions
---
-DROP FUNCTION IF EXISTS `generate_slug`$$
-CREATE DEFINER=`root`@`localhost` FUNCTION `generate_slug` (`input_text` VARCHAR(250)) RETURNS VARCHAR(250) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci DETERMINISTIC BEGIN
-    DECLARE slug VARCHAR(250);
-
-    -- Remplacer les caractères accentués manuellement
-    SET slug = input_text;
-    SET slug = REPLACE(slug, 'à', 'a');
-    SET slug = REPLACE(slug, 'á', 'a');
-    SET slug = REPLACE(slug, 'â', 'a');
-    SET slug = REPLACE(slug, 'ä', 'a');
-    SET slug = REPLACE(slug, 'ã', 'a');
-    SET slug = REPLACE(slug, 'å', 'a');
-    SET slug = REPLACE(slug, 'è', 'e');
-    SET slug = REPLACE(slug, 'é', 'e');
-    SET slug = REPLACE(slug, 'ê', 'e');
-    SET slug = REPLACE(slug, 'ë', 'e');
-    SET slug = REPLACE(slug, 'ì', 'i');
-    SET slug = REPLACE(slug, 'í', 'i');
-    SET slug = REPLACE(slug, 'î', 'i');
-    SET slug = REPLACE(slug, 'ï', 'i');
-    SET slug = REPLACE(slug, 'ò', 'o');
-    SET slug = REPLACE(slug, 'ó', 'o');
-    SET slug = REPLACE(slug, 'ô', 'o');
-    SET slug = REPLACE(slug, 'ö', 'o');
-    SET slug = REPLACE(slug, 'õ', 'o');
-    SET slug = REPLACE(slug, 'ù', 'u');
-    SET slug = REPLACE(slug, 'ú', 'u');
-    SET slug = REPLACE(slug, 'û', 'u');
-    SET slug = REPLACE(slug, 'ü', 'u');
-    SET slug = REPLACE(slug, 'ç', 'c');
-    SET slug = REPLACE(slug, 'ñ', 'n');
-    SET slug = REPLACE(slug, 'ý', 'y');
-    SET slug = REPLACE(slug, 'ÿ', 'y');
-
-    -- Convertir en minuscules
-    SET slug = LOWER(slug);
-
-    -- Remplacer les espaces et tirets multiples par un seul tiret
-    SET slug = REPLACE(slug, ' ', '-');
-
-    -- Supprimer les caractères non alphanumériques ou tirets
-    SET slug = REGEXP_REPLACE(slug, '[^a-z0-9-]', '');
-
-    RETURN slug;
-END$$
-
-DELIMITER ;
-
-
-
---
--- Déclencheurs `product_types`
---
-DROP TRIGGER IF EXISTS `before_insert_product_types`;
-DELIMITER $$
-CREATE TRIGGER `before_insert_product_types` BEFORE INSERT ON `product_types` FOR EACH ROW BEGIN
-    DECLARE base_slug VARCHAR(250);
-    DECLARE unique_slug VARCHAR(250);
-    DECLARE counter INT DEFAULT 0;
-
-    -- Générer un slug de base
-    SET base_slug = generate_slug(NEW.product_type_name);
-
-    -- Vérifier l'unicité et ajuster si nécessaire
-    SET unique_slug = base_slug;
-    WHILE EXISTS (SELECT 1 FROM product_types WHERE product_type_slug = unique_slug) DO
-        SET counter = counter + 1;
-        SET unique_slug = CONCAT(base_slug, '-', counter);
-    END WHILE;
-
-    -- Attribuer le slug unique à la nouvelle ligne
-    SET NEW.product_type_slug = unique_slug;
-END
-$$
-DELIMITER ;
-
-
-
-DROP TRIGGER IF EXISTS `before_update_product_types`;
-DELIMITER $$
-CREATE TRIGGER `before_update_product_types` BEFORE UPDATE ON `product_types` FOR EACH ROW BEGIN
-    DECLARE base_slug VARCHAR(250);
-    DECLARE unique_slug VARCHAR(250);
-    DECLARE counter INT DEFAULT 0;
-
-    -- Vérifier si Nom_categorie a changé
-    IF OLD.product_type_name <> NEW.product_type_name THEN
-        -- Générer un slug de base
-        SET base_slug = generate_slug(NEW.product_type_name);
-
-        -- Vérifier l'unicité et ajuster si nécessaire
-        SET unique_slug = base_slug;
-        WHILE EXISTS (SELECT 1 FROM product_type WHERE product_type_slug = unique_slug AND product_type_id <> OLD.product_type_id) DO
-            SET counter = counter + 1;
-            SET unique_slug = CONCAT(base_slug, '-', counter);
-        END WHILE;
-
-        -- Attribuer le slug unique à la ligne mise à jour
-        SET NEW.product_type_slug = unique_slug;
-  END IF;
-END
-$$
-DELIMITER ;
-
-
-
-
-
---
--- Déclencheurs `products`
---
-DROP TRIGGER IF EXISTS before_insert_products;
-DELIMITER $$
-CREATE TRIGGER before_insert_products BEFORE INSERT ON products FOR EACH ROW BEGIN
-    DECLARE base_slug VARCHAR(250);
-    DECLARE unique_slug VARCHAR(250);
-    DECLARE counter INT DEFAULT 0;
-    SET base_slug = generate_slug(NEW.product_name);
-    SET unique_slug = base_slug;
-    WHILE EXISTS (SELECT 1 FROM products WHERE product_slug COLLATE utf8mb4_unicode_ci = unique_slug) DO
-        SET counter = counter + 1;
-        SET unique_slug = CONCAT(base_slug, '-', counter);
-    END WHILE;
-    SET NEW.product_slug = unique_slug;
-END$$
-DELIMITER ;
-
-
-
-DROP TRIGGER IF EXISTS before_update_products;
-DELIMITER $$
-CREATE TRIGGER before_update_products BEFORE UPDATE ON products FOR EACH ROW BEGIN
-    DECLARE base_slug VARCHAR(250);
-    DECLARE unique_slug VARCHAR(250);
-    DECLARE counter INT DEFAULT 0;
-    IF OLD.product_name <> NEW.product_name THEN
-        SET base_slug = generate_slug(NEW.product_name);
-        SET unique_slug = base_slug;
-        WHILE EXISTS (SELECT 1 FROM products WHERE product_slug = unique_slug AND product_id <> OLD.product_id) DO
-            SET counter = counter + 1;
-            SET unique_slug = CONCAT(base_slug, '-', counter);
-        END WHILE;
-        SET NEW.product_slug = unique_slug;
-    END IF;
-END$$
-DELIMITER ;
-
-
-
---
--- Déclencheurs `orders`
---
-
-DROP TRIGGER IF EXISTS `before_generate_num_orders`;
-DELIMITER $$
-CREATE TRIGGER `before_num_orders` BEFORE INSERT ON `orders` FOR EACH ROW BEGIN
-    DECLARE prefix CHAR(3) DEFAULT 'CMD';
-    DECLARE num INT;
-
-    SELECT COUNT(*) INTO num FROM orders;
-    SET num = num + 1;
-
-    SET NEW.order_number = CONCAT(prefix, LPAD(num, 7, '0'));
-END
-$$
-DELIMITER ;
-
-
-DROP TRIGGER IF EXISTS `before_insert_bills`;
-DELIMITER $$
-CREATE TRIGGER `before_insert_bills` AFTER INSERT ON `orders` FOR EACH ROW BEGIN
-    INSERT INTO bills (order_id)
-    VALUES (NEW.order_id);
-END
-$$
-DELIMITER ;
-
-
-
-
-
-
---
--- Déclencheurs `deliveries`
---
-DROP TRIGGER IF EXISTS `before_generate_num_deliveries`;
-DELIMITER $$
-CREATE TRIGGER `before_generate_num_deliveries` BEFORE INSERT ON `deliveries` FOR EACH ROW BEGIN
-    DECLARE prefix CHAR(3) DEFAULT 'EXP';
-    DECLARE num INT;
-
-    SELECT COUNT(*) INTO num FROM deliveries;
-    SET num = num + 1;
-
-    SET NEW.delivery_number= CONCAT(prefix, LPAD(num, 7, '0'));
-END
-$$
-DELIMITER ;
-
-
-
-
---
--- Déclencheurs `bills`
---
-DROP TRIGGER IF EXISTS `before_generate_num_bills`;
-DELIMITER $$
-CREATE TRIGGER `before_generate_num_bills` BEFORE INSERT ON `bills` FOR EACH ROW BEGIN
-    DECLARE prefix CHAR(3) DEFAULT 'FAC';
-    DECLARE num INT;
-
-    SELECT COUNT(*) INTO num FROM bills;
-    SET num = num + 1;
-
-    SET NEW.bill_number = CONCAT(prefix, LPAD(num, 7, '0'));
-END
-$$
-DELIMITER ;

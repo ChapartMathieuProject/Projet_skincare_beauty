@@ -40,11 +40,11 @@
             </div>
             <div class="collapse navbar-collapse" id="menuPrincipal">
                 <ul class="navbar-nav ms-lg-4">
-                    <li class="nav-item"><a class="nav-link" href="#">Nouveautés</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Sérums</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Crèmes</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Parfums</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Promotions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="products_categories.php?filter=nouveautes">Nouveautés</a></li>
+                    <li class="nav-item"><a class="nav-link" href="products_categories.php?cat=serum">Sérums</a></li>
+                    <li class="nav-item"><a class="nav-link" href="products_categories.php?cat=creme">Crèmes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="products_categories.php?cat=parfum">Parfums</a></li>
+                    <li class="nav-item"><a class="nav-link" href="products_categories.php?filter=promotions">Promotions</a></li>
                 </ul>
             </div>
         </div>
