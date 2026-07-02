@@ -1,70 +1,121 @@
 <?php
 // Protection de la page : accès réservé aux utilisateurs connectés
-session_start();
-
-// Décommenter ce bloc pour la mise en production
-/*
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
-*/
+
+
+require_once 'public/includes/db.php';
 
 $successMessage = '';
 $errorMessage   = '';
 
+// On récupère la fiche client liée à l'utilisateur connecté : toutes les
+// adresses sont rattachées à un client, pas directement à un utilisateur.
+$customerStatement = $pdo->prepare(
+    'SELECT customer_id_account, customer_name, customer_firstname
+     FROM customers
+     WHERE user_id = :userId'
+);
+$customerStatement->execute(['userId' => $_SESSION['user_id']]);
+$customer = $customerStatement->fetch();
+
 // Traitement de l'ajout d'une nouvelle adresse
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+if ($customer !== false && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+
+    $customerIdAccount = $customer['customer_id_account'];
 
     if ($_POST['action'] === 'add_address') {
-        $addressLabel    = trim($_POST['address_label']    ?? '');
-        $addressLine1    = trim($_POST['address_line1']    ?? '');
-        $addressCity     = trim($_POST['address_city']     ?? '');
-        $addressZip      = trim($_POST['address_zip']      ?? '');
-        $addressCountry  = trim($_POST['address_country']  ?? '');
+        $addressLabel   = trim($_POST['address_label']   ?? '');
+        $addressLine1   = trim($_POST['address_line1']   ?? '');
+        $addressCity    = trim($_POST['address_city']    ?? '');
+        $addressZip     = trim($_POST['address_zip']     ?? '');
+        $addressCountry = trim($_POST['address_country'] ?? '');
 
         if (empty($addressLabel) || empty($addressLine1) || empty($addressCity) || empty($addressZip)) {
             $errorMessage = 'Veuillez remplir tous les champs obligatoires.';
         } else {
-            // TODO (CB) : insérer l'adresse en BDD (table users_addresses)
+            // Le destinataire n'est pas demandé dans le formulaire : on reprend
+            // par défaut le nom du client connecté.
+            $insertAddress = $pdo->prepare(
+                'INSERT INTO addresses
+                    (customer_id_account, address_label, address_name, address_firstname,
+                     address_adress_1, address_postcode, address_city, address_country)
+                 VALUES
+                    (:customerIdAccount, :label, :lastName, :firstName,
+                     :line1, :zip, :city, :country)'
+            );
+            $insertAddress->execute([
+                'customerIdAccount' => $customerIdAccount,
+                'label'             => $addressLabel,
+                'lastName'          => $customer['customer_name'],
+                'firstName'         => $customer['customer_firstname'],
+                'line1'             => $addressLine1,
+                'zip'               => $addressZip,
+                'city'              => $addressCity,
+                'country'           => $addressCountry !== '' ? $addressCountry : 'France',
+            ]);
+
             $successMessage = 'Adresse ajoutée avec succès.';
         }
     }
 
     if ($_POST['action'] === 'delete_address') {
         $addressId = (int) ($_POST['address_id'] ?? 0);
+
         if ($addressId > 0) {
-            // TODO (CB) : vérifier que l'adresse appartient bien à l'utilisateur avant suppression
+            // On vérifie que l'adresse appartient bien au client connecté avant
+            // de la supprimer, pour empêcher qu'un utilisateur supprime l'adresse
+            // de quelqu'un d'autre en modifiant l'ID dans le formulaire.
+            $deleteAddress = $pdo->prepare(
+                'DELETE FROM addresses
+                 WHERE address_id = :addressId AND customer_id_account = :customerIdAccount'
+            );
+            $deleteAddress->execute([
+                'addressId'         => $addressId,
+                'customerIdAccount' => $customerIdAccount,
+            ]);
+
             $successMessage = 'Adresse supprimée.';
         }
     }
 }
 
-// Adresses fictives — à remplacer par une requête BDD
-$addresses = [
-    [
-        'id'      => 1,
-        'label'   => 'Domicile',
-        'line1'   => '12 rue des Acacias',
-        'city'    => 'Châtellerault',
-        'zip'     => '86100',
-        'country' => 'France',
-        'default' => true,
-    ],
-    [
-        'id'      => 2,
-        'label'   => 'Bureau',
-        'line1'   => '5 avenue du Commerce',
-        'city'    => 'Poitiers',
-        'zip'     => '86000',
-        'country' => 'France',
-        'default' => false,
-    ],
-];
+// On récupère les adresses du client connecté, l'adresse par défaut en premier.
+$addresses = [];
+
+if ($customer !== false) {
+    $addressesStatement = $pdo->prepare(
+        'SELECT address_id, address_label, address_adress_1, address_city,
+                address_postcode, address_country, address_is_default
+         FROM addresses
+         WHERE customer_id_account = :customerIdAccount
+         ORDER BY address_is_default DESC, address_id ASC'
+    );
+    $addressesStatement->execute(['customerIdAccount' => $customer['customer_id_account']]);
+    $addressesFromDatabase = $addressesStatement->fetchAll();
+
+    foreach ($addressesFromDatabase as $addressRow) {
+        $addresses[] = [
+            'id'      => $addressRow['address_id'],
+            'label'   => $addressRow['address_label'],
+            'line1'   => $addressRow['address_adress_1'],
+            'city'    => $addressRow['address_city'],
+            'zip'     => $addressRow['address_postcode'],
+            'country' => $addressRow['address_country'],
+            'default' => (bool) $addressRow['address_is_default'],
+        ];
+    }
+}
 
 // Inclusion conforme à la structure du projet (sans public/)
 include 'public/includes/header.php';
 ?>
+
 
 <main class="profile-main">
   <div class="container">
@@ -114,7 +165,7 @@ include 'public/includes/header.php';
           </address>
           <div class="address-card__actions">
             <a href="#" class="address-card__link">Modifier</a>
-            <form method="POST" action="adresses.php" class="d-inline"
+            <form method="POST" action="addresses.php" class="d-inline"
               onsubmit="return confirm('Supprimer cette adresse ?')">
               <input type="hidden" name="action" value="delete_address">
               <input type="hidden" name="address_id" value="<?= (int) $address['id'] ?>">
@@ -140,7 +191,7 @@ include 'public/includes/header.php';
 
         <form
           method="POST"
-          action="adresses.php"
+          action="addresses.php"
           id="formAddAddress"
           class="address-form"
           novalidate
