@@ -1218,6 +1218,66 @@
 }
 
 
+/* ============ PAGE INSCRIPTION ============ */
+
+/* Variante plus large de la auth-card pour accueillir le formulaire à deux colonnes. */
+.auth-card--wide {
+  max-width: 520px;
+}
+
+.auth-card__icon {
+  display: block;
+  text-align: center;
+  font-size: 2rem;
+  color: var(--rose);
+  margin-bottom: 0.75rem;
+}
+
+/* Prénom / Nom côte à côte, comme sur la maquette. */
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group-profile {
+  flex: 1;
+}
+
+/* Texte d'aide sous un champ (ex: "8 caractères minimum"). */
+.form-hint {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--footer-muted);
+  margin-top: 0.35rem;
+}
+
+/* Bloc case à cocher CGU, label sur plusieurs lignes possible. */
+.auth-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0.5rem 0 1.5rem;
+  font-size: 0.85rem;
+  color: var(--texte);
+}
+
+.auth-terms input[type="checkbox"] {
+  margin-top: 0.2rem;
+  accent-color: var(--rose);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .auth-card--wide {
+    padding: 1.75rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
 
 /* ============ COMPTE ADMIN - CREATION PRODUIT ============ */
 

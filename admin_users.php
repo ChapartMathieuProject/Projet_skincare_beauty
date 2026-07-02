@@ -1,5 +1,24 @@
-<?php $menu_actif = 'clients'; ?> <!-- Changer le 'clients' en fonction de la page -->
-<?php include "public/includes/header_admin.php"; ?>
+
+<?php 
+
+require_once "public/includes/db.php";
+
+$users = [];
+foreach ($pdo->query("SELECT user_id, user_mail FROM users") as $row) {
+    $users[$row["user_id"]] = $row["user_mail"];
+}
+
+$orders_count = [];
+foreach ($pdo->query("SELECT customer_id_account, COUNT(*) AS nb FROM orders GROUP BY customer_id_account") as $row) {
+    $orders_count[$row["customer_id_account"]] = $row["nb"];
+}
+
+$customers = $pdo->query("SELECT * FROM customers ORDER BY customer_name")->fetchAll();
+
+
+$menu_actif = 'clients'; //<!-- Changer le 'clients' en fonction de la page -->
+include "public/includes/header_admin.php"; 
+?>
 
 <div class="admin-main">
     <header class="admin-topbar">
@@ -17,8 +36,8 @@
                         placeholder="Rechercher un client (nom, email, téléphone...)">
                 </div>
             </div>
-            <p class="results-count" id="clients-count">6 clients</p>
-
+            <p class="results-count" id="clients-count"><?= count($customers) ?> client<?= count($customers) > 1 ? 's' : '' ?></p>
+ 
             <div class="table-scroll">
                 <table class="orders-table">
                     <thead>
@@ -26,169 +45,48 @@
                             <th>Client</th>
                             <th>Téléphone</th>
                             <th>Commandes</th>
-                            <th>Inscription</th>
                             <th class="col-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- *** généré par PHP, juste présent en HTML pour tester.
-                             Le bouton œil ouvre la modale unique #client-modal et
-                             porte les infos du client en data-… (lus par le JS). -->
+                        <?php foreach ($customers as $c):
+                            $full_name = $c['customer_firstname'] . ' ' . $c['customer_name'];
+                            $initials  = mb_strtoupper(mb_substr($c['customer_firstname'], 0, 1) . mb_substr($c['customer_name'], 0, 1));
+                            $mail      = $users[$c['user_id']] ?? '';
+                            $nb_orders = $orders_count[$c['customer_id_account']] ?? 0;
+                        ?>
                         <tr>
                             <td>
                                 <div class="client-identity">
-                                    <span class="client-avatar">CD</span>
+                                    <span class="client-avatar"><?= htmlspecialchars($initials) ?></span>
                                     <div class="client-cell">
-                                        <span class="nom">Camille Durand</span>
-                                        <span class="mail">camille.durand@email.fr</span>
+                                        <span class="nom"><?= htmlspecialchars($full_name) ?></span>
+                                        <span class="mail"><?= htmlspecialchars($mail) ?></span>
                                     </div>
                                 </div>
                             </td>
-                            <td>06 12 34 56 78</td>
-                            <td><span class="count-pill">5</span></td>
-                            <td>12 janv. 2025</td>
+                            <td><?= htmlspecialchars($c['customer_phone']) ?></td>
+                            <td><span class="count-pill"><?= (int) $nb_orders ?></span></td>
                             <td class="col-actions">
                                 <button type="button" class="btn-row-action"
                                     data-bs-toggle="modal" data-bs-target="#client-modal"
-                                    data-id="1" data-avatar="CD" data-nom="Camille Durand"
-                                    data-email="camille.durand@email.fr" data-tel="06 12 34 56 78"
-                                    data-inscription="12 janv. 2025" data-commandes="5"
+                                    data-id="<?= (int) $c['customer_id_account'] ?>"
+                                    data-avatar="<?= htmlspecialchars($initials) ?>"
+                                    data-nom="<?= htmlspecialchars($full_name) ?>"
+                                    data-email="<?= htmlspecialchars($mail) ?>"
+                                    data-tel="<?= htmlspecialchars($c['customer_phone']) ?>"
+                                    data-commandes="<?= (int) $nb_orders ?>"
                                     aria-label="Voir la fiche client">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                             </td>
                         </tr>
-
-                        <tr>
-                            <td>
-                                <div class="client-identity">
-                                    <span class="client-avatar">SM</span>
-                                    <div class="client-cell">
-                                        <span class="nom">Sophie Martin</span>
-                                        <span class="mail">s.martin@email.fr</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>06 98 76 54 32</td>
-                            <td><span class="count-pill">2</span></td>
-                            <td>03 mars 2025</td>
-                            <td class="col-actions">
-                                <button type="button" class="btn-row-action"
-                                    data-bs-toggle="modal" data-bs-target="#client-modal"
-                                    data-id="2" data-avatar="SM" data-nom="Sophie Martin"
-                                    data-email="s.martin@email.fr" data-tel="06 98 76 54 32"
-                                    data-inscription="03 mars 2025" data-commandes="2"
-                                    aria-label="Voir la fiche client">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <div class="client-identity">
-                                    <span class="client-avatar">LR</span>
-                                    <div class="client-cell">
-                                        <span class="nom">Léa Robert</span>
-                                        <span class="mail">lea.robert@email.fr</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>07 45 12 89 33</td>
-                            <td><span class="count-pill">8</span></td>
-                            <td>21 nov. 2024</td>
-                            <td class="col-actions">
-                                <button type="button" class="btn-row-action"
-                                    data-bs-toggle="modal" data-bs-target="#client-modal"
-                                    data-id="3" data-avatar="LR" data-nom="Léa Robert"
-                                    data-email="lea.robert@email.fr" data-tel="07 45 12 89 33"
-                                    data-inscription="21 nov. 2024" data-commandes="8"
-                                    aria-label="Voir la fiche client">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <div class="client-identity">
-                                    <span class="client-avatar">HB</span>
-                                    <div class="client-cell">
-                                        <span class="nom">Hugo Bernard</span>
-                                        <span class="mail">hugo.bernard@email.fr</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>06 22 41 78 90</td>
-                            <td><span class="count-pill">1</span></td>
-                            <td>09 juin 2026</td>
-                            <td class="col-actions">
-                                <button type="button" class="btn-row-action"
-                                    data-bs-toggle="modal" data-bs-target="#client-modal"
-                                    data-id="4" data-avatar="HB" data-nom="Hugo Bernard"
-                                    data-email="hugo.bernard@email.fr" data-tel="06 22 41 78 90"
-                                    data-inscription="09 juin 2026" data-commandes="1"
-                                    aria-label="Voir la fiche client">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <div class="client-identity">
-                                    <span class="client-avatar">IP</span>
-                                    <div class="client-cell">
-                                        <span class="nom">Inès Petit</span>
-                                        <span class="mail">ines.petit@email.fr</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>07 88 23 45 11</td>
-                            <td><span class="count-pill">3</span></td>
-                            <td>17 sept. 2025</td>
-                            <td class="col-actions">
-                                <button type="button" class="btn-row-action"
-                                    data-bs-toggle="modal" data-bs-target="#client-modal"
-                                    data-id="5" data-avatar="IP" data-nom="Inès Petit"
-                                    data-email="ines.petit@email.fr" data-tel="07 88 23 45 11"
-                                    data-inscription="17 sept. 2025" data-commandes="3"
-                                    aria-label="Voir la fiche client">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <div class="client-identity">
-                                    <span class="client-avatar">LM</span>
-                                    <div class="client-cell">
-                                        <span class="nom">Lucas Moreau</span>
-                                        <span class="mail">l.moreau@email.fr</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>06 55 67 12 04</td>
-                            <td><span class="count-pill">4</span></td>
-                            <td>28 févr. 2025</td>
-                            <td class="col-actions">
-                                <button type="button" class="btn-row-action"
-                                    data-bs-toggle="modal" data-bs-target="#client-modal"
-                                    data-id="6" data-avatar="LM" data-nom="Lucas Moreau"
-                                    data-email="l.moreau@email.fr" data-tel="06 55 67 12 04"
-                                    data-inscription="28 févr. 2025" data-commandes="4"
-                                    aria-label="Voir la fiche client">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
         </section>
-
+ 
         <!-- ===================================================================
              MODALE FICHE CLIENT (une seule, partagée par toutes les lignes).
              Vide pour l'instant : le JS lira les data-… du bouton cliqué
@@ -197,8 +95,7 @@
         <div class="modal fade" id="client-modal" tabindex="-1" aria-labelledby="cm-name" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content client-modal">
-
-                    <!-- En-tête : avatar + nom + email -->
+ 
                     <div class="modal-header">
                         <div class="client-modal-head">
                             <span class="client-avatar lg" id="cm-avatar"></span>
@@ -209,10 +106,9 @@
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
-
+ 
                     <div class="modal-body">
-
-                        <!-- Coordonnées -->
+ 
                         <div class="client-section">
                             <h6 class="client-section-title">Coordonnées</h6>
                             <div class="client-info-grid">
@@ -234,8 +130,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Rôle (modifiable) -->
+ 
                         <div class="client-section">
                             <h6 class="client-section-title">Rôle</h6>
                             <div class="role-row">
@@ -247,8 +142,7 @@
                                 <button type="button" class="btn-admin-primary" id="cm-role-save">Mettre à jour</button>
                             </div>
                         </div>
-
-                        <!-- Adresses -->
+ 
                         <div class="client-section">
                             <h6 class="client-section-title">Adresses</h6>
                             <div class="address-list">
@@ -262,8 +156,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Dernières commandes -->
+ 
                         <div class="client-section">
                             <h6 class="client-section-title">Dernières commandes</h6>
                             <div class="table-scroll">
@@ -288,24 +181,24 @@
                                 </table>
                             </div>
                         </div>
-
+ 
                     </div>
-
+ 
                     <!-- Pied : fermeture + lien fiche complète (href posé par le JS) -->
                     <div class="modal-footer">
                         <button type="button" class="btn-draft" data-bs-dismiss="modal">Fermer</button>
                         <a class="btn-admin-primary" id="cm-full-link" href="#">Voir la fiche complète</a>
                     </div>
-
+ 
                 </div>
             </div>
         </div>
-
+ 
     </div>
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-
+ 
 </body>
-
+ 
 </html>
