@@ -107,7 +107,7 @@ include 'public/includes/header.php';
       </div>
 
       <div class="auth-options">
-        <a href="forgot-password.php" class="auth-link">Mot de passe oublié ?</a>
+        <a href="forgot_password.php" class="auth-link">Mot de passe oublié ?</a>
       </div>
 
       <button type="submit" class="btn-rose-sm">Se connecter</button>

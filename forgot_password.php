@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 ]);
 
                 // On construit le lien de réinitialisation avec le token en paramètre GET.
-                $resetLink = 'http://' . $_SERVER['HTTP_HOST'] . '/reset-password.php?token=' . $resetToken;
+                $resetLink = 'http://' . $_SERVER['HTTP_HOST'] . '/reset_password.php?token=' . $resetToken;
 
                 $subject = 'SkinCareBeauty - Réinitialisation de votre mot de passe';
                 $message = "Bonjour,\n\nCliquez sur ce lien pour choisir un nouveau mot de passe :\n{$resetLink}\n\n"
@@ -106,7 +106,7 @@ include 'public/includes/header.php';
       </div>
     <?php endif; ?>
 
-    <form method="POST" action="forgot-password.php" novalidate>
+    <form method="POST" action="forgot_password.php" novalidate>
       <input type="hidden" name="action" value="forgot_password">
 
       <div class="form-group-profile">
