@@ -194,11 +194,13 @@ CREATE TABLE orders (
     order_type_id INT NOT NULL,
     payment_type_id INT NOT NULL,
     company_id_account INT NOT NULL,
+    customer_id_account INT NOT NULL, 
     delivery_type_id INT NOT NULL,
     deliveries_id INT NOT NULL,
     FOREIGN KEY (order_type_id) REFERENCES order_status(order_type_id),
     FOREIGN KEY (payment_type_id) REFERENCES payement_types(payement_type_id),
     FOREIGN KEY (company_id_account) REFERENCES companies(company_id_account),
+    FOREIGN KEY (customer_id_account) REFERENCES customers(customer_id_account), 
     FOREIGN KEY (delivery_type_id) REFERENCES delivery_types(delivery_type_id),
     FOREIGN KEY (deliveries_id) REFERENCES deliveries(delivery_id)
 )engine= Innodb Default charset=utf8mb4;
@@ -570,9 +572,9 @@ INSERT INTO deliveries
 -- Commandes
 INSERT INTO orders
     (order_number, order_date, order_date_annulation, order_promotion,
-     order_type_id, payment_type_id, company_id_account, delivery_type_id, deliveries_id) VALUES
-    ('CMD-2026-001', '2026-05-09 09:15:00', NULL, NULL, 1, 1, 1, 1, 1),
-    ('CMD-2026-002', '2026-05-11 16:40:00', NULL, 10,   2, 3, 1, 2, 2);
+     order_type_id, payment_type_id, company_id_account, customer_id_account, delivery_type_id, deliveries_id) VALUES
+    ('CMD-2026-001', '2026-05-09 09:15:00', NULL, NULL, 1, 1, 1, 1, 1, 1),
+    ('CMD-2026-002', '2026-05-11 16:40:00', NULL, 10,   2, 3, 1, 2, 2, 2);
 
 -- Contenu des commandes
 INSERT INTO contains (product_id, order_id) VALUES
