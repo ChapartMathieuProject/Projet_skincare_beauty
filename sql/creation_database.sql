@@ -54,6 +54,8 @@ CREATE TABLE companies (
 -- TABLE : adresse
 CREATE TABLE addresses(
     address_id INT PRIMARY KEY AUTO_INCREMENT,
+    customer_id_account INT NOT NULL,
+    address_label VARCHAR(50) NOT NULL,
     address_name VARCHAR(50) NOT NULL,
     address_firstname VARCHAR(30) NOT NULL,
     address_adress_1 VARCHAR(50) NOT NULL,
@@ -62,8 +64,10 @@ CREATE TABLE addresses(
     address_adress_4 VARCHAR(50),
     address_postcode VARCHAR(5) NOT NULL,
     address_city VARCHAR(30) NOT NULL,
-    address_country VARCHAR(30) NOT NULL
-)engine= Innodb DEFAULT charset=utf8mb4;
+    address_country VARCHAR(30) NOT NULL,
+    address_is_default BOOLEAN NOT NULL DEFAULT 0,
+    FOREIGN KEY (customer_id_account) REFERENCES customers(customer_id_account)
+) engine= Innodb DEFAULT charset=utf8mb4;
 
 
 -- TABLE : type de livraison
@@ -555,12 +559,22 @@ INSERT INTO lien_product_type (product_id, product_type_id) VALUES
     (19,4),(20,4),(21,4),                                                         -- Parfums
     (22,5),(23,5),(24,5);                                                         -- Masques
 
+
+
+-- Ajout des colonnes manquantes sur addresses (lien client + libellé + adresse par défaut)
+ALTER TABLE addresses
+ADD COLUMN customer_id_account INT NOT NULL AFTER address_id,
+ADD COLUMN address_label VARCHAR(50) NOT NULL AFTER customer_id_account,
+ADD COLUMN address_is_default BOOLEAN NOT NULL DEFAULT 0,
+ADD FOREIGN KEY (customer_id_account) REFERENCES customers(customer_id_account);
+
 -- Adresses
 INSERT INTO addresses
-    (address_name, address_firstname, address_adress_1, address_adress_2,
-     address_adress_3, address_adress_4, address_postcode, address_city, address_country) VALUES
-    ('Martin', 'Sophie', '12 rue des Lilas',      NULL, NULL, NULL, '86100', 'Châtellerault', 'France'),
-    ('Dupont', 'Lucas',  '5 avenue Victor Hugo',  NULL, NULL, NULL, '75002', 'Paris',         'France');
+    (customer_id_account, address_label, address_name, address_firstname,
+     address_adress_1, address_adress_2, address_adress_3, address_adress_4,
+     address_postcode, address_city, address_country, address_is_default) VALUES
+    (1, 'Domicile', 'Martin', 'Sophie', '12 rue des Lilas',     NULL, NULL, NULL, '86100', 'Châtellerault', 'France', 1),
+    (2, 'Domicile', 'Dupont', 'Lucas',  '5 avenue Victor Hugo', NULL, NULL, NULL, '75002', 'Paris',         'France', 1);
 
 -- Livraisons
 INSERT INTO deliveries
