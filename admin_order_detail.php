@@ -9,6 +9,19 @@ $order = $stmt->fetch();
 
 $menu_actif = 'commandes';
 
+$date_fr = '';
+$status_class = '';
+$status_name = '—';
+$payment_name = '—';
+$client_name = 'Client inconnu';
+$client_mail = '';
+$total = 0;
+$lines = [];
+$bill = null;
+$company = null;
+$delivery_address = null;
+$invoice_date_fr = '';
+
 $mois_fr = [1=>'janvier',2=>'février',3=>'mars',4=>'avril',5=>'mai',6=>'juin',
             7=>'juillet',8=>'août',9=>'septembre',10=>'octobre',11=>'novembre',12=>'décembre'];
 
@@ -119,7 +132,7 @@ include "public/includes/header_admin.php";
             </div>
             <a href="admin_orders.php" class="btn-draft"><i class="fa-solid fa-arrow-left"></i> Retour aux commandes</a>
 
-        <?php Sulser: else: ?>
+        <?php else: ?>
 
             <section class="admin-card">
                 <div class="card-title">
