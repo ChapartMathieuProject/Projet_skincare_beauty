@@ -241,6 +241,14 @@ CREATE TABLE lien_product_type(
     FOREIGN KEY (product_type_id) REFERENCES product_types(product_type_id)
 )engine= Innodb Default charset=utf8mb4;
 
+-- TABLE : tokens de réinitialisation de mot de passe
+CREATE TABLE password_resets (
+    password_reset_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id            INT NOT NULL,
+    reset_token         VARCHAR(64) NOT NULL UNIQUE,
+    reset_expires_at    DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 DELIMITER $$
 --
