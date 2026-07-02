@@ -1,4 +1,3 @@
-
 <?php 
 require_once "public/includes/db.php";
 
@@ -7,93 +6,124 @@ $company_id = 1; //TODO : à recup depuis la session admin plus tard
 $edit_id = (isset($_GET['id']) && ctype_digit($_GET['id'])) ? (int) $_GET['id'] : null;
 
 $errors = [];
+$cat_errors = [];
 
 /* ---------- TRAITEMENT DU FORMULAIRE (uniquement en POST) ---------- */
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
-    $product_id     = !empty($_POST['product_id']) ? (int) $_POST['product_id'] : null;
-    $name           = htmlspecialchars(trim($_POST['nom'] ?? ''));
-    $ean            = htmlspecialchars(trim($_POST['ean'] ?? ''));
-    $composition    = htmlspecialchars(trim($_POST['composition'] ?? ''));
-    $description    = htmlspecialchars(trim($_POST['description'] ?? '')); 
-    $buy_price      = htmlspecialchars(str_replace(',', '.', trim($_POST['prix_achat'] ?? '')));
-    $margin         = htmlspecialchars((int) ($_POST['marge'] ?? 0));
-    $quantity       = htmlspecialchars((int) ($_POST['stock'] ?? 0));
-    $alert          = ($_POST['alerte'] ?? '') === '' ? null : (int) $_POST['alerte'];
-    $brand_id       = (int) ($_POST['brand_id'] ?? 0);
-    $type_id        = (int) ($_POST['product_type_id'] ?? 0);
-    $is_status      = isset($_POST['actif']) ? 1 : 0;
 
-    if($name === '')                        $errors[] = "Le nom du produit est obligatoire.";
-    if (!preg_match('/^\d{13}$/', $ean))    $errors[] = "L'EAN doit comporter exactement 13 chiffres.";
-    if ($brand_id <= 0)                     $errors[] = "Choisis une marque.";
-    if ($type_id <= 0)                      $errors[] = "Choisis une catégorie.";
-    if (!is_numeric($buy_price))            $errors[] = "Le prix d'achat est invalide.";
+    // --- CAS 1 : AJOUT D'UNE CATÉGORIE ---
+    if (isset($_POST['category_name'])) {
+        $cat_name = htmlspecialchars(trim($_POST['category_name']));
 
-    if (!$errors) {
-        $stmt = $pdo->prepare("SELECT producer_id FROM brands WHERE brand_id = ?"); // Pour déduire la marque en rapport avec le fabricant
-        $stmt->execute([$brand_id]);
-        $producer_id = $stmt->fetchColumn();
-
-        if(!$producer_id) {
-            $errors[] = "Marque introuvable.";
+        if ($cat_name === '') {
+            $cat_errors[] = "Le nom de la catégorie ne peut pas être vide.";
         } else {
-            try {
-                if ($product_id){
-                    $sql = "UPDATE products SET
-                                product_name = ?, product_ean = ?, product_composition = ?,
-                                product_description = ?, product_is_status = ?, product_buy_price = ?,
-                                product_margin = ?, product_quantity = ?, product_alert = ?,
-                                producer_id = ?, brand_id = ?
-                            WHERE product_id = ?";
-                    
-                    $pdo->prepare($sql)->execute([
-                        $name, $ean, $composition, $description, $is_status, $buy_price,
-                        $margin, $quantity, $alert, $producer_id, $brand_id, $product_id,
-                    ]);
-                    $saved_id =$product_id;
-                } else {
-                    $sql = "INSERT INTO products
-                                (product_name, product_ean, product_composition, product_description,
-                                product_is_status, product_buy_price, product_margin, product_quantity,
-                                product_alert, producer_id, brand_id, company_id_account)
-                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
-                    $pdo->prepare($sql)->execute([
-                        $name, $ean, $composition, $description, $is_status, $buy_price,
-                        $margin, $quantity, $alert, $producer_id, $brand_id, $company_id,
-                    ]);
-                    $saved_id = (int) $pdo->lastInsertId();
-                }
-                
-                $pdo->prepare(
-                    "INSERT INTO lien_product_type (product_id, product_type_id)
-                    VALUES (?, ?)
-                    ON DUPLICATE KEY UPDATE product_type_id = VALUES(product_type_id)"
-                )->execute([$saved_id, $type_id]);
-
-
-                // Pour récupérer la création du SLUG pour la redirection vers la page produit
-                $stmt = $pdo->prepare("SELECT product_slug FROM products WHERE product_id = ?");
-                $stmt->execute([$saved_id]);
-                $slug = $stmt->fetchColumn();
-
-                header("Location: product.php?slug=" . urlencode($slug));
-                exit;
-
-            } catch (PDOException $e) {
-                if ($e->getCode() ==='23000'){ //Le 23000 est un code d'erreur SQL standard : il signale une violation de contrainte 
-                    $errors[] = "Cet EAN existe déjà : il doit être unique.";
-                } else {
-                    $errors[] = "Erreur d'enregistrement :" . $e->getMessage();
-                }
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM product_types WHERE LOWER(product_type_name) = LOWER(?)");
+            $stmt->execute([$cat_name]);
+            if ($stmt->fetchColumn() > 0) {
+                $cat_errors[] = "Cette catégorie existe déjà.";
             }
-        } 
+        }
+
+        if (!$cat_errors) {
+            try {
+                $stmt = $pdo->prepare("INSERT INTO product_types (product_type_name) VALUES (?)");
+                $stmt->execute([$cat_name]);
+
+                $redirect_url = "admin_add_product.php" . ($edit_id ? "?id=" . $edit_id . "&cat_added=1" : "?cat_added=1");
+                header("Location: " . $redirect_url);
+                exit;
+            } catch (PDOException $e) {
+                $cat_errors[] = "Erreur lors de la création de la catégorie : " . $e->getMessage();
+            }
+        }
+    }
+
+    // --- CAS 2 : ENREGISTREMENT DU PRODUIT (Ajout ou Modification) ---
+    if (isset($_POST['nom'])) {
+        $product_id     = !empty($_POST['product_id']) ? (int) $_POST['product_id'] : null;
+        $name           = htmlspecialchars(trim($_POST['nom'] ?? ''));
+        $ean            = htmlspecialchars(trim($_POST['ean'] ?? ''));
+        $composition    = htmlspecialchars(trim($_POST['composition'] ?? ''));
+        $description    = htmlspecialchars(trim($_POST['description'] ?? '')); 
+        $buy_price      = htmlspecialchars(str_replace(',', '.', trim($_POST['prix_achat'] ?? '')));
+        $margin         = htmlspecialchars((int) ($_POST['marge'] ?? 0));
+        $quantity       = htmlspecialchars((int) ($_POST['stock'] ?? 0));
+        $alert          = ($_POST['alerte'] ?? '') === '' ? null : (int) $_POST['alerte'];
+        $brand_id       = (int) ($_POST['brand_id'] ?? 0);
+        $type_id        = (int) ($_POST['product_type_id'] ?? 0);
+        $is_status      = isset($_POST['actif']) ? 1 : 0;
+
+        if($name === '')                        $errors[] = "Le nom du produit est obligatoire.";
+        if (!preg_match('/^\d{13}$/', $ean))    $errors[] = "L'EAN doit comporter exactement 13 chiffres.";
+        if ($brand_id <= 0)                     $errors[] = "Choisis une marque.";
+        if ($type_id <= 0)                      $errors[] = "Choisis une catégorie.";
+        if (!is_numeric($buy_price))            $errors[] = "Le prix d'achat est invalide.";
+
+        if (!$errors) {
+            $stmt = $pdo->prepare("SELECT producer_id FROM brands WHERE brand_id = ?"); 
+            $stmt->execute([$brand_id]);
+            $producer_id = $stmt->fetchColumn();
+
+            if(!$producer_id) {
+                $errors[] = "Marque introuvable.";
+            } else {
+                try {
+                    if ($product_id){
+                        $sql = "UPDATE products SET
+                                    product_name = ?, product_ean = ?, product_composition = ?,
+                                    product_description = ?, product_is_status = ?, product_buy_price = ?,
+                                    product_margin = ?, product_quantity = ?, product_alert = ?,
+                                    producer_id = ?, brand_id = ?
+                                WHERE product_id = ?";
+                        
+                        $pdo->prepare($sql)->execute([
+                            $name, $ean, $composition, $description, $is_status, $buy_price,
+                            $margin, $quantity, $alert, $producer_id, $brand_id, $product_id,
+                        ]);
+                        $saved_id =$product_id;
+                    } else {
+                        $sql = "INSERT INTO products
+                                    (product_name, product_ean, product_composition, product_description,
+                                    product_is_status, product_buy_price, product_margin, product_quantity,
+                                    product_alert, producer_id, brand_id, company_id_account)
+                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                        $pdo->prepare($sql)->execute([
+                            $name, $ean, $composition, $description, $is_status, $buy_price,
+                            $margin, $quantity, $alert, $producer_id, $brand_id, $company_id,
+                        ]);
+                        $saved_id = (int) $pdo->lastInsertId();
+                    }
+                    
+                    $pdo->prepare(
+                        "INSERT INTO lien_product_type (product_id, product_type_id)
+                        VALUES (?, ?)
+                        ON DUPLICATE KEY UPDATE product_type_id = VALUES(product_type_id)"
+                    )->execute([$saved_id, $type_id]);
+
+                    $stmt = $pdo->prepare("SELECT product_slug FROM products WHERE product_id = ?");
+                    $stmt->execute([$saved_id]);
+                    $slug = $stmt->fetchColumn();
+
+                    header("Location: product.php?slug=" . urlencode($slug));
+                    exit;
+
+                } catch (PDOException $e) {
+                    if ($e->getCode() === '23000'){ 
+                        $errors[] = "Cet EAN existe déjà : il doit être unique.";
+                    } else {
+                        $errors[] = "Erreur d'enregistrement :" . $e->getMessage();
+                    }
+                }
+            } 
+        }
     }
 }
 
 /* ---------- CHARGEMENT POUR L'AFFICHAGE ---------- */
 
-$menu_actif = "ajouter un produits";
+$menu_actif = "ajouter un produit";
 
 $brands = $pdo->query("SELECT brand_id, brand_name FROM brands ORDER BY brand_name")->fetchAll();
 $types = $pdo->query("SELECT product_type_id, product_type_name FROM product_types ORDER BY product_type_name")->fetchAll();
@@ -115,13 +145,13 @@ if ($edit_id) {
         $t->execute([$edit_id]);
         $current_type = (int) $t->fetchColumn();
     } else {
-        $edit_id = null; // Si id inexistant on retourne sur la création
+        $edit_id = null; 
     }
 }
  
 $mode_edition = $edit_id !== null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errors) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nom']) && $errors) {
     $p['product_name']        = $_POST['nom'] ?? '';
     $p['product_ean']         = $_POST['ean'] ?? '';
     $p['product_composition'] = $_POST['composition'] ?? '';
@@ -138,9 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errors) {
 function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8'); }
 ?>
 
-
 <?php include "public/includes/header_admin.php"; ?>
-<?php $menu_actif = 'ajouter un produit'; ?> <!-- Changer le 'ajouter un produit' en fonction de la page -->
 <div class="admin-main">
     <header class="admin-topbar">
         <nav class="breadcrumb-admin">
@@ -163,7 +191,6 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
             <input type="hidden" name="product_id" value="<?= (int) $edit_id ?>">
         <?php endif; ?>
  
-        <!-- Messages -->
         <?php if (!empty($_GET['saved'])): ?>
             <div class="profile-alert profile-alert--success">
                 <i class="fa-solid fa-check"></i> Produit enregistré avec succès.
@@ -177,7 +204,6 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
             </div>
         <?php endif; ?>
  
-        <!-- ====== 1. Informations générales ====== -->
         <section class="admin-card">
             <div class="card-title">
                 <span class="num">1</span>
@@ -235,7 +261,6 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
             </div>
         </section>
  
-        <!-- ====== 2. Prix & stock (1 seul jeu, pas de variantes) ====== -->
         <section class="admin-card">
             <div class="card-title">
                 <span class="num">2</span>
@@ -266,7 +291,6 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
             </div>
         </section>
  
-        <!-- ====== 3. Disponibilité ====== -->
         <section class="admin-card">
             <div class="card-title">
                 <span class="num">3</span>
@@ -286,7 +310,6 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
             </div>
         </section>
  
-        <!-- ====== 4. Images (affichage seulement — traitement à venir) ====== -->
         <section class="admin-card">
             <div class="card-title">
                 <span class="num">4</span>
@@ -302,8 +325,53 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
                 <label class="upload-zone"><input type="file" name="images[]" accept="image/*" hidden><i class="fa-solid fa-plus"></i></label>
             </div>
         </section>
- 
     </form>
+
+    <section class="admin-card" style="margin-top: 2rem;">
+        <div class="card-title">
+            <i class="fa-solid fa-tags" style="font-size: 1.25rem; margin-right: 10px; color: var(--admin-primary, #4f46e5);"></i>
+            <h2>Créer une nouvelle catégorie</h2>
+        </div>
+
+        <?php if (isset($_GET['cat_added'])): ?>
+            <div class="profile-alert profile-alert--success" style="margin-bottom: 1.5rem;">
+                <i class="fa-solid fa-check"></i> Catégorie ajoutée avec succès ! Elle est désormais disponible dans la liste ci-dessus.
+            </div>
+        <?php endif; ?>
+
+        <?php if ($cat_errors): ?>
+            <div class="profile-alert profile-alert--error" style="margin-bottom: 1.5rem;">
+                <ul class="m-0 ps-3">
+                    <?php foreach ($cat_errors as $c_err): ?><li><?= e($c_err) ?></li><?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <form method="post" action="">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-8">
+                    <label class="form-label-admin" for="category_name">Nom de la catégorie</label>
+                    <input class="input-admin" type="text" id="category_name" name="category_name" placeholder="Ex: Crème de nuit, Sérum..." required>
+                </div>
+                <div class="col-12 col-md-4">
+                    <button type="submit" class="btn-admin-primary" style="width: 100%; justify-content: center; height: 42px;">
+                        <i class="fa-solid fa-plus"></i> Ajouter la catégorie
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div style="margin-top: 1.5rem;">
+            <p class="form-label-admin" style="margin-bottom: 0.5rem;">Catégories existantes (<?= count($types) ?>) :</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <?php foreach ($types as $t): ?>
+                    <span style="background: #f3f4f6; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; color: #374151; border: 1px solid #e5e7eb;">
+                        <?= e($t['product_type_name']) ?>
+                    </span>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
 </div>
 </div>
  
