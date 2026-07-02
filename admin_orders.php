@@ -70,7 +70,7 @@
                         <span class="statut-badge statut-preparation"><span class="point"></span>En préparation</span>
                     </td>
                     <td class="col-actions">
-                        <a class="btn-row-action" href="commande_detail.php?id=1041" aria-label="Voir la commande">
+                        <a class="btn-row-action" href="admin_order_detail.php?id=1041" aria-label="Voir la commande">
                             <i class="fa-solid fa-eye"></i>
                         </a>
                     </td>
@@ -89,7 +89,7 @@
                         <span class="statut-badge statut-expediee"><span class="point"></span>Expédiée</span>
                     </td>
                     <td class="col-actions">
-                        <a class="btn-row-action" href="commande_detail.php?id=1040" aria-label="Voir la commande">
+                        <a class="btn-row-action" href="admin_order_detail.php?id=1040" aria-label="Voir la commande">
                             <i class="fa-solid fa-eye"></i>
                         </a>
                     </td>
@@ -108,7 +108,7 @@
                         <span class="statut-badge statut-livree"><span class="point"></span>Livrée</span>
                     </td>
                     <td class="col-actions">
-                        <a class="btn-row-action" href="commande_detail.php?id=1039" aria-label="Voir la commande">
+                        <a class="btn-row-action" href="admin_order_detail.php?id=1039" aria-label="Voir la commande">
                             <i class="fa-solid fa-eye"></i>
                         </a>
                     </td>
@@ -127,7 +127,7 @@
                         <span class="statut-badge statut-expediee"><span class="point"></span>Expédiée</span>
                     </td>
                     <td class="col-actions">
-                        <a class="btn-row-action" href="commande_detail.php?id=1038" aria-label="Voir la commande">
+                        <a class="btn-row-action" href="admin_order_detail.php?id=1038" aria-label="Voir la commande">
                             <i class="fa-solid fa-eye"></i>
                         </a>
                     </td>
@@ -146,7 +146,7 @@
                         <span class="statut-badge statut-livree"><span class="point"></span>Livrée</span>
                     </td>
                     <td class="col-actions">
-                        <a class="btn-row-action" href="commande_detail.php?id=1037" aria-label="Voir la commande">
+                        <a class="btn-row-action" href="admin_order_detail.php?id=1037" aria-label="Voir la commande">
                             <i class="fa-solid fa-eye"></i>
                         </a>
                     </td>
