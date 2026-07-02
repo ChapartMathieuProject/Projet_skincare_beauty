@@ -1,23 +1,45 @@
-
-<?php 
-
+<?php
 require_once "public/includes/db.php";
 
+$user_types = [];
+foreach ($pdo->query("SELECT user_type_id, user_type_name FROM user_types ORDER BY user_type_id") as $row) {
+    $user_types[$row['user_type_id']] = $row['user_type_name'];
+}
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'update_role') {
+
+    $user_id = isset($_POST['user_id'])      ? (int) $_POST['user_id']      : 0;
+    $role_id = isset($_POST['user_type_id']) ? (int) $_POST['user_type_id'] : 0;
+
+    if ($user_id > 0 && array_key_exists($role_id, $user_types)) {
+        $stmt = $pdo->prepare("UPDATE users SET user_type_id = :type WHERE user_id = :id");
+        $stmt->execute(['type' => $role_id, 'id' => $user_id]);
+    }
+
+    header('Location: admin_users.php?role_updated=1');
+    exit;
+}
+
+
+
 $users = [];
-foreach ($pdo->query("SELECT user_id, user_mail FROM users") as $row) {
-    $users[$row["user_id"]] = $row["user_mail"];
+foreach ($pdo->query("SELECT user_id, user_mail, user_type_id FROM users") as $row) {
+    $users[$row['user_id']] = [
+        'mail' => $row['user_mail'],
+        'type' => $row['user_type_id'],
+    ];
 }
 
 $orders_count = [];
 foreach ($pdo->query("SELECT customer_id_account, COUNT(*) AS nb FROM orders GROUP BY customer_id_account") as $row) {
-    $orders_count[$row["customer_id_account"]] = $row["nb"];
+    $orders_count[$row['customer_id_account']] = $row['nb'];
 }
 
 $customers = $pdo->query("SELECT * FROM customers ORDER BY customer_name")->fetchAll();
 
-
-$menu_actif = 'clients'; //<!-- Changer le 'clients' en fonction de la page -->
-include "public/includes/header_admin.php"; 
+$menu_actif = 'clients';   // Changer selon la page
+include "public/includes/header_admin.php";
 ?>
 
 <div class="admin-main">
@@ -28,6 +50,11 @@ include "public/includes/header_admin.php";
         <h1>Clients</h1>
     </header>
     <div class="admin-content">
+
+        <?php if (isset($_GET['role_updated'])): ?>
+            <div class="alert alert-success" role="alert">Le rôle du client a été mis à jour.</div>
+        <?php endif; ?>
+
         <section class="admin-card">
             <div class="orders-toolbar">
                 <div class="search-admin">
@@ -37,7 +64,7 @@ include "public/includes/header_admin.php";
                 </div>
             </div>
             <p class="results-count" id="clients-count"><?= count($customers) ?> client<?= count($customers) > 1 ? 's' : '' ?></p>
- 
+
             <div class="table-scroll">
                 <table class="orders-table">
                     <thead>
@@ -52,7 +79,8 @@ include "public/includes/header_admin.php";
                         <?php foreach ($customers as $c):
                             $full_name = $c['customer_firstname'] . ' ' . $c['customer_name'];
                             $initials  = mb_strtoupper(mb_substr($c['customer_firstname'], 0, 1) . mb_substr($c['customer_name'], 0, 1));
-                            $mail      = $users[$c['user_id']] ?? '';
+                            $mail      = $users[$c['user_id']]['mail'] ?? '';
+                            $role_id   = $users[$c['user_id']]['type'] ?? '';
                             $nb_orders = $orders_count[$c['customer_id_account']] ?? 0;
                         ?>
                         <tr>
@@ -71,6 +99,8 @@ include "public/includes/header_admin.php";
                                 <button type="button" class="btn-row-action"
                                     data-bs-toggle="modal" data-bs-target="#client-modal"
                                     data-id="<?= (int) $c['customer_id_account'] ?>"
+                                    data-user-id="<?= (int) $c['user_id'] ?>"
+                                    data-role="<?= (int) $role_id ?>"
                                     data-avatar="<?= htmlspecialchars($initials) ?>"
                                     data-nom="<?= htmlspecialchars($full_name) ?>"
                                     data-email="<?= htmlspecialchars($mail) ?>"
@@ -86,16 +116,17 @@ include "public/includes/header_admin.php";
                 </table>
             </div>
         </section>
- 
+
         <!-- ===================================================================
              MODALE FICHE CLIENT (une seule, partagée par toutes les lignes).
-             Vide pour l'instant : le JS lira les data-… du bouton cliqué
-             (event.relatedTarget) et remplira les emplacements #cm-… ci-dessous.
+             Le JS (admin_clients.js) lit les data-… du bouton cliqué
+             (event.relatedTarget) et remplit les emplacements #cm-… ci-dessous.
              =================================================================== -->
         <div class="modal fade" id="client-modal" tabindex="-1" aria-labelledby="cm-name" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content client-modal">
- 
+
+                    <!-- En-tête : avatar + nom + email -->
                     <div class="modal-header">
                         <div class="client-modal-head">
                             <span class="client-avatar lg" id="cm-avatar"></span>
@@ -106,9 +137,10 @@ include "public/includes/header_admin.php";
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
- 
+
                     <div class="modal-body">
- 
+
+                        <!-- Coordonnées -->
                         <div class="client-section">
                             <h6 class="client-section-title">Coordonnées</h6>
                             <div class="client-info-grid">
@@ -130,19 +162,22 @@ include "public/includes/header_admin.php";
                                 </div>
                             </div>
                         </div>
- 
+
                         <div class="client-section">
                             <h6 class="client-section-title">Rôle</h6>
-                            <div class="role-row">
-                                <select class="input-admin" id="cm-role" name="role" aria-label="Rôle du client">
-                                    <option value="client">Client</option>
-                                    <option value="vip">Client VIP</option>
-                                    <option value="admin">Administrateur</option>
+                            <form method="post" action="admin_users.php" class="role-row">
+                                <input type="hidden" name="action" value="update_role">
+                                <input type="hidden" name="user_id" id="cm-user-id" value="">
+                                <select class="input-admin" id="cm-role" name="user_type_id" aria-label="Rôle du client">
+                                    <?php foreach ($user_types as $type_id => $type_name): ?>
+                                        <option value="<?= (int) $type_id ?>"><?= htmlspecialchars($type_name) ?></option>
+                                    <?php endforeach; ?>
                                 </select>
-                                <button type="button" class="btn-admin-primary" id="cm-role-save">Mettre à jour</button>
-                            </div>
+                                <button type="submit" class="btn-admin-primary" id="cm-role-save">Mettre à jour</button>
+                            </form>
                         </div>
- 
+
+                        <!-- Adresses -->
                         <div class="client-section">
                             <h6 class="client-section-title">Adresses</h6>
                             <div class="address-list">
@@ -156,7 +191,8 @@ include "public/includes/header_admin.php";
                                 </div>
                             </div>
                         </div>
- 
+
+                        <!-- Dernières commandes -->
                         <div class="client-section">
                             <h6 class="client-section-title">Dernières commandes</h6>
                             <div class="table-scroll">
@@ -181,24 +217,23 @@ include "public/includes/header_admin.php";
                                 </table>
                             </div>
                         </div>
- 
+
                     </div>
- 
-                    <!-- Pied : fermeture + lien fiche complète (href posé par le JS) -->
+
                     <div class="modal-footer">
                         <button type="button" class="btn-draft" data-bs-dismiss="modal">Fermer</button>
-                        <a class="btn-admin-primary" id="cm-full-link" href="#">Voir la fiche complète</a>
                     </div>
- 
+
                 </div>
             </div>
         </div>
- 
+
     </div>
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
- 
+<script src="public/scripts/admin_users.js"></script>
+
 </body>
- 
+
 </html>
