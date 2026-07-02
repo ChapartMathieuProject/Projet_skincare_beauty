@@ -220,12 +220,15 @@ CREATE TABLE bills(
 
 
 
-CREATE TABLE contains ( 
-    product_id INT PRIMARY KEY,
-    order_id INT,
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (order_id) REFERENCES orders(order_id)
-)engine= Innodb Default charset=utf8mb4;
+CREATE TABLE contains (
+    order_id    INT NOT NULL,
+    product_id  INT NOT NULL,
+    quantity    INT NOT NULL,
+    unit_price  DECIMAL(10,2) NOT NULL, 
+    PRIMARY KEY (order_id, product_id),
+    FOREIGN KEY (order_id)   REFERENCES orders(order_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE do(
     product_id INT PRIMARY KEY,
@@ -494,7 +497,7 @@ INSERT INTO payement_types (payement_type_name) VALUES
     ('Google Pay'), ('Apple Pay');
 
 INSERT INTO order_status (order_type_name) VALUES
-    ('En cours'), ('Expédié'), ('Annulé');
+    ('En attente'), ('En préparation'), ('Expédiée'), ('Livrée');
 
 INSERT INTO producers (producer_name) VALUES
     ('Roche-posay'), ("L'Oréal");
@@ -573,13 +576,14 @@ INSERT INTO deliveries
 INSERT INTO orders
     (order_number, order_date, order_date_annulation, order_promotion,
      order_type_id, payment_type_id, company_id_account, customer_id_account, delivery_type_id, deliveries_id) VALUES
-    ('CMD-2026-001', '2026-05-09 09:15:00', NULL, NULL, 1, 1, 1, 1, 1, 1),
-    ('CMD-2026-002', '2026-05-11 16:40:00', NULL, 10,   2, 3, 1, 2, 2, 2);
+    ('CMD-2026-001', '2026-05-09 09:15:00', NULL, NULL, 4, 1, 1, 1, 1, 1),
+    ('CMD-2026-002', '2026-05-11 16:40:00', NULL, 10,   3, 3, 1, 2, 2, 2);
 
 -- Contenu des commandes
-INSERT INTO contains (product_id, order_id) VALUES
-    (1, 1), (4, 1), (16, 2);
-
+INSERT INTO contains (order_id, product_id, quantity, unit_price) VALUES
+    (1, 1,  2, 19.20),   -- P-Tiox      : 24,00 € -20% = 19,20 €
+    (1, 4,  1, 27.38),   -- C.E Ferulic : 37,50 € -27% = 27,38 €
+    (2, 16, 3, 27.90);   -- Advanced Hyalu B5 Gel : 27,90 € (sans promo)
 -- Contenu des promotions
 INSERT INTO promotions (product_id, promotion_percent, promotion_is_active) VALUES
     (1, 20, 1),
