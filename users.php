@@ -45,7 +45,7 @@ $profileCards = [
         'id' => 'commandes',
         'title' => 'Vos Commandes',
         'desc' => 'Suivez vos colis, consultez votre historique et téléchargez vos factures.',
-        'link' => 'commandes.php',
+        'link' => 'orders.php',
         'icon' => 'fa-solid fa-box',
     ],
     [
@@ -59,7 +59,7 @@ $profileCards = [
         'id' => 'addresses',
         'title' => 'Adresses',
         'desc' => 'Gérez vos adresses de livraison et de facturation.',
-        'link' => 'adresses.php',
+        'link' => 'addresses.php',
         'icon' => 'fa-solid fa-location-dot',
     ],
     [

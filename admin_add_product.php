@@ -118,7 +118,10 @@ if ($edit_id) {
         $edit_id = null; // Si id inexistant on retourne sur la création
     }
 }
+
  
+
+
 $mode_edition = $edit_id !== null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errors) {

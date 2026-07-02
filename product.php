@@ -93,7 +93,7 @@ $similar_products = array_slice($similar_products, 0, 4);
 
 include "public/includes/header.php";
 ?>
-
+<!-- product.php -->
 <div class="ariadne container small text-secondary pt-4 pb-1 d-flex gap-2">
     <a href="index.php">Accueil</a><span>></span>
     <a href="#"><?= htmlspecialchars($type_name) ?></a><span>></span>
