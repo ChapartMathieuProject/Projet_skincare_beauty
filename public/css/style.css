@@ -50,6 +50,11 @@
   color: var(--rose);
 }
 
+.navbar .nav-link.active {
+  color: var(--rose);
+  font-weight: 600;
+}
+
 .btn-icon {
   border: none;
   background: transparent;
