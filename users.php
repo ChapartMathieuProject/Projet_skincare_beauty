@@ -3,17 +3,17 @@
 // En production, remplacer la simulation par une vraie vérification BDD.
 session_start();
 
-//if (!isset($_SESSION['user_id'])) {
-    // Redirection vers la page de connexion si la session est absente
-    //header('Location: login.php');
-   // exit;
-//}
+if (!isset($_SESSION['user_id'])) {
+     //Redirection vers la page de connexion si la session est absente
+    header('Location: login.php');
+    exit;
+}
 
 // Simulation d'un utilisateur connecté pour le développement
 $currentUser = [
     'user_id' => $_SESSION['user_id'] ?? 1,
     'user_name' => $_SESSION['user_name'] ?? 'Camil Bernardeau',
-    'user_mail' => $_SESSION['user_email'] ?? 'camil@skincarebeauty.fr',
+    'user_mail' => $_SESSION['user_mail'] ?? 'camil@skincarebeauty.fr',
 ];
 
 /**

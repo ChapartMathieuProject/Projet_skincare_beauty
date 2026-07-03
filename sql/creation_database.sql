@@ -16,7 +16,7 @@ CREATE TABLE user_types (
 CREATE TABLE users(
     user_id INT PRIMARY KEY AUTO_INCREMENT,
     user_mail VARCHAR(50) not null,
-    user_password VARCHAR (20) NOT NULL,
+    user_password VARCHAR (255) NOT NULL,
     UNIQUE (user_mail),
     user_type_id INT NOT NULL,
     FOREIGN KEY (user_type_id) REFERENCES user_types(user_type_id)
@@ -606,6 +606,26 @@ INSERT INTO contains (product_id, order_id) VALUES
 INSERT INTO promotions (product_id, promotion_percent, promotion_is_active) VALUES
     (1, 20, 1),
     (4, 27, 1);
+-- Insertion des réinitialisations de mot de passe
+INSERT INTO password_resets (
+  user_id, 
+  reset_token, 
+  reset_expires_at
+) VALUES (
+  1, 
+  '9f82c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', 
+  DATE_ADD(NOW(), INTERVAL 1 HOUR)
+);
+
+INSERT INTO password_resets (
+  user_id, 
+  reset_token, 
+  reset_expires_at
+) VALUES (
+  2, 
+  'a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890', 
+  '2026-07-02 18:00:00'
+);
 <<<<<<< HEAD
 =======
 
