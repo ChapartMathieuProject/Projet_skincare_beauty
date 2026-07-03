@@ -47,9 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if (!empty($user['customer_firstname'])) {
           $_SESSION['user_name'] = $user['customer_firstname'] . ' ' . $user['customer_name'];
         } else {
-<<<<<<< HEAD
-          $_SESSION['user_name'] = $user['user_mail'];
-=======
             // On joint customers pour récupérer le nom/prénom du client.
             // LEFT JOIN car un compte administrateur n'a pas forcément de ligne dans customers.
             $stmt = $pdo->prepare(
@@ -89,7 +86,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
 
             $errorMessage = 'E-mail ou mot de passe incorrect.';
->>>>>>> origin/FEA_BER_012
         }
 
         if ($rememberMe) {
