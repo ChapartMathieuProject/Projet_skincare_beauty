@@ -1,11 +1,8 @@
 <?php
-
 // session_start() doit être la toute première chose du fichier
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
-require_once "cart.php";
 
 // On récupère les infos de l'utilisateur connecté (utilisées plus bas dans la modale)
 $userName = $_SESSION['user_name'] ?? 'Invité';
@@ -44,12 +41,9 @@ $isAdmin = ($_SESSION['user_type_id'] ?? null) === 2;
                 <button class="btn-icon" type="button" aria-label="Mon compte" data-bs-toggle="modal" data-bs-target="#userModal">
                     <i class="fa-regular fa-user"></i>
                 </button>
-                <a class="btn-icon position-relative" href="panier.php" aria-label="Panier">
+                <button class="btn-icon position-relative" type="button" aria-label="Panier">
                     <i class="fa fa-shopping-bag"></i>
-                    <?php if (cart_count() > 0): ?>
-                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill"><?= cart_count() ?></span>
-                    <?php endif; ?>
-                </a>
+                </button>
                 <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse"
                     data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false"
                     aria-label="Ouvrir le menu">
