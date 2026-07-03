@@ -1,5 +1,5 @@
 <?php
-require_once "public/includes/db.php"; 
+require_once "public/includes/db.php";
 
 // 1. CHARGEMENT DES DICTIONNAIRES (Même logique que ton index.php)
 $brands = [];
@@ -108,12 +108,12 @@ include "public/includes/header.php";
                     <?php if ($has_promo): ?>
                         <span class="badge-reduction position-absolute top-0 start-0 m-3">-<?= (int)$promo_percent ?>%</span>
                     <?php endif; ?>
-                    
+
                     <button id="btn-wishlist" type="button" aria-label="Ajouter à la wishlist"
                         class="btn position-absolute top-0 end-0 m-3 rounded-circle d-flex align-items-center justify-content-center">
                         <i class="test fa-reg-he fa-regular fa-heart"></i>
                     </button>
-                    
+
                     <img src="<?= htmlspecialchars($img_main) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>">
                 </div>
                 <div class="d-flex gap-2 mt-3">
@@ -124,16 +124,16 @@ include "public/includes/header.php";
                 </div>
             </div>
         </div>
-        
+
         <div class="col-12 col-lg-6">
             <p class="overtitle-brand mb-2"><?= htmlspecialchars($brand_name) ?></p>
             <h1 class="title-product h2 mb-3"><?= htmlspecialchars($product['product_name']) ?></h1>
-            
+
             <ul class="atouts-paper list-unstyled d-flex flex-column gap-2 mb-4">
                 <li class="d-flex gap-2"><span class="puce">✦</span>Formule haute efficacité</li>
                 <li class="d-flex gap-2"><span class="puce">✦</span>Composition : <?= htmlspecialchars($product['product_composition']) ?></li>
             </ul>
-            
+
             <div class="d-flex align-items-baseline gap-3 mb-1">
                 <span class="actual-price" id="actual-price"><?= number_format($final_price, 2, ',', ' ') ?>€</span>
                 <?php if ($has_promo): ?>
@@ -141,7 +141,7 @@ include "public/includes/header.php";
                     <span class="promotion-badge-reduction badge-product rounded px-2 py-1" id="promotion-badge">-<?= (int)$promo_percent ?>%</span>
                 <?php endif; ?>
             </div>
-            
+
             <?php if ($has_promo): ?>
                 <p class="saving small mb-4" id="saving">Vous économisez <?= number_format($saving, 2, ',', ' ') ?>€</p>
             <?php endif; ?>
@@ -153,7 +153,7 @@ include "public/includes/header.php";
                     <span class="sous d-block">EAN: <?= htmlspecialchars($product['product_ean']) ?></span>
                 </button>
             </div>
-            
+
             <div class="d-flex gap-3 mb-3">
                 <div class="choice-quantity d-flex align-items-center">
                     <button type="button" id="qty-less" aria-label="Diminuer">-</button>
@@ -165,7 +165,7 @@ include "public/includes/header.php";
                     <i class="fa-solid fa-bag-shopping"></i> Ajouter au panier
                 </button>
             </div>
-            
+
             <div class="d-flex align-items-center gap-2 mb-4 small text-secondary">
                 <span class="spot-stock" style="background-color: <?= $product['product_quantity'] > 0 ? '#28a745' : '#dc3545' ?>;"></span>
                 <span>
@@ -204,58 +204,63 @@ include "public/includes/header.php";
 </section>
 
 <?php if (!empty($similar_products)): ?>
-<section class="container py-5">
-    <h2 class="h3 text-center mb-4">Vous aimerez aussi</h2>
-    <div class="row g-4">
-        <?php foreach($similar_products as $sp):
-            $brand_name_sp = $brands[$sp['brand_id']] ?? 'Marque';
-            $promo_percent_sp = $promotions[$sp['product_id']] ?? null;
-            $has_promo_sp     = $promo_percent_sp !== null;
-            $img_sp           = $pictures[$sp['product_id']] ?? $default_image;
+    <section class="container py-5">
+        <h2 class="h3 text-center mb-4">Vous aimerez aussi</h2>
+        <div class="row g-4">
+            <?php foreach ($similar_products as $sp):
+                $brand_name_sp = $brands[$sp['brand_id']] ?? 'Marque';
+                $promo_percent_sp = $promotions[$sp['product_id']] ?? null;
+                $has_promo_sp     = $promo_percent_sp !== null;
+                $img_sp           = $pictures[$sp['product_id']] ?? $default_image;
 
-            $coef_marge_sp = 1 + ($sp["product_margin"] / 100);
-            $base_price_sp = $sp["product_buy_price"] * $coef_marge_sp;
+                $coef_marge_sp = 1 + ($sp["product_margin"] / 100);
+                $base_price_sp = $sp["product_buy_price"] * $coef_marge_sp;
 
-            $final_price_sp = $base_price_sp;
-            if ($has_promo_sp) {
-                $final_price_sp = $base_price_sp - ($base_price_sp * ($promo_percent_sp / 100));
-            }
-        ?>
-        <div class="col-12 col-sm-6 col-lg-3">
-            <div class="card-bind h-100 d-flex flex-column">
-                <div class="visual position-relative">
-                    <a href="product.php?slug=<?= urlencode($sp["product_slug"]) ?>">
-                        <img src="<?= htmlspecialchars($img_sp) ?>" alt="<?= htmlspecialchars($sp["product_name"]) ?>">
-                    </a>
-                    <?php if ($has_promo_sp): ?>
-                        <span class="badge-reduction position-absolute top-0 start-0 m-2">-<?= (int)$promo_percent_sp ?>%</span>
-                    <?php endif; ?>
-                </div>
-
-                <div class="p-3 d-flex flex-column flex-fill">
-                    <span class="brand"><?= htmlspecialchars($brand_name_sp) ?></span>
-                    <a href="product.php?slug=<?= urlencode($sp["product_slug"]) ?>" class="text-decoration-none text-dark">
-                        <span class="name my-1 fw-semibold d-block"><?= htmlspecialchars($sp["product_name"]) ?></span>
-                    </a>
-
-                    <div class="mt-auto d-flex align-items-center justify-content-between pt-2">
-                        <span>
-                            <span class="price-prom-badge fw-bold"><?= number_format($final_price_sp, 2, ',', ' ') ?> €</span>
+                $final_price_sp = $base_price_sp;
+                if ($has_promo_sp) {
+                    $final_price_sp = $base_price_sp - ($base_price_sp * ($promo_percent_sp / 100));
+                }
+            ?>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card-bind h-100 d-flex flex-column">
+                        <div class="visual position-relative">
+                            <a href="product.php?slug=<?= urlencode($sp["product_slug"]) ?>">
+                                <img src="<?= htmlspecialchars($img_sp) ?>" alt="<?= htmlspecialchars($sp["product_name"]) ?>">
+                            </a>
                             <?php if ($has_promo_sp): ?>
-                                <span class="strike-price small ms-1 text-muted text-decoration-line-through"><?= number_format($base_price_sp, 2, ',', ' ') ?> €</span>
+                                <span class="badge-reduction position-absolute top-0 start-0 m-2">-<?= (int)$promo_percent_sp ?>%</span>
                             <?php endif; ?>
-                        </span>
+                        </div>
 
-                        <button class="btn-rose btn-bag rounded-circle d-flex align-items-center justify-content-center" aria-label="Ajouter au panier">
-                            <i class="fa-solid fa-bag-shopping"></i>
-                        </button>
+                        <div class="p-3 d-flex flex-column flex-fill">
+                            <span class="brand"><?= htmlspecialchars($brand_name_sp) ?></span>
+                            <a href="product.php?slug=<?= urlencode($sp["product_slug"]) ?>" class="text-decoration-none text-dark">
+                                <span class="name my-1 fw-semibold d-block"><?= htmlspecialchars($sp["product_name"]) ?></span>
+                            </a>
+
+                            <div class="mt-auto d-flex align-items-center justify-content-between pt-2">
+                                <span>
+                                    <span class="price-prom-badge fw-bold"><?= number_format($final_price_sp, 2, ',', ' ') ?> €</span>
+                                    <?php if ($has_promo_sp): ?>
+                                        <span class="strike-price small ms-1 text-muted text-decoration-line-through"><?= number_format($base_price_sp, 2, ',', ' ') ?> €</span>
+                                    <?php endif; ?>
+                                </span>
+
+                                <form method="post" action="cart_action.php" class="flex-fill">
+                                    <input type="hidden" name="action" value="add">
+                                    <input type="hidden" name="product_id" value="<?= (int) $product['product_id'] ?>">
+                                    <input type="hidden" name="return" value="<?= htmlspecialchars(basename($_SERVER['REQUEST_URI']), ENT_QUOTES) ?>">
+                                    <button class="btn-rose btn-add w-100 d-flex align-items-center justify-content-center gap-2" id="btn-add" type="submit">
+                                        <i class="fa-solid fa-bag-shopping"></i> Ajouter au panier
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            <?php endforeach; ?>
         </div>
-        <?php endforeach; ?>
-    </div>
-</section>
+    </section>
 <?php endif; ?>
 
 <script src="public/scripts/product.js"></script>
