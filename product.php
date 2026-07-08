@@ -248,6 +248,7 @@ include "public/includes/header.php";
 
                         <button class="btn-rose btn-bag rounded-circle d-flex align-items-center justify-content-center" aria-label="Ajouter au panier">
                             <i class="fa-solid fa-bag-shopping"></i>
+                            
                         </button>
                     </div>
                 </div>
