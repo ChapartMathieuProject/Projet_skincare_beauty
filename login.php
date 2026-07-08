@@ -1,14 +1,15 @@
 <?php
+// On redirige un utilisateur déjà connecté : pas de raison de lui remontrer le formulaire.
 if (session_status() === PHP_SESSION_NONE) {
-  session_start();
+    session_start();
+}
+
+if (isset($_SESSION['user_id'])) {
+    header('Location: users.php');
+    exit;
 }
 
 require_once 'public/includes/db.php';
-
-if (isset($_SESSION['user_id'])) {
-  header('Location: index.php');
-  exit;
-}
 
 $errorMessage = '';
 $email        = '';
@@ -46,7 +47,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if (!empty($user['customer_firstname'])) {
           $_SESSION['user_name'] = $user['customer_firstname'] . ' ' . $user['customer_name'];
         } else {
-          $_SESSION['user_name'] = $user['user_mail'];
+            // On joint customers pour récupérer le nom/prénom du client.
+            // LEFT JOIN car un compte administrateur n'a pas forcément de ligne dans customers.
+            $stmt = $pdo->prepare(
+                'SELECT users.user_id, users.user_mail, users.user_password, users.user_type_id,
+                        customers.customer_name, customers.customer_firstname
+                 FROM users
+                 LEFT JOIN customers ON customers.user_id = users.user_id
+                 WHERE users.user_mail = :email'
+            );
+            $stmt->execute(['email' => $email]);
+            $user = $stmt->fetch();
+
+            // On reste volontairement vague : on ne précise jamais si c'est l'e-mail ou le mot de passe
+            // qui est faux, pour ne pas faciliter l'énumération des comptes existants.
+            if ($user && password_verify($password, $user['user_password'])) {
+                session_regenerate_id(true);
+
+                $_SESSION['user_id']      = $user['user_id'];
+                $_SESSION['user_mail']    = $user['user_mail'];
+                $_SESSION['user_type_id'] = $user['user_type_id'];
+
+                // On construit un nom d'affichage. Si customer_firstname est vide (cas admin
+                // sans ligne dans customers), on retombe sur l'e-mail pour éviter un nom vide.
+                if (!empty($user['customer_firstname'])) {
+                    $_SESSION['user_name'] = $user['customer_firstname'] . ' ' . $user['customer_name'];
+                } else {
+                    $_SESSION['user_name'] = $user['user_mail'];
+                }
+
+                if ($rememberMe) {
+                    // TODO (CB) : générer un token aléatoire, le stocker en BDD (table remember_tokens)
+                    // et poser un cookie longue durée contenant ce token (jamais le mot de passe)
+                }
+
+                header('Location: users.php');
+                exit;
+            }
+
+            $errorMessage = 'E-mail ou mot de passe incorrect.';
         }
 
         if ($rememberMe) {
@@ -65,6 +104,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 include 'public/includes/header.php';
+
+
+
 ?>
 
 <main class="auth-section">
@@ -107,7 +149,7 @@ include 'public/includes/header.php';
       </div>
 
       <div class="auth-options">
-        <a href="forgot-password.php" class="auth-link">Mot de passe oublié ?</a>
+        <a href="forgot_password.php" class="auth-link">Mot de passe oublié ?</a>
       </div>
 
       <button type="submit" class="btn-rose-sm">Se connecter</button>
