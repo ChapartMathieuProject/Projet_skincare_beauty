@@ -17,8 +17,8 @@ class BrandDAO extends DAO {
         ];
     }
 
-    public function findAllKeyeById(): array {
-        $stmt = $this->pdo->query("SELECT * FROM ORDER BY brand_name");
+    public function findAllKeyedById(): array {
+        $stmt = $this->pdo->query("SELECT * FROM brands ORDER BY brand_name");
         $brands = [];
         foreach ($stmt->fetchAll() as $row) {
             $brands[(int) $row["brand_id"]] = new Brand($row);

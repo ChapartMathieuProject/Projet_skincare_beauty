@@ -1,63 +1,59 @@
 <?php
 require_once "public/includes/db.php";
 
-// On instancie le DAO une fois, en haut
-$productDAO = new ProductDAO($pdo);
+// Instanciation des DAO
+$productDAO     = new ProductDAO($pdo);
+$brandDAO       = new BrandDAO($pdo);
+$productTypeDAO = new ProductTypeDAO($pdo);
 
-// 1. CHARGEMENT DES DICTIONNAIRES (tables de référence en tableaux keyed-by-id)
-$brands = [];
-foreach ($pdo->query("SELECT brand_id, brand_name FROM brands") as $row) {
-    $brands[$row["brand_id"]] = $row["brand_name"];
-}
+// 1. CHARGEMENT DES DICTIONNAIRES
+// Entités (objets) via les DAO :
+$brands        = $brandDAO->findAllKeyedById();        // [brand_id => Brand]
+$product_types = $productTypeDAO->findAllKeyedById();  // [product_type_id => ProductType]
 
-$product_types = [];
-foreach ($pdo->query("SELECT product_type_id, product_type_name, product_type_slug FROM product_types") as $row) {
-    $product_types[$row["product_type_id"]] = [
-        "name" => $row["product_type_name"],
-        "slug" => $row["product_type_slug"],
-    ];
-}
-
+// Tables de liaison / attributs : simples maps clé => valeur, pas d'entité nécessaire
 $product_type_of = [];
 foreach ($pdo->query("SELECT product_id, product_type_id FROM lien_product_type") as $row) {
-    $product_type_of[$row["product_id"]] = $row["product_type_id"];
+    $product_type_of[(int) $row["product_id"]] = (int) $row["product_type_id"];
 }
 
 $promotions = [];
 foreach ($pdo->query("SELECT product_id, promotion_percent FROM promotions WHERE promotion_is_active = 1") as $row) {
-    $promotions[$row['product_id']] = $row['promotion_percent'];
+    $promotions[(int) $row['product_id']] = (int) $row['promotion_percent'];
 }
 
 $pictures = [];
 foreach ($pdo->query("SELECT product_id, picture_path FROM pictures") as $row) {
-    if (!isset($pictures[$row["product_id"]])) {
-        $pictures[$row["product_id"]] = $row["picture_path"];
+    if (!isset($pictures[(int) $row["product_id"]])) {
+        $pictures[(int) $row["product_id"]] = $row["picture_path"];
     }
 }
 
 $default_image = 'images/_C-E-Ferulic-30ml_SkinCeuticals.jpg';
 
 // 2. RÉCUPÉRATION DU PRODUIT PRINCIPAL (via le DAO)
-// Si le slug est vide, findBySlug n'est pas appelé et $product reste null.
 $slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
 $product = ($slug !== '') ? $productDAO->findBySlug($slug) : null;
 
-// Le header (et donc le CSS) est TOUJOURS inclus, même en cas d'erreur.
 include "public/includes/header.php";
 
-// Si aucun produit : message + footer, puis on arrête la page.
 if ($product === null) {
     echo "<div class='container py-5'><div class='alert alert-danger'>Ce produit n'existe pas ou n'est plus disponible.</div></div>";
     include "public/includes/footer.php";
     exit;
 }
 
-// 3. TRAITEMENT DES INFOS DU PRODUIT PRINCIPAL (getters)
+// 3. TRAITEMENT DES INFOS DU PRODUIT PRINCIPAL
 $current_id = $product->getId();
-$brand_name = $brands[$product->getBrandId()] ?? 'Marque';
 
-$type_id    = $product_type_of[$current_id] ?? null;
-$type_name  = $type_id !== null ? ($product_types[$type_id]['name'] ?? 'Catégorie') : 'Catégorie';
+// $brands contient des objets Brand : on récupère l'objet, puis son nom
+$brand      = $brands[$product->getBrandId()] ?? null;
+$brand_name = $brand !== null ? $brand->getName() : 'Marque';
+
+// Idem pour le type de produit
+$type_id   = $product_type_of[$current_id] ?? null;
+$type      = ($type_id !== null) ? ($product_types[$type_id] ?? null) : null;
+$type_name = $type !== null ? $type->getName() : 'Catégorie';
 
 $promo_percent = $promotions[$current_id] ?? null;
 $has_promo     = $promo_percent !== null;
@@ -75,7 +71,7 @@ if ($has_promo) {
     $saving = $reduction;
 }
 
-// 4. RÉCUPÉRATION DES PRODUITS SIMILAIRES (via le DAO, objets Product)
+// 4. RÉCUPÉRATION DES PRODUITS SIMILAIRES (objets Product)
 $all_products = $productDAO->findAllActive();
 
 $similar_products = [];
@@ -205,7 +201,9 @@ $similar_products = array_slice($similar_products, 0, 4);
         <h2 class="h3 text-center mb-4">Vous aimerez aussi</h2>
         <div class="row g-4">
             <?php foreach ($similar_products as $sp):
-                $brand_name_sp    = $brands[$sp->getBrandId()] ?? 'Marque';
+                $brand_sp      = $brands[$sp->getBrandId()] ?? null;
+                $brand_name_sp = $brand_sp !== null ? $brand_sp->getName() : 'Marque';
+
                 $promo_percent_sp = $promotions[$sp->getId()] ?? null;
                 $has_promo_sp     = $promo_percent_sp !== null;
                 $img_sp           = $pictures[$sp->getId()] ?? $default_image;
