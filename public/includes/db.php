@@ -1,7 +1,14 @@
 <?php
-require_once __DIR__ . "/classes/DAO/DAO.php";
-require_once __DIR__ . "includes/classes/DAO/ProductDAO.php";
-require_once __DIR__ . "includes/classes/Entity/Product.php";
+// Entités
+require_once __DIR__ . '/classes/Entity/Product.php';
+require_once __DIR__ . '/classes/Entity/Brand.php';
+require_once __DIR__ . '/classes/Entity/ProductType.php';
+
+// DAO
+require_once __DIR__ . '/classes/DAO/DAO.php';
+require_once __DIR__ . '/classes/DAO/ProductDAO.php';
+require_once __DIR__ . '/classes/DAO/BrandDAO.php';
+require_once __DIR__ . '/classes/DAO/ProductTypeDAO.php';
 
 
 $host = 'localhost';
