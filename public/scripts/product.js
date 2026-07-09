@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  
+
 
   /* ===== 2. WISHLIST ========================= */
   const btnWishlist = document.getElementById("btn-wishlist");
@@ -64,23 +64,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (qtyMore) qtyMore.addEventListener("click", () => { qty++; qtySpan.textContent = qty; });
     if (qtyLess) qtyLess.addEventListener("click", () => { qty = Math.max(1, qty - 1); qtySpan.textContent = qty; });
 
-    /* ===== 5. AJOUTER AU PANIER : mise à jour du compteur ========== */
-    const badgePanier = document.getElementById("badge-panier");
-
-    const ajouterAuPanier = (n) => {
-      if (!badgePanier) return;
-      const total = (parseInt(badgePanier.textContent) || 0) + n;
-      badgePanier.textContent = total;
-    };
-
+    /* ===== 5. AJOUTER AU PANIER : appel à l'API ========== */
     const btnAdd = document.getElementById("btn-add");
-    if (btnAdd) btnAdd.addEventListener("click", () => ajouterAuPanier(qty));
 
-    document.querySelectorAll(".card-bind .btn-bag").forEach((b) => {
-      b.addEventListener("click", () => ajouterAuPanier(1));
-    });
+    if (btnAdd) {
+      btnAdd.addEventListener("click", () => {
+        addToCart({ id: btnAdd.dataset.id, quantity: qty });
+      });
+    }
   }
-
 
   /* ===== 6. ONGLETS : afficher le bon panneau ====================== */
   const tabs = document.querySelectorAll(".tab");
@@ -98,3 +90,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+

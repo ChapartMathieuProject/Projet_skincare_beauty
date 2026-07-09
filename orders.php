@@ -25,48 +25,59 @@ $orders = [];
 if ($customer !== false) {
     $customerIdAccount = $customer['customer_id_account'];
 
-    // On récupère les commandes du client, avec le libellé de statut.
+    // 1. On charge les statuts de commande en dictionnaire (comme dans index.php/product.php).
+    $orderStatuses = [];
+    foreach ($pdo->query('SELECT order_type_id, order_type_name FROM order_status') as $row) {
+        $orderStatuses[$row['order_type_id']] = $row['order_type_name'];
+    }
+
+    // 2. On récupère les commandes du client, sans JOIN sur order_status.
     $ordersStatement = $pdo->prepare(
-        'SELECT orders.order_id,
-                orders.order_number,
-                orders.order_date,
-                order_status.order_type_name AS statusName
+        'SELECT order_id, order_number, order_date, order_type_id
          FROM orders
-         INNER JOIN order_status ON order_status.order_type_id = orders.order_type_id
-         WHERE orders.customer_id_account = :customerIdAccount
-         ORDER BY orders.order_date DESC'
+         WHERE customer_id_account = :customerIdAccount
+         ORDER BY order_date DESC'
     );
     $ordersStatement->execute(['customerIdAccount' => $customerIdAccount]);
     $ordersFromDatabase = $ordersStatement->fetchAll();
 
-    // Pour chaque commande, on récupère les produits associés afin de compter
-    // les articles et d'estimer le total.
-    $itemsStatement = $pdo->prepare(
-        'SELECT products.product_buy_price, products.product_margin
-         FROM contains
-         INNER JOIN products ON products.product_id = contains.product_id
-         WHERE contains.order_id = :orderId'
+    // 3. Requêtes préparées réutilisées pour chaque commande (lignes + produit).
+    $linesStatement = $pdo->prepare(
+        'SELECT product_id, contains_quantity FROM contains WHERE order_id = :orderId'
+    );
+    $productStatement = $pdo->prepare(
+        'SELECT product_buy_price, product_margin FROM products WHERE product_id = :productId'
     );
 
     foreach ($ordersFromDatabase as $orderRow) {
-        $itemsStatement->execute(['orderId' => $orderRow['order_id']]);
-        $products = $itemsStatement->fetchAll();
+        $linesStatement->execute(['orderId' => $orderRow['order_id']]);
+        $lines = $linesStatement->fetchAll();
 
         // TODO (CB) : le prix de vente réel au moment de la commande n'est pas
         // stocké en base. On le recalcule ici depuis le prix d'achat + la marge,
         // ce qui n'est pas fiable si le prix ou la marge changent après coup.
         $total = 0;
-        foreach ($products as $product) {
+        $itemsCount = 0;
+
+        foreach ($lines as $line) {
+            $productStatement->execute(['productId' => $line['product_id']]);
+            $product = $productStatement->fetch();
+
+            if ($product === false) {
+                continue; // produit supprimé entre-temps
+            }
+
             $sellingPrice = $product['product_buy_price'] * (1 + $product['product_margin'] / 100);
-            $total += $sellingPrice;
+            $total += $sellingPrice * $line['contains_quantity'];
+            $itemsCount += $line['contains_quantity'];
         }
 
         $orders[] = [
             'id'     => $orderRow['order_number'],
             'date'   => date('d F Y', strtotime($orderRow['order_date'])),
-            'status' => $orderRow['statusName'],
+            'status' => $orderStatuses[$orderRow['order_type_id']] ?? 'Statut inconnu',
             'total'  => number_format($total, 2, ',', ' ') . ' €',
-            'items'  => count($products),
+            'items'  => $itemsCount,
         ];
     }
 }

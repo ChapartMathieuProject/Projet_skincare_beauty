@@ -2648,3 +2648,10 @@ select.input-admin {
     padding: 1.75rem;
   }
 }
+
+/* ============ PAGE PANIER IMAGE============ */
+.cart-item-image {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+}
