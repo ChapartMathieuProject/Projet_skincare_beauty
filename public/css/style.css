@@ -2655,3 +2655,11 @@ select.input-admin {
     height: 64px;
     object-fit: cover;
 }
+
+/* ============ page Orders image============ */
+.order-detail__line-image {
+    width: 35px;
+    height: 35px;
+    object-fit: cover;
+    border-radius: 4px;
+}

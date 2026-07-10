@@ -31,7 +31,18 @@ if ($customer !== false) {
         $orderStatuses[$row['order_type_id']] = $row['order_type_name'];
     }
 
+    // 1bis. Dictionnaire des images produits (même logique que product.php).
+    $pictures = [];
+    foreach ($pdo->query('SELECT product_id, picture_path FROM pictures') as $row) {
+        if (!isset($pictures[$row['product_id']])) {
+            $pictures[$row['product_id']] = $row['picture_path'];
+        }
+    }
+    $defaultImage = 'images/_C-E-Ferulic-30ml_SkinCeuticals.jpg';
+
     // 2. On récupère les commandes du client, sans JOIN sur order_status.
+    // TODO (CB) : si order_shipping_cost existe en base, l'ajouter ici pour éviter
+    // de recalculer les frais de port plus bas.
     $ordersStatement = $pdo->prepare(
         'SELECT order_id, order_number, order_date, order_type_id
          FROM orders
@@ -46,8 +57,14 @@ if ($customer !== false) {
         'SELECT product_id, contains_quantity FROM contains WHERE order_id = :orderId'
     );
     $productStatement = $pdo->prepare(
-        'SELECT product_buy_price, product_margin FROM products WHERE product_id = :productId'
+        'SELECT product_name, product_buy_price, product_margin
+         FROM products WHERE product_id = :productId'
     );
+
+    // TODO (CB) : aligne ce seuil et ce montant avec ta logique de checkout,
+    // ou remplace par order_shipping_cost si cette colonne existe en base.
+    $freeShippingThreshold = 50.00;
+    $standardShippingCost  = 4.90;
 
     foreach ($ordersFromDatabase as $orderRow) {
         $linesStatement->execute(['orderId' => $orderRow['order_id']]);
@@ -56,8 +73,9 @@ if ($customer !== false) {
         // TODO (CB) : le prix de vente réel au moment de la commande n'est pas
         // stocké en base. On le recalcule ici depuis le prix d'achat + la marge,
         // ce qui n'est pas fiable si le prix ou la marge changent après coup.
-        $total = 0;
+        $total = 0; // sous-total produits, sert aussi au calcul du seuil de gratuité
         $itemsCount = 0;
+        $orderLines = []; // détail des produits pour l'affichage étendu (accordéon)
 
         foreach ($lines as $line) {
             $productStatement->execute(['productId' => $line['product_id']]);
@@ -68,16 +86,35 @@ if ($customer !== false) {
             }
 
             $sellingPrice = $product['product_buy_price'] * (1 + $product['product_margin'] / 100);
-            $total += $sellingPrice * $line['contains_quantity'];
+            $lineTotal = $sellingPrice * $line['contains_quantity'];
+
+            $total += $lineTotal;
             $itemsCount += $line['contains_quantity'];
+
+            $orderLines[] = [
+                'quantity'  => $line['contains_quantity'],
+                'name'      => $product['product_name'],
+                'lineTotal' => number_format($lineTotal, 2, ',', ' ') . ' €',
+                'image'     => $pictures[$line['product_id']] ?? $defaultImage,
+            ];
         }
 
+        // Frais de port : gratuits au-delà du seuil, sinon coût standard.
+        $shippingCost = $total >= $freeShippingThreshold ? 0.0 : $standardShippingCost;
+
+        // Le total affiché sur la card doit inclure les frais de port quand ils sont payés,
+        // mais le seuil de gratuité ci-dessus reste calculé sur le sous-total produits uniquement.
+        $grandTotal = $total + $shippingCost;
+
         $orders[] = [
-            'id'     => $orderRow['order_number'],
-            'date'   => date('d F Y', strtotime($orderRow['order_date'])),
-            'status' => $orderStatuses[$orderRow['order_type_id']] ?? 'Statut inconnu',
-            'total'  => number_format($total, 2, ',', ' ') . ' €',
-            'items'  => $itemsCount,
+            'id'           => $orderRow['order_number'],
+            'orderId'      => $orderRow['order_id'],
+            'date'         => date('d F Y', strtotime($orderRow['order_date'])),
+            'status'       => $orderStatuses[$orderRow['order_type_id']] ?? 'Statut inconnu',
+            'total'        => number_format($grandTotal, 2, ',', ' ') . ' €', // <-- inclut les FDP
+            'items'        => $itemsCount,
+            'lines'        => $orderLines,
+            'shippingCost' => $shippingCost,
         ];
     }
 }
@@ -110,6 +147,7 @@ require_once 'public/includes/header.php';
         <?php else: ?>
             <div class="orders-list">
                 <?php foreach ($orders as $order): ?>
+                    <?php $detailId = 'order-detail-' . $order['orderId']; ?>
                     <div class="order-card">
                         <div class="order-card__header">
                             <div>
@@ -138,10 +176,49 @@ require_once 'public/includes/header.php';
                             <span class="order-card__total">
                                 <?= htmlspecialchars($order['total'], ENT_QUOTES, 'UTF-8') ?>
                             </span>
-                            <a href="#" class="order-card__link">
+                            <button
+                                type="button"
+                                class="order-card__link"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#<?= $detailId ?>"
+                                aria-expanded="false"
+                                aria-controls="<?= $detailId ?>"
+                            >
                                 Voir le détail
                                 <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-                            </a>
+                            </button>
+                        </div>
+
+                        <!-- Zone détaillée, masquée par défaut, ouverte via Bootstrap collapse -->
+                        <div class="collapse order-card__detail" id="<?= $detailId ?>">
+                            <ul class="order-detail__lines">
+                                <?php foreach ($order['lines'] as $line): ?>
+                                    <li class="order-detail__line">
+                                        <img
+                                            src="<?= htmlspecialchars($line['image'], ENT_QUOTES, 'UTF-8') ?>"
+                                            alt="<?= htmlspecialchars($line['name'], ENT_QUOTES, 'UTF-8') ?>"
+                                            class="order-detail__line-image"
+                                            loading="lazy"
+                                        >
+                                        <span class="order-detail__line-info">
+                                            <?= (int) $line['quantity'] ?> x
+                                            <?= htmlspecialchars($line['name'], ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                        <span class="order-detail__line-total">
+                                            <?= htmlspecialchars($line['lineTotal'], ENT_QUOTES, 'UTF-8') ?>
+                                        </span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+
+                            <div class="order-detail__shipping">
+                                <?php if ($order['shippingCost'] > 0): ?>
+                                    Frais de port :
+                                    <?= number_format($order['shippingCost'], 2, ',', ' ') ?> €
+                                <?php else: ?>
+                                    Frais de port : <strong>Offerts</strong>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
