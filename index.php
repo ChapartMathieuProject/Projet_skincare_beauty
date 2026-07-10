@@ -198,8 +198,9 @@ usort($flash_products, function ($a, $b) use ($promotions) {
           </div>
         </div>
       <?php endforeach; ?>
-    </div>
-  </div>
+                                                                                  </div>
+                                                                                </div>
 </section>
 <script src="public/scripts/index.js"></script>
-<?php include "public/includes/footer.php"; ?>
+<script src="public/scripts/cart-manager.js"></script>
+<?php include "public/includes/footer.php"; ?>                                                                                                                                                                                                                      

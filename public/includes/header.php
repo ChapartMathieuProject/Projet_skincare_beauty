@@ -1,4 +1,14 @@
 <?php
+// Activer l'affichage des erreurs PHP
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Si tu utilises PDO pour te connecter à la base de données, active les erreurs SQL :
+// $bdd->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+?>
+
+<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -120,7 +130,7 @@ $isAdmin = ($_SESSION['user_type_id'] ?? null) === 2;
                     </div>
                     <div>
                         <button type="button" class="btn-rose" data-bs-dismiss="modal">Continuer mes achats</button>
-                        <a href="orders.php" class="btn-rose" id="cart-checkout-btn">Passer commande</a>
+                        <a href="/checkout.php" class="btn-rose" id="cart-checkout-btn">Passer commande</a>
                     </div>
                 </div>
             </div>

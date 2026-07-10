@@ -154,7 +154,12 @@ $similar_products = array_slice($similar_products, 0, 4);
                     <button type="button" id="qty-more" aria-label="Augmenter">+</button>
                 </div>
                 <button class="btn-rose btn-add flex-fill d-flex align-items-center justify-content-center gap-2"
-                    id="btn-add" type="button">
+                    id="btn-add"
+                    type="button"
+                    data-id="<?= $product['product_id'] ?>"
+                    data-name="<?= htmlspecialchars($product['product_name']) ?>"
+                    data-price="<?= $final_price ?>"
+                    data-image="<?= htmlspecialchars($img_main) ?>">
                     <i class="fa-solid fa-bag-shopping"></i> Ajouter au panier
                 </button>
             </div>
@@ -247,12 +252,15 @@ $similar_products = array_slice($similar_products, 0, 4);
                             </div>
                         </div>
                     </div>
+                <?php endforeach; ?>
                 </div>
             <?php endforeach; ?>
         </div>
     </section>
 <?php endif; ?>
 
+
+<script src="public/scripts/cart-manager.js"></script>
 <script src="public/scripts/product.js"></script>
 
 <?php include "public/includes/footer.php"; ?>
