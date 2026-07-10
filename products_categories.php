@@ -1,42 +1,37 @@
 <?php
 require_once "public/includes/db.php";
 
-$brands = [];
-foreach ($pdo->query("SELECT brand_id, brand_name FROM brands") as $row) {
-    $brands[$row["brand_id"]] = $row["brand_name"];
-}
+// Instanciation des DAO
+$productDAO     = new ProductDAO($pdo);
+$brandDAO       = new BrandDAO($pdo);
+$productTypeDAO = new ProductTypeDAO($pdo);
 
-$product_types = [];
-foreach ($pdo->query("SELECT product_type_id, product_type_name, product_type_slug FROM product_types ORDER BY product_type_name") as $row) {
-    $product_types[$row["product_type_id"]] = [
-        "name" => $row["product_type_name"],
-        "slug" => $row["product_type_slug"],
-    ];
-}
+// Entités (objets) via les DAO
+$brands        = $brandDAO->findAllKeyedById(); 
+$product_types = $productTypeDAO->findAllKeyedById(); 
 
+// Tables de liaison / attributs : simples maps clé => valeur
 $product_type_of = [];
 foreach ($pdo->query("SELECT product_id, product_type_id FROM lien_product_type") as $row) {
-    $product_type_of[$row["product_id"]] = $row["product_type_id"];
+    $product_type_of[(int) $row["product_id"]] = (int) $row["product_type_id"];
 }
 
 $promotions = [];
 foreach ($pdo->query("SELECT product_id, promotion_percent FROM promotions WHERE promotion_is_active = 1") as $row) {
-    $promotions[$row["product_id"]] = $row["promotion_percent"];
+    $promotions[(int) $row["product_id"]] = (int) $row["promotion_percent"];
 }
 
 $pictures = [];
 foreach ($pdo->query("SELECT product_id, picture_path FROM pictures") as $row) {
-    if (!isset($pictures[$row["product_id"]])) {
-        $pictures[$row["product_id"]] = $row["picture_path"];
+    if (!isset($pictures[(int) $row["product_id"]])) {
+        $pictures[(int) $row["product_id"]] = $row["picture_path"];
     }
 }
 
 $default_image = 'images/_C-E-Ferulic-30ml_SkinCeuticals.jpg';
 
 
-/* ============================================================
-   AIGUILLAGE — quelle requête remplit la grille ?
-   ============================================================ */
+  //  AIGUILLAGE — quelle méthode du DAO remplit la grille ?
 
 $cat    = isset($_GET["cat"])    ? trim($_GET["cat"])    : "";
 $filter = isset($_GET["filter"]) ? trim($_GET["filter"]) : "";
@@ -45,48 +40,41 @@ $page_title = "Tous nos produits";
 $products   = [];
 
 if ($cat !== "") {
+    // On cherche le type dont le slug correspond au paramètre ?cat=
     $type_id_active = null;
     foreach ($product_types as $id => $type) {
-        if ($type["slug"] === $cat) {
+        if ($type->getSlug() === $cat) {
             $type_id_active = $id;
-            $page_title     = $type["name"];
+            $page_title     = $type->getName();
             break;
         }
     }
 
     if ($type_id_active !== null) {
-        $stmt_ids = $pdo->prepare("SELECT product_id FROM lien_product_type WHERE product_type_id = ?");
-        $stmt_ids->execute([$type_id_active]);
-        $ids = $stmt_ids->fetchAll(PDO::FETCH_COLUMN);
-
-        if (!empty($ids)) {
-            $placeholders = implode(",", array_fill(0, count($ids), "?"));
-            $stmt = $pdo->prepare("SELECT * FROM products WHERE product_id IN ($placeholders) AND product_is_status = 1 ORDER BY product_name");
-            $stmt->execute($ids);
-            $products = $stmt->fetchAll();
+        // Plus besoin d'interroger lien_product_type : le dictionnaire est déjà chargé.
+        // On garde les product_id dont le type correspond.
+        $ids = [];
+        foreach ($product_type_of as $product_id => $type_id) {
+            if ($type_id === $type_id_active) {
+                $ids[] = $product_id;
+            }
         }
+        $products = $productDAO->findByIds($ids);
     } else {
         $page_title = "Catégorie introuvable";
     }
 
 } elseif ($filter === "promotions") {
     $page_title = "Promotions";
-    $ids = array_keys($promotions);
-
-    if (!empty($ids)) {
-        $placeholders = implode(",", array_fill(0, count($ids), "?"));
-        $stmt = $pdo->prepare("SELECT * FROM products WHERE product_id IN ($placeholders) AND product_is_status = 1 ORDER BY product_name");
-        $stmt->execute($ids);
-        $products = $stmt->fetchAll();
-    }
+    $products   = $productDAO->findByIds(array_keys($promotions));
 
 } elseif ($filter === "nouveautes") {
     $page_title = "Nouveautés";
-    $products = $pdo->query("SELECT * FROM products WHERE product_is_status = 1 ORDER BY product_id DESC LIMIT 8")->fetchAll();
+    $products   = $productDAO->findNewest(8);
 
 } else {
     $page_title = "Tous nos produits";
-    $products = $pdo->query("SELECT * FROM products WHERE product_is_status = 1 ORDER BY product_name")->fetchAll();
+    $products   = $productDAO->findAllActiveOrderedByName();
 }
 
 include "public/includes/header.php";
@@ -109,14 +97,22 @@ include "public/includes/header.php";
 
     <div class="row g-4" id="grid-product">
       <?php foreach ($products as $p):
-          $brand_name = $brands[$p['brand_id']] ?? 'Marque';
-          $type_id   = $product_type_of[$p['product_id']] ?? null;
-          $type_slug = $type_id !== null ? ($product_types[$type_id]['slug'] ?? '') : '';
-          $promo_percent = $promotions[$p['product_id']] ?? null;
+          // $brands contient des objets Brand
+          $brand      = $brands[$p->getBrandId()] ?? null;
+          $brand_name = $brand !== null ? $brand->getName() : 'Marque';
+
+          // $product_types contient des objets ProductType
+          $type_id   = $product_type_of[$p->getId()] ?? null;
+          $type      = ($type_id !== null) ? ($product_types[$type_id] ?? null) : null;
+          $type_slug = $type !== null ? $type->getSlug() : '';
+
+          $promo_percent = $promotions[$p->getId()] ?? null;
           $has_promo     = $promo_percent !== null;
-          $img = $pictures[$p['product_id']] ?? $default_image;
-          $coef_marge = 1 + ($p['product_margin'] / 100);
-          $base_price = $p['product_buy_price'] * $coef_marge;
+
+          $img = $pictures[$p->getId()] ?? $default_image;
+
+          // Le prix de vente vient de l'entité (buy_price × marge)
+          $base_price = $p->getSellPrice();
 
           $final_price = $base_price;
           if ($has_promo) {
@@ -129,7 +125,7 @@ include "public/includes/header.php";
 
         <div class="card card-product h-100 border-0 shadow-sm position-relative">
           <div class="card-picture position-relative">
-            <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($p['product_name']) ?>" class="card-img-top">
+            <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($p->getName()) ?>" class="card-img-top">
             <?php if ($has_promo): ?>
               <span class="badge badge-promo position-absolute top-0 start-0 m-2">-<?= (int) $promo_percent ?>%</span>
             <?php endif; ?>
@@ -138,9 +134,9 @@ include "public/includes/header.php";
           <div class="card-body">
             <p class="brand mb-1"><?= htmlspecialchars($brand_name) ?></p>
             <h3 class="name-product h6 mb-2">
-              <a href="product.php?slug=<?= urlencode($p['product_slug']) ?>"
+              <a href="product.php?slug=<?= urlencode($p->getSlug()) ?>"
                  class="stretched-link text-decoration-none text-reset">
-                <?= htmlspecialchars($p['product_name']) ?>
+                <?= htmlspecialchars($p->getName()) ?>
               </a>
             </h3>
 

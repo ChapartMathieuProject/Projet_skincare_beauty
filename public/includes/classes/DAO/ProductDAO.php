@@ -47,4 +47,56 @@ class ProductDAO extends DAO
         }
         return $produits;
     }
+
+    // --- Produits actifs, triés par nom (pour le catalogue) ---
+    public function findAllActiveOrderedByName(): array
+    {
+        $stmt = $this->pdo->query(
+            "SELECT * FROM products WHERE product_is_status = 1 ORDER BY product_name"
+        );
+        $produits = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $produits[] = new Product($row);
+        }
+        return $produits;
+    }
+
+    // --- Produits actifs correspondant à une liste d'ids ---
+    public function findByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM products
+             WHERE product_id IN ($placeholders) AND product_is_status = 1
+             ORDER BY product_name"
+        );
+        $stmt->execute(array_values($ids));
+
+        $produits = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $produits[] = new Product($row);
+        }
+        return $produits;
+    }
+
+    // --- Les N derniers produits actifs (nouveautés) ---
+    public function findNewest(int $limit = 8): array
+    {
+        // $limit est casté en int : pas d'injection possible
+        $limit = max(1, $limit);
+        $stmt = $this->pdo->query(
+            "SELECT * FROM products WHERE product_is_status = 1
+             ORDER BY product_id DESC LIMIT $limit"
+        );
+        $produits = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $produits[] = new Product($row);
+        }
+        return $produits;
+    }
 }
