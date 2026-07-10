@@ -76,9 +76,11 @@ $all_products = $productDAO->findAllActive();
 
 $similar_products = [];
 foreach ($all_products as $p) {
-    if ($p->getId() !== $current_id
+    if (
+        $p->getId() !== $current_id
         && isset($product_type_of[$p->getId()])
-        && $product_type_of[$p->getId()] === $type_id) {
+        && $product_type_of[$p->getId()] === $type_id
+    ) {
         $similar_products[] = $p;
     }
 }
@@ -156,33 +158,32 @@ $similar_products = array_slice($similar_products, 0, 4);
                 <button class="btn-rose btn-add flex-fill d-flex align-items-center justify-content-center gap-2"
                     id="btn-add"
                     type="button"
-                    data-id="<?= $product['product_id'] ?>"
-                    data-name="<?= htmlspecialchars($product['product_name']) ?>"
+                    data-id="<?= $product->getId() ?>"
+                    data-name="<?= htmlspecialchars($product->getName()) ?>"
                     data-price="<?= $final_price ?>"
                     data-image="<?= htmlspecialchars($img_main) ?>">
                     <i class="fa-solid fa-bag-shopping"></i> Ajouter au panier
                 </button>
-            </div>
 
-            <div class="d-flex align-items-center gap-2 mb-4 small text-secondary">
-                <span class="spot-stock" style="background-color: <?= $product->getQuantity() > 0 ? '#28a745' : '#dc3545' ?>;"></span>
-                <span>
-                    <?php if ($product->getQuantity() > 0): ?>
-                        En stock (<?= $product->getQuantity() ?> disponibles) - Expédié sous 48h
-                    <?php else: ?>
-                        Rupture de stock
-                    <?php endif; ?>
-                </span>
-            </div>
+                <div class="d-flex align-items-center gap-2 mb-4 small text-secondary">
+                    <span class="spot-stock" style="background-color: <?= $product->getQuantity() > 0 ? '#28a745' : '#dc3545' ?>;"></span>
+                    <span>
+                        <?php if ($product->getQuantity() > 0): ?>
+                            En stock (<?= $product->getQuantity() ?> disponibles) - Expédié sous 48h
+                        <?php else: ?>
+                            Rupture de stock
+                        <?php endif; ?>
+                    </span>
+                </div>
 
-            <div class="reassurance row g-3 py-4">
-                <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-leaf"></i> 100% Naturel</div>
-                <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-heart"></i> Cruelty-free</div>
-                <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-truck"></i> Livraison 48h</div>
-                <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-rotate-left"></i> Retours 30 jours</div>
+                <div class="reassurance row g-3 py-4">
+                    <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-leaf"></i> 100% Naturel</div>
+                    <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-heart"></i> Cruelty-free</div>
+                    <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-truck"></i> Livraison 48h</div>
+                    <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-rotate-left"></i> Retours 30 jours</div>
+                </div>
             </div>
         </div>
-    </div>
 </section>
 
 <section class="container pb-5">
@@ -252,7 +253,6 @@ $similar_products = array_slice($similar_products, 0, 4);
                             </div>
                         </div>
                     </div>
-                <?php endforeach; ?>
                 </div>
             <?php endforeach; ?>
         </div>
