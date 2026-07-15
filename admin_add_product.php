@@ -1,116 +1,141 @@
 
-<?php 
+Admin add product · PHP
+<?php
 require_once "public/includes/db.php";
-
+ 
+// Instanciation des DAO
+$productDAO     = new ProductDAO($pdo);
+$brandDAO       = new BrandDAO($pdo);
+$productTypeDAO = new ProductTypeDAO($pdo);
+ 
 $company_id = 1; //TODO : à recup depuis la session admin plus tard
-
+ 
 $edit_id = (isset($_GET['id']) && ctype_digit($_GET['id'])) ? (int) $_GET['id'] : null;
-
+ 
 $errors = [];
-
+ 
 /* ---------- TRAITEMENT DU FORMULAIRE (uniquement en POST) ---------- */
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST'){
-    $product_id     = !empty($_POST['product_id']) ? (int) $_POST['product_id'] : null;
-    $name           = htmlspecialchars(trim($_POST['nom'] ?? ''));
-    $ean            = htmlspecialchars(trim($_POST['ean'] ?? ''));
-    $composition    = htmlspecialchars(trim($_POST['composition'] ?? ''));
-    $description    = htmlspecialchars(trim($_POST['description'] ?? '')); 
-    $buy_price      = htmlspecialchars(str_replace(',', '.', trim($_POST['prix_achat'] ?? '')));
-    $margin         = htmlspecialchars((int) ($_POST['marge'] ?? 0));
-    $quantity       = htmlspecialchars((int) ($_POST['stock'] ?? 0));
-    $alert          = ($_POST['alerte'] ?? '') === '' ? null : (int) $_POST['alerte'];
-    $brand_id       = (int) ($_POST['brand_id'] ?? 0);
-    $type_id        = (int) ($_POST['product_type_id'] ?? 0);
-    $is_status      = isset($_POST['actif']) ? 1 : 0;
-
-    if($name === '')                        $errors[] = "Le nom du produit est obligatoire.";
-    if (!preg_match('/^\d{13}$/', $ean))    $errors[] = "L'EAN doit comporter exactement 13 chiffres.";
-    if ($brand_id <= 0)                     $errors[] = "Choisis une marque.";
-    if ($type_id <= 0)                      $errors[] = "Choisis une catégorie.";
-    if (!is_numeric($buy_price))            $errors[] = "Le prix d'achat est invalide.";
-
+ 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+ 
+    // On NETTOIE et on VALIDE ici. On n'échappe PAS (htmlspecialchars) :
+    // l'échappement se fait à l'affichage, via la fonction e() en bas de page.
+    $product_id  = !empty($_POST['product_id']) ? (int) $_POST['product_id'] : null;
+    $name        = trim($_POST['nom'] ?? '');
+    $ean         = trim($_POST['ean'] ?? '');
+    $composition = trim($_POST['composition'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+    $buy_price   = str_replace(',', '.', trim($_POST['prix_achat'] ?? ''));
+    $margin      = (int) ($_POST['marge'] ?? 0);
+    $quantity    = (int) ($_POST['stock'] ?? 0);
+    $alert       = ($_POST['alerte'] ?? '') === '' ? null : (int) $_POST['alerte'];
+    $brand_id    = (int) ($_POST['brand_id'] ?? 0);
+    $type_id     = (int) ($_POST['product_type_id'] ?? 0);
+    $is_status   = isset($_POST['actif']) ? 1 : 0;
+ 
+    if ($name === '')                      $errors[] = "Le nom du produit est obligatoire.";
+    if (!preg_match('/^\d{13}$/', $ean))   $errors[] = "L'EAN doit comporter exactement 13 chiffres.";
+    if ($brand_id <= 0)                    $errors[] = "Choisis une marque.";
+    if ($type_id <= 0)                     $errors[] = "Choisis une catégorie.";
+    if (!is_numeric($buy_price))           $errors[] = "Le prix d'achat est invalide.";
+ 
     if (!$errors) {
-        $stmt = $pdo->prepare("SELECT producer_id FROM brands WHERE brand_id = ?"); // Pour déduire la marque en rapport avec le fabricant
-        $stmt->execute([$brand_id]);
-        $producer_id = $stmt->fetchColumn();
-
-        if(!$producer_id) {
+ 
+        // On déduit le fabricant depuis la marque, via le DAO
+        $brand = $brandDAO->find($brand_id);
+ 
+        if ($brand === null) {
             $errors[] = "Marque introuvable.";
         } else {
             try {
-                if ($product_id){
-                    $sql = "UPDATE products SET
-                                product_name = ?, product_ean = ?, product_composition = ?,
-                                product_description = ?, product_is_status = ?, product_buy_price = ?,
-                                product_margin = ?, product_quantity = ?, product_alert = ?,
-                                producer_id = ?, brand_id = ?
-                            WHERE product_id = ?";
-                    
-                    $pdo->prepare($sql)->execute([
-                        $name, $ean, $composition, $description, $is_status, $buy_price,
-                        $margin, $quantity, $alert, $producer_id, $brand_id, $product_id,
-                    ]);
-                    $saved_id =$product_id;
+                // On fabrique l'objet Product à partir du POST.
+                // Les CLÉS sont les noms de colonnes SQL : c'est ce que Product::hydrate() attend.
+                // product_id et product_slug sont absents : auto-increment + trigger s'en chargent.
+                $product = new Product([
+                    'product_name'        => $name,
+                    'product_ean'         => $ean,
+                    'product_composition' => $composition,
+                    'product_description' => $description,
+                    'product_is_status'   => $is_status,
+                    'product_buy_price'   => $buy_price,
+                    'product_margin'      => $margin,
+                    'product_quantity'    => $quantity,
+                    'product_alert'       => $alert,
+                    'producer_id'         => $brand->getProducerId(),
+                    'brand_id'            => $brand_id,
+                    'company_id_account'  => $company_id,
+                ]);
+ 
+                if ($product_id) {
+                    // UPDATE : le DAO construit le SQL depuis dehydrate()
+                    $productDAO->update($product_id, $product);
+                    $saved_id = $product_id;
                 } else {
-                    $sql = "INSERT INTO products
-                                (product_name, product_ean, product_composition, product_description,
-                                product_is_status, product_buy_price, product_margin, product_quantity,
-                                product_alert, producer_id, brand_id, company_id_account)
-                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
-                    $pdo->prepare($sql)->execute([
-                        $name, $ean, $composition, $description, $is_status, $buy_price,
-                        $margin, $quantity, $alert, $producer_id, $brand_id, $company_id,
-                    ]);
-                    $saved_id = (int) $pdo->lastInsertId();
+                    // INSERT : create() renvoie le nouvel id
+                    $saved_id = $productDAO->create($product);
                 }
-                
+ 
+                // lien_product_type : table de liaison simple, requête directe
                 $pdo->prepare(
                     "INSERT INTO lien_product_type (product_id, product_type_id)
-                    VALUES (?, ?)
-                    ON DUPLICATE KEY UPDATE product_type_id = VALUES(product_type_id)"
+                     VALUES (?, ?)
+                     ON DUPLICATE KEY UPDATE product_type_id = VALUES(product_type_id)"
                 )->execute([$saved_id, $type_id]);
-
-
-                // Pour récupérer la création du SLUG pour la redirection vers la page produit
-                $stmt = $pdo->prepare("SELECT product_slug FROM products WHERE product_id = ?");
-                $stmt->execute([$saved_id]);
-                $slug = $stmt->fetchColumn();
-
-                header("Location: product.php?slug=" . urlencode($slug));
+ 
+                // Le slug est généré par le trigger : on relit le produit pour l'obtenir
+                $saved = $productDAO->find($saved_id);
+ 
+                header("Location: product.php?slug=" . urlencode($saved->getSlug()));
                 exit;
-
+ 
             } catch (PDOException $e) {
-                if ($e->getCode() ==='23000'){ //Le 23000 est un code d'erreur SQL standard : il signale une violation de contrainte 
+                if ($e->getCode() === '23000') { //Le 23000 est un code d'erreur SQL standard : il signale une violation de contrainte
                     $errors[] = "Cet EAN existe déjà : il doit être unique.";
                 } else {
-                    $errors[] = "Erreur d'enregistrement :" . $e->getMessage();
+                    $errors[] = "Erreur d'enregistrement : " . $e->getMessage();
                 }
             }
-        } 
+        }
     }
 }
-
+ 
 /* ---------- CHARGEMENT POUR L'AFFICHAGE ---------- */
-
+ 
 $menu_actif = "ajouter un produits";
-
-$brands = $pdo->query("SELECT brand_id, brand_name FROM brands ORDER BY brand_name")->fetchAll();
-$types = $pdo->query("SELECT product_type_id, product_type_name FROM product_types ORDER BY product_type_name")->fetchAll();
-
+ 
+// Dictionnaires d'entités pour les listes déroulantes
+$brands = $brandDAO->findAllKeyedById();  
+$types  = $productTypeDAO->findAllKeyedById(); 
+ 
+// $p reste un TABLEAU : c'est l'état du formulaire, pas une entité.
+// Il doit pouvoir contenir une saisie invalide (ex. prix "abc"),
+// ce qu'un objet Product typé refuserait.
 $p = [
     'product_name' => '', 'product_ean' => '', 'product_composition' => '', 'product_description' => '',
     'product_is_status' => 1, 'product_buy_price' => '', 'product_margin' => '', 'product_quantity' => '',
     'product_alert' => '', 'brand_id' => 0,
 ];
 $current_type = 0;
-
+ 
 if ($edit_id) {
-    $stmt = $pdo->prepare("SELECT * FROM products WHERE product_id = ?");
-    $stmt->execute([$edit_id]);
-    $row = $stmt->fetch();
-    if ($row) {
-        $p = $row;
+    $product_edit = $productDAO->find($edit_id);
+ 
+    if ($product_edit !== null) {
+        // On remplit le tableau du formulaire depuis les getters de l'entité
+        $p = [
+            'product_name'        => $product_edit->getName(),
+            'product_ean'         => $product_edit->getEan(),
+            'product_composition' => $product_edit->getComposition(),
+            'product_description' => $product_edit->getDescription(),
+            'product_is_status'   => $product_edit->isStatus() ? 1 : 0,
+            'product_buy_price'   => $product_edit->getBuyPrice(),
+            'product_margin'      => $product_edit->getMargin(),
+            'product_quantity'    => $product_edit->getQuantity(),
+            'product_alert'       => $product_edit->getAlert(),
+            'brand_id'            => $product_edit->getBrandId(),
+        ];
+ 
+        // Catégorie courante : table de liaison, requête directe
         $t = $pdo->prepare("SELECT product_type_id FROM lien_product_type WHERE product_id = ?");
         $t->execute([$edit_id]);
         $current_type = (int) $t->fetchColumn();
@@ -118,12 +143,10 @@ if ($edit_id) {
         $edit_id = null; // Si id inexistant on retourne sur la création
     }
 }
-
  
-
-
 $mode_edition = $edit_id !== null;
-
+ 
+// En cas d'erreur, on réaffiche ce que l'utilisateur avait saisi (valeurs brutes du POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errors) {
     $p['product_name']        = $_POST['nom'] ?? '';
     $p['product_ean']         = $_POST['ean'] ?? '';
@@ -137,13 +160,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errors) {
     $p['brand_id']            = (int) ($_POST['brand_id'] ?? 0);
     $current_type             = (int) ($_POST['product_type_id'] ?? 0);
 }
-
+ 
 function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8'); }
 ?>
-
-
+ 
+ 
 <?php include "public/includes/header_admin.php"; ?>
-<?php $menu_actif = 'ajouter un produit'; ?> <!-- Changer le 'ajouter un produit' en fonction de la page -->
 <div class="admin-main">
     <header class="admin-topbar">
         <nav class="breadcrumb-admin">
@@ -205,9 +227,10 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
                     <select class="input-admin" id="brand_id" name="brand_id">
                         <option value="">— Choisir —</option>
                         <?php foreach ($brands as $b): ?>
-                            <option value="<?= (int) $b['brand_id'] ?>"
-                                <?= ((int) $p['brand_id'] === (int) $b['brand_id']) ? 'selected' : '' ?>>
-                                <?= e($b['brand_name']) ?>
+                            <!-- $brands contient des objets Brand -->
+                            <option value="<?= $b->getId() ?>"
+                                <?= ((int) $p['brand_id'] === $b->getId()) ? 'selected' : '' ?>>
+                                <?= e($b->getName()) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -217,9 +240,10 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
                     <select class="input-admin" id="product_type_id" name="product_type_id">
                         <option value="">— Choisir —</option>
                         <?php foreach ($types as $t): ?>
-                            <option value="<?= (int) $t['product_type_id'] ?>"
-                                <?= ($current_type === (int) $t['product_type_id']) ? 'selected' : '' ?>>
-                                <?= e($t['product_type_name']) ?>
+                            <!-- $types contient des objets ProductType -->
+                            <option value="<?= $t->getId() ?>"
+                                <?= ($current_type === $t->getId()) ? 'selected' : '' ?>>
+                                <?= e($t->getName()) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -312,3 +336,20 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
  
 </body>
 </html>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
