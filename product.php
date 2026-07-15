@@ -35,6 +35,7 @@ $default_image = 'images/_C-E-Ferulic-30ml_SkinCeuticals.jpg';
 $slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
 $product = ($slug !== '') ? $productDAO->findBySlug($slug) : null;
 
+// Le header (et donc le CSS) est TOUJOURS inclus, même en cas d'erreur.
 include "public/includes/header.php";
 
 if ($product === null) {
@@ -76,11 +77,9 @@ $all_products = $productDAO->findAllActive();
 
 $similar_products = [];
 foreach ($all_products as $p) {
-    if (
-        $p->getId() !== $current_id
+    if ($p->getId() !== $current_id
         && isset($product_type_of[$p->getId()])
-        && $product_type_of[$p->getId()] === $type_id
-    ) {
+        && $product_type_of[$p->getId()] === $type_id) {
         $similar_products[] = $p;
     }
 }
@@ -88,7 +87,7 @@ shuffle($similar_products);
 $similar_products = array_slice($similar_products, 0, 4);
 ?>
 
-<!-- product.php -->
+<!-- Fil d'Ariane -->
 <div class="ariadne container small text-secondary pt-4 pb-1 d-flex gap-2">
     <a href="index.php">Accueil</a><span>></span>
     <a href="#"><?= htmlspecialchars($type_name) ?></a><span>></span>
@@ -97,6 +96,8 @@ $similar_products = array_slice($similar_products, 0, 4);
 
 <section class="container py-4">
     <div class="row g-5 align-items-start">
+
+        <!-- Colonne gauche : galerie -->
         <div class="col-12 col-lg-6">
             <div class="gallery-sticky">
                 <div class="img-main position-relative d-flex align-items-end justify-content-center">
@@ -111,6 +112,7 @@ $similar_products = array_slice($similar_products, 0, 4);
 
                     <img src="<?= htmlspecialchars($img_main) ?>" alt="<?= htmlspecialchars($product->getName()) ?>">
                 </div>
+
                 <div class="d-flex gap-2 mt-3">
                     <button class="vignette active" data-titre="flacon — vue face"></button>
                     <button class="vignette" data-titre="texture / swatch"></button>
@@ -119,8 +121,11 @@ $similar_products = array_slice($similar_products, 0, 4);
                 </div>
             </div>
         </div>
+        <!-- /colonne gauche -->
 
+        <!-- Colonne droite : infos produit -->
         <div class="col-12 col-lg-6">
+
             <p class="overtitle-brand mb-2"><?= htmlspecialchars($brand_name) ?></p>
             <h1 class="title-product h2 mb-3"><?= htmlspecialchars($product->getName()) ?></h1>
 
@@ -129,6 +134,7 @@ $similar_products = array_slice($similar_products, 0, 4);
                 <li class="d-flex gap-2"><span class="puce">✦</span>Composition : <?= htmlspecialchars($product->getComposition()) ?></li>
             </ul>
 
+            <!-- Prix -->
             <div class="d-flex align-items-baseline gap-3 mb-1">
                 <span class="actual-price" id="actual-price"><?= number_format($final_price, 2, ',', ' ') ?>€</span>
                 <?php if ($has_promo): ?>
@@ -141,6 +147,7 @@ $similar_products = array_slice($similar_products, 0, 4);
                 <p class="saving small mb-4" id="saving">Vous économisez <?= number_format($saving, 2, ',', ' ') ?>€</p>
             <?php endif; ?>
 
+            <!-- Contenance -->
             <p class="small fw-semibold mb-2">CONTENANCE</p>
             <div class="d-flex gap-3 mb-4">
                 <button class="variante active p-3" data-price="<?= $final_price ?>" data-old="<?= $base_price ?>">
@@ -149,12 +156,14 @@ $similar_products = array_slice($similar_products, 0, 4);
                 </button>
             </div>
 
+            <!-- Quantité + ajout au panier -->
             <div class="d-flex gap-3 mb-3">
                 <div class="choice-quantity d-flex align-items-center">
                     <button type="button" id="qty-less" aria-label="Diminuer">-</button>
                     <span id="qty" class="text-center fw-semibold">1</span>
                     <button type="button" id="qty-more" aria-label="Augmenter">+</button>
                 </div>
+
                 <button class="btn-rose btn-add flex-fill d-flex align-items-center justify-content-center gap-2"
                     id="btn-add"
                     type="button"
@@ -164,28 +173,38 @@ $similar_products = array_slice($similar_products, 0, 4);
                     data-image="<?= htmlspecialchars($img_main) ?>">
                     <i class="fa-solid fa-bag-shopping"></i> Ajouter au panier
                 </button>
-
-                <div class="d-flex align-items-center gap-2 mb-4 small text-secondary">
-                    <span class="spot-stock" style="background-color: <?= $product->getQuantity() > 0 ? '#28a745' : '#dc3545' ?>;"></span>
-                    <span>
-                        <?php if ($product->getQuantity() > 0): ?>
-                            En stock (<?= $product->getQuantity() ?> disponibles) - Expédié sous 48h
-                        <?php else: ?>
-                            Rupture de stock
-                        <?php endif; ?>
-                    </span>
-                </div>
-
-                <div class="reassurance row g-3 py-4">
-                    <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-leaf"></i> 100% Naturel</div>
-                    <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-heart"></i> Cruelty-free</div>
-                    <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-truck"></i> Livraison 48h</div>
-                    <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-rotate-left"></i> Retours 30 jours</div>
-                </div>
             </div>
+            <!-- /quantité + panier -->
+
+            <!-- Stock -->
+            <div class="d-flex align-items-center gap-2 mb-4 small text-secondary">
+                <span class="spot-stock" style="background-color: <?= $product->getQuantity() > 0 ? '#28a745' : '#dc3545' ?>;"></span>
+                <span>
+                    <?php if ($product->getQuantity() > 0): ?>
+                        En stock (<?= $product->getQuantity() ?> disponibles) - Expédié sous 48h
+                    <?php else: ?>
+                        Rupture de stock
+                    <?php endif; ?>
+                </span>
+            </div>
+            <!-- /stock -->
+
+            <!-- Réassurance -->
+            <div class="reassurance row g-3 py-4">
+                <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-leaf"></i> 100% Naturel</div>
+                <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-heart"></i> Cruelty-free</div>
+                <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-truck"></i> Livraison 48h</div>
+                <div class="col-6 d-flex align-items-center gap-2 small"><i class="fa-solid fa-rotate-left"></i> Retours 30 jours</div>
+            </div>
+            <!-- /réassurance -->
+
         </div>
+        <!-- /colonne droite -->
+
+    </div>
 </section>
 
+<!-- Onglets -->
 <section class="container pb-5">
     <div class="d-flex gap-1 border-bottom mb-4 overflow-auto" id="tab-bar">
         <button class="tab active" data-target="desc">Description</button>
@@ -202,6 +221,7 @@ $similar_products = array_slice($similar_products, 0, 4);
     </div>
 </section>
 
+<!-- Produits similaires -->
 <?php if (!empty($similar_products)): ?>
     <section class="container py-5">
         <h2 class="h3 text-center mb-4">Vous aimerez aussi</h2>
@@ -246,9 +266,14 @@ $similar_products = array_slice($similar_products, 0, 4);
                                     <?php endif; ?>
                                 </span>
 
-                                <button class="btn-rose btn-bag rounded-circle d-flex align-items-center justify-content-center" aria-label="Ajouter au panier">
+                                <button class="btn-rose btn-bag rounded-circle d-flex align-items-center justify-content-center"
+                                    type="button"
+                                    aria-label="Ajouter au panier"
+                                    data-id="<?= $sp->getId() ?>"
+                                    data-name="<?= htmlspecialchars($sp->getName()) ?>"
+                                    data-price="<?= $final_price_sp ?>"
+                                    data-image="<?= htmlspecialchars($img_sp) ?>">
                                     <i class="fa-solid fa-bag-shopping"></i>
-
                                 </button>
                             </div>
                         </div>
@@ -258,7 +283,6 @@ $similar_products = array_slice($similar_products, 0, 4);
         </div>
     </section>
 <?php endif; ?>
-
 
 <script src="public/scripts/cart-manager.js"></script>
 <script src="public/scripts/product.js"></script>

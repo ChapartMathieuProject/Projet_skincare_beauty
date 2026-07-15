@@ -191,16 +191,16 @@ usort($flash_products, function ($a, $b) use ($promotions) {
                   <?php endif; ?>
                 </div>
                 <button class="btn-bag position-relative" type="button" aria-label="Ajouter au panier">
-                  <i class="fa-solid fa-cart-shopping"></i>
+                  <i class="fa-solid fa-bag-shopping"></i>
                 </button>
               </div>
             </div>
           </div>
         </div>
       <?php endforeach; ?>
-                                                                                  </div>
-                                                                                </div>
+    </div>
+  </div>
 </section>
 <script src="public/scripts/index.js"></script>
 <script src="public/scripts/cart-manager.js"></script>
-<?php include "public/includes/footer.php"; ?>                                                                                                                                                                                                                      
+<?php include "public/includes/footer.php"; ?>
