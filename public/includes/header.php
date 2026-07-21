@@ -6,9 +6,9 @@ error_reporting(E_ALL);
 
 // Si tu utilises PDO pour te connecter à la base de données, active les erreurs SQL :
 // $bdd->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-?>
 
-<?php
+
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -17,7 +17,52 @@ $isLoggedIn = isset($_SESSION['user_id']);
 $userName = $_SESSION['user_name'] ?? 'Invité';
 $userEmail = $_SESSION['user_mail'] ?? '';
 $isAdmin = ($_SESSION['user_type_id'] ?? null) === 2;
+
+
+
+
+require_once __DIR__ . '/classes/DAO/ProductDAO.php'; 
+
+$cartItems = [];
+$cartTotal = 0;
+$cartCount = 0;
+
+if (!empty($_SESSION['cart'])) {
+    $productDAO = new ProductDAO($pdo);
+    $cartProducts = $productDAO->findByIds(array_keys($_SESSION['cart']));
+
+    $pictureStatement = $pdo->prepare('SELECT picture_path FROM pictures WHERE product_id = :id LIMIT 1');
+    $defaultImage = 'images/_C-E-Ferulic-30ml_SkinCeuticals.jpg';
+
+    foreach ($cartProducts as $product) {
+        $productId = $product->getId();
+        $quantity = $_SESSION['cart'][$productId] ?? 0;
+
+        if ($quantity <= 0) {
+            continue;
+        }
+
+        $pictureStatement->execute(['id' => $productId]);
+        $picture = $pictureStatement->fetch();
+        $image = $picture !== false ? $picture['picture_path'] : $defaultImage;
+
+        $lineTotal = $product->getSellPrice() * $quantity;
+
+        $cartItems[] = [
+            'id'        => $productId,
+            'name'      => $product->getName(),
+            'price'     => $product->getSellPrice(),
+            'image'     => $image,
+            'quantity'  => $quantity,
+            'lineTotal' => $lineTotal,
+        ];
+
+        $cartTotal += $lineTotal;
+        $cartCount += $quantity;
+    }
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -117,21 +162,69 @@ $isAdmin = ($_SESSION['user_type_id'] ?? null) === 2;
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body">
-                    <div id="cart-items">
-                        <p class="text-center text-muted py-4" id="cart-empty-message">Votre panier est vide.</p>
-                    </div>
-                </div>
+              <div class="modal-body">
+    <div id="cart-items">
+        <?php if (empty($cartItems)): ?>
+            <p class="text-center text-muted py-4" id="cart-empty-message">Votre panier est vide.</p>
+        <?php else: ?>
+            <?php foreach ($cartItems as $item): ?>
+                <div class="cart-line d-flex align-items-center mb-3">
+                    <img src="<?= htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8') ?>"
+                         alt="<?= htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8') ?>"
+                         style="width:60px;height:60px;object-fit:cover;" class="me-2">
 
-                <div class="modal-footer justify-content-between">
-                    <div>
-                        <strong>Total :</strong>
-                        <span id="cart-total">0,00 €</span>
+                    <div class="flex-grow-1">
+                        <div><?= htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8') ?></div>
+                        <div class="text-muted"><?= number_format($item['price'], 2, ',', ' ') ?> €</div>
                     </div>
-                    <div>
-                        <button type="button" class="btn-rose" data-bs-dismiss="modal">Continuer mes achats</button>
-                        <a href="/checkout.php" class="btn-rose" id="cart-checkout-btn">Passer commande</a>
-                    </div>
+
+                    <!-- Diminuer -->
+                    <form method="post" action="panier_action.php" class="d-inline">
+                        <input type="hidden" name="action" value="update">
+                        <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
+                        <input type="hidden" name="delta" value="-1">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">-</button>
+                    </form>
+
+                    <span class="mx-2"><?= (int) $item['quantity'] ?></span>
+
+                    <!-- Augmenter -->
+                    <form method="post" action="panier_action.php" class="d-inline">
+                        <input type="hidden" name="action" value="update">
+                        <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
+                        <input type="hidden" name="delta" value="1">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">+</button>
+                    </form>
+
+                    <span class="ms-3" style="min-width:70px;text-align:right;">
+                        <?= number_format($item['lineTotal'], 2, ',', ' ') ?> €
+                    </span>
+
+                    <!-- Supprimer -->
+                    <form method="post" action="panier_action.php" class="d-inline ms-2">
+                        <input type="hidden" name="action" value="remove">
+                        <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="modal-footer justify-content-between">
+    <div>
+        <strong>Total :</strong>
+        <span id="cart-total"><?= number_format($cartTotal, 2, ',', ' ') ?> €</span>
+    </div>
+    <div>
+        <button type="button" class="btn-rose" data-bs-dismiss="modal">Continuer mes achats</button>
+        <a href="/checkout.php" class="btn-rose" id="cart-checkout-btn">Passer commande</a>
+    </div>
+</div>
+                   
                 </div>
             </div>
         </div>

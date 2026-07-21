@@ -157,23 +157,24 @@ $similar_products = array_slice($similar_products, 0, 4);
             </div>
 
             <!-- Quantité + ajout au panier -->
-            <div class="d-flex gap-3 mb-3">
-                <div class="choice-quantity d-flex align-items-center">
-                    <button type="button" id="qty-less" aria-label="Diminuer">-</button>
-                    <span id="qty" class="text-center fw-semibold">1</span>
-                    <button type="button" id="qty-more" aria-label="Augmenter">+</button>
-                </div>
+      <div class="d-flex gap-3 mb-3">
+              <form method="post" action="panier_action.php" class="d-flex gap-3 mb-3 flex-fill">
+    <input type="hidden" name="action" value="add">
+    <input type="hidden" name="id" value="<?= (int) $product->getId() ?>">
+    <input type="hidden" name="quantity" id="qty-input" value="1">
 
-                <button class="btn-rose btn-add flex-fill d-flex align-items-center justify-content-center gap-2"
-                    id="btn-add"
-                    type="button"
-                    data-id="<?= $product->getId() ?>"
-                    data-name="<?= htmlspecialchars($product->getName()) ?>"
-                    data-price="<?= $final_price ?>"
-                    data-image="<?= htmlspecialchars($img_main) ?>">
-                    <i class="fa-solid fa-bag-shopping"></i> Ajouter au panier
-                </button>
+    <div class="choice-quantity d-flex align-items-center">
+        <button type="button" id="qty-less" aria-label="Diminuer">-</button>
+        <span id="qty" class="text-center fw-semibold">1</span>
+        <button type="button" id="qty-more" aria-label="Augmenter">+</button>
+    </div>
+
+    <button class="btn-rose btn-add flex-fill d-flex align-items-center justify-content-center gap-2" type="submit" id="btn-add">
+        <i class="fa-solid fa-bag-shopping"></i> Ajouter au panier
+    </button>
+</form>
             </div>
+              
             <!-- /quantité + panier -->
 
             <!-- Stock -->
@@ -284,7 +285,6 @@ $similar_products = array_slice($similar_products, 0, 4);
     </section>
 <?php endif; ?>
 
-<script src="public/scripts/cart-manager.js"></script>
 <script src="public/scripts/product.js"></script>
 
 <?php include "public/includes/footer.php"; ?>
