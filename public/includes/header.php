@@ -29,9 +29,8 @@ $isAdmin = ($_SESSION['user_type_id'] ?? null) === 2;
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
     <title>Document</title>
     <link rel="apple-touch-icon" href="favicon.png">
-    <link rel="stylesheet" href="public/css/banner.css">
-    <link rel="stylesheet" href="public/css/style.css">
-
+    <link rel="stylesheet" href="<?= url('/public/css/banner.css') ?>">
+    <link rel="stylesheet" href="<?= url('/public/css/style.css') ?>">
 </head>
 
 <body>
@@ -74,7 +73,7 @@ $isAdmin = ($_SESSION['user_type_id'] ?? null) === 2;
         </div>
     </nav>
 
-    
+
     <!-- Modale infos utilisateur -->
     <div class="modal fade" id="userModal" tabindex="-1">
         <div class="modal-dialog">
