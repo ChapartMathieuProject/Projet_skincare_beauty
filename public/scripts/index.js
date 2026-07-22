@@ -4,11 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (buttons.length === 0 || cards.length === 0) return;
 
-  // Détermine si une carte doit être affichée selon le filtre choisi
   const isVisible = (card, filter) => {
     if (filter === "tous")  return true;
     if (filter === "promo") return card.dataset.promo === "1";
-    return card.dataset.type === filter;   // sinon : filtre par slug de catégorie
+    return card.dataset.type === filter; 
   };
 
   buttons.forEach((button) => {
@@ -18,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const filter = button.dataset.filter;
 
-      // On masque ou affiche chaque carte
       cards.forEach((card) => {
         card.classList.toggle("d-none", !isVisible(card, filter));
       });

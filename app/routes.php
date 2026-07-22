@@ -1,7 +1,6 @@
 <?php
-
 return [
-    ['GET',  '/',                'HomeController',    'index'],
-    ['GET',  '/produits',        'ProductController', 'index'],
-    ['GET',  '/produit/{slug}',  'ProductController', 'show'],
+    ['GET', '/',               'HomeController',    'index'],
+    ['GET', '/produit/{slug}', 'ProductController', 'show'],
+    ['GET', '/produits',       'CategoryController', 'index'],
 ];

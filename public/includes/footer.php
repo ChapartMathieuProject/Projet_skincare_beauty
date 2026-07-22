@@ -17,10 +17,10 @@
             <div class="col-12 col-sm-6 col-lg-3">
                 <h2 class="footer-heading mb-3">Boutique</h2>
                 <ul class="footer-nav list-unstyled mb-0">
-                    <li><a href="<?= url('/products_categories.php?filter=nouveautes') ?>">Nouveautés</a></li>
-                    <li><a href="<?= url('/products_categories.php?filter=bestsellers') ?>">Bestsellers</a></li>
-                    <li><a href="<?= url('/products_categories.php?filter=promotions') ?>">Promotions</a></li>
-                    <li><a href="<?= url('/products_categories.php?cat=coffrets') ?>">Coffrets</a></li>
+                    <li><a href="<?= url('/produits?filter=nouveautes') ?>">Nouveautés</a></li>
+                    <li><a href="<?= url('/produits?filter=bestsellers') ?>">Bestsellers</a></li>
+                    <li><a href="<?= url('/produits?filter=promotions') ?>">Promotions</a></li>
+                    <li><a href="<?= url('/produits?filter=coffrets') ?>">Coffrets</a></li>
                 </ul>
             </div>
 
