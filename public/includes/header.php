@@ -28,8 +28,8 @@ $isAdmin    = ($_SESSION['user_type_id'] ?? null) === 2;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
-    <title>SkinCareBeauty</title>
-    <link rel="icon" href="<?= url('/favicon.png') ?>">
+    <title>Document</title>
+    <link rel="apple-touch-icon" href="favicon.png">
     <link rel="stylesheet" href="<?= url('/public/css/banner.css') ?>">
     <link rel="stylesheet" href="<?= url('/public/css/style.css') ?>">
 </head>

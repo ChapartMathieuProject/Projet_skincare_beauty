@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+// var_dump($_SERVER['SCRIPT_NAME'], $_SERVER['REQUEST_URI']); exit;
 
 require_once __DIR__ . '/public/includes/db.php';
 require_once __DIR__ . '/app/core/Controller.php';
@@ -14,7 +15,7 @@ define("BASE_PATH", $base === "/" ? "" : $base);
 
 $uri = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 if (BASE_PATH !== "" && str_starts_with($uri, BASE_PATH)) {
-  $uri = substr($uri, strlen(BASE_PATH));  
+    $uri = substr($uri, strlen(BASE_PATH));
 }
 $uri = "/" . trim($uri, "/");
 
