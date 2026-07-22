@@ -59,11 +59,11 @@ $isAdmin    = ($_SESSION['user_type_id'] ?? null) === 2;
             </div>
             <div class="collapse navbar-collapse" id="menuPrincipal">
                 <ul class="navbar-nav ms-lg-4">
-                    <li class="nav-item"><a class="nav-link" href="<?= url('/products_categories.php?filter=nouveautes') ?>">Nouveautés</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= url('/products_categories.php?cat=serum') ?>">Sérums</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= url('/products_categories.php?cat=creme') ?>">Crèmes</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= url('/products_categories.php?cat=parfum') ?>">Parfums</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= url('/products_categories.php?filter=promotions') ?>">Promotions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= url('/produits?filter=nouveautes') ?>">Nouveautés</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= url('/produits?cat=serum') ?>">Sérums</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= url('/produits?cat=creme') ?>">Crèmes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= url('/produits?cat=parfum') ?>">Parfums</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= url('/produits?filter=promotions') ?>">Promotions</a></li>
                 </ul>
             </div>
         </div>
