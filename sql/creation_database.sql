@@ -226,12 +226,16 @@ CREATE TABLE bills(
 
 
 
-CREATE TABLE contains ( 
-    product_id INT PRIMARY KEY,
-    order_id INT,
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (order_id) REFERENCES orders(order_id)
-)engine= Innodb Default charset=utf8mb4;
+DROP TABLE IF EXISTS contains;
+
+CREATE TABLE contains (
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    contains_quantity INT NOT NULL DEFAULT 1,
+    PRIMARY KEY (order_id, product_id),
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE do(
     product_id INT PRIMARY KEY,
@@ -254,6 +258,27 @@ CREATE TABLE password_resets (
     reset_token         VARCHAR(64) NOT NULL UNIQUE,
     reset_expires_at    DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS cart_items;
+DROP TABLE IF EXISTS carts;
+
+CREATE TABLE carts (
+    cart_id INT AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    cart_created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (cart_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE cart_items (
+    cart_item_id INT AUTO_INCREMENT,
+    cart_id INT NOT NULL,
+    product_id INT NOT NULL,
+    cart_item_quantity INT NOT NULL DEFAULT 1,
+    PRIMARY KEY (cart_item_id),
+    FOREIGN KEY (cart_id) REFERENCES carts(cart_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 DELIMITER $$

@@ -2,13 +2,10 @@
 //  Footer 
 ?>
 
-
 <footer class="site-footer py-5">
     <div class="container">
 
-
         <div class="row g-4 mb-4">
-
 
             <div class="col-12 col-sm-6 col-lg-3">
                 <p class="footer-brand mb-3">SkinCareBeauty</p>
@@ -17,28 +14,25 @@
                 </p>
             </div>
 
-
             <div class="col-12 col-sm-6 col-lg-3">
                 <h2 class="footer-heading mb-3">Boutique</h2>
                 <ul class="footer-nav list-unstyled mb-0">
-                    <li><a href="#">Nouveautés</a></li>
-                    <li><a href="#">Bestsellers</a></li>
-                    <li><a href="#">Promotions</a></li>
-                    <li><a href="#">Coffrets</a></li>
+                    <li><a href="<?= url('/products_categories.php?filter=nouveautes') ?>">Nouveautés</a></li>
+                    <li><a href="<?= url('/products_categories.php?filter=bestsellers') ?>">Bestsellers</a></li>
+                    <li><a href="<?= url('/products_categories.php?filter=promotions') ?>">Promotions</a></li>
+                    <li><a href="<?= url('/products_categories.php?cat=coffrets') ?>">Coffrets</a></li>
                 </ul>
             </div>
-
 
             <div class="col-12 col-sm-6 col-lg-3">
                 <h2 class="footer-heading mb-3">Aide</h2>
                 <ul class="footer-nav list-unstyled mb-0">
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="<?= url('/contact.php') ?>">Contact</a></li>
                     <li><a href="#">Livraison</a></li>
                     <li><a href="#">Retours</a></li>
                     <li><a href="#">FAQ</a></li>
                 </ul>
             </div>
-
 
             <div class="col-12 col-sm-6 col-lg-3">
                 <h2 class="footer-heading mb-3">Suivez-nous</h2>
@@ -57,9 +51,7 @@
 
         </div>
 
-
         <hr class="footer-divider my-3">
-
 
         <p class="footer-copy text-center mb-0">
             &copy; <?= date('Y') ?> SkinCareBeauty. Tous droits réservés.
@@ -67,7 +59,7 @@
 
     </div>
 </footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-</body>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

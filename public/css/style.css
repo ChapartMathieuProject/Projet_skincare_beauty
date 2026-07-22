@@ -653,7 +653,7 @@
 }
 
 .small {
-  letter-spacing: 0.3rem;
+  letter-spacing: 0.2rem;
 }
 
 
@@ -2647,4 +2647,19 @@ select.input-admin {
   .auth-card {
     padding: 1.75rem;
   }
+}
+
+/* ============ PAGE PANIER IMAGE============ */
+.cart-item-image {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+}
+
+/* ============ page Orders image============ */
+.order-detail__line-image {
+    width: 35px;
+    height: 35px;
+    object-fit: cover;
+    border-radius: 4px;
 }
