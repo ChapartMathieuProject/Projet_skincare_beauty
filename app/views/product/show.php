@@ -102,10 +102,11 @@ if ($has_promo) {
 
       <!-- Quantité + ajout au panier -->
       <div class="d-flex gap-3 mb-3">
-        <form method="post" action="<?= url('/panier_action.php') ?>" class="cart-form d-flex gap-3 mb-3 flex-fill">
+        <form method="post" action="<?= url('/panier_action.php') ?>" class="cart-form js-cart d-flex gap-3 mb-3 flex-fill">
           <input type="hidden" name="action" value="add">
           <input type="hidden" name="id" value="<?= (int) $product->getId() ?>">
           <input type="hidden" name="quantity" id="qty-input" value="1">
+          <input type="hidden" name="redirect" value="/produit/<?= htmlspecialchars($product->getSlug()) ?>">
 
           <div class="choice-quantity d-flex align-items-center">
             <button type="button" id="qty-less" aria-label="Diminuer">-</button>
@@ -201,15 +202,16 @@ if ($has_promo) {
                   <?php endif; ?>
                 </span>
 
-                <button class="btn-rose btn-bag rounded-circle d-flex align-items-center justify-content-center"
-                  type="button"
-                  aria-label="Ajouter au panier"
-                  data-id="<?= $sp->getId() ?>"
-                  data-name="<?= htmlspecialchars($sp->getName()) ?>"
-                  data-price="<?= $final_price_sp ?>"
-                  data-image="<?= htmlspecialchars($img_sp) ?>">
-                  <i class="fa-solid fa-bag-shopping"></i>
-                </button>
+                <form method="post" action="<?= url('/panier_action.php') ?>" class="js-cart">
+                  <input type="hidden" name="action" value="add">
+                  <input type="hidden" name="id" value="<?= (int) $sp->getId() ?>">
+                  <input type="hidden" name="quantity" value="1">
+                  <input type="hidden" name="redirect" value="/produit/<?= htmlspecialchars($product->getSlug()) ?>">
+                  <button class="btn-rose btn-bag rounded-circle d-flex align-items-center justify-content-center"
+                    type="submit" aria-label="Ajouter au panier">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                  </button>
+                </form>
               </div>
             </div>
           </div>
@@ -219,7 +221,6 @@ if ($has_promo) {
   </section>
 <?php endif; ?>
 
-<script src="<?= url('/public/scripts/cart-manager.js') ?>"></script>
 <script src="<?= url('/public/scripts/product.js') ?>"></script>
 
 <?php require __DIR__ . '/../../../public/includes/footer.php'; ?>
