@@ -14,7 +14,7 @@ require_once __DIR__ . '/classes/DAO/ProductTypeDAO.php';
 $host = 'localhost';
 $db   = 'Skincarebeauty';
 $user = 'root';
-$pass = '';
+$pass = 'jean';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
