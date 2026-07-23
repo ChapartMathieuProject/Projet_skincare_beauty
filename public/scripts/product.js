@@ -54,25 +54,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ===== 4. QUANTITÉ ========================== */
   const qtySpan = document.getElementById("qty");
+
+  const qtyInput = document.getElementById("qty-input");
+
   if (qtySpan) {
     let qty = Math.max(1, parseInt(qtySpan.textContent) || 1);
     qtySpan.textContent = qty;
+    if (qtyInput) qtyInput.value = qty;
 
     const qtyMore = document.getElementById("qty-more");
     const qtyLess = document.getElementById("qty-less");
+        if (qtyMore) qtyMore.addEventListener("click", () => { 
+        qty++; 
+        qtySpan.textContent = qty; 
+        if (qtyInput) qtyInput.value = qty; 
+    });
+    
+    if (qtyLess) qtyLess.addEventListener("click", () => { 
+        qty = Math.max(1, qty - 1); 
+        qtySpan.textContent = qty; 
+        if (qtyInput) qtyInput.value = qty; 
+    });
 
-    if (qtyMore) qtyMore.addEventListener("click", () => { qty++; qtySpan.textContent = qty; });
-    if (qtyLess) qtyLess.addEventListener("click", () => { qty = Math.max(1, qty - 1); qtySpan.textContent = qty; });
 
-    /* ===== 5. AJOUTER AU PANIER : appel à l'API ========== */
-    const btnAdd = document.getElementById("btn-add");
 
-    if (btnAdd) {
-      btnAdd.addEventListener("click", () => {
-        addToCart({ id: btnAdd.dataset.id, quantity: qty });
-      });
-    }
   }
+
+ 
 
   /* ===== 6. ONGLETS : afficher le bon panneau ====================== */
   const tabs = document.querySelectorAll(".tab");
