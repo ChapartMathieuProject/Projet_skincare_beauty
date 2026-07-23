@@ -111,12 +111,14 @@ $isAdmin    = ($_SESSION['user_type_id'] ?? null) === 2;
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <?php if (!empty($_SESSION['cart_message'])): ?>
-    <div class="alert alert-warning" role="alert">
-        <?= htmlspecialchars($_SESSION['cart_message'], ENT_QUOTES, 'UTF-8') ?>
-    </div>
-    <?php unset($_SESSION['cart_message']); ?>
-<?php endif; ?>
+                    <div id="cart-message">
+                        <?php if (!empty($_SESSION['cart_message'])): ?>
+                            <div class="alert alert-warning" role="alert">
+                                <?= htmlspecialchars($_SESSION['cart_message'], ENT_QUOTES, 'UTF-8') ?>
+                            </div>
+                            <?php unset($_SESSION['cart_message']); ?>
+                        <?php endif; ?>
+                    </div>
                     <div id="cart-items">
                         <?php if (empty($cartItems)): ?>
                             <p class="text-center text-muted py-4" id="cart-empty-message">Votre panier est vide.</p>
@@ -129,69 +131,76 @@ $isAdmin    = ($_SESSION['user_type_id'] ?? null) === 2;
 
                                     <div class="flex-grow-1">
                                         <div><?= htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8') ?></div>
-                                        <div class="text-muted"><?= number_format($item['price'], 2, ',', ' ') ?> €</div>
+                                        <div class="text-muted">
+                                            <?php if ($item['hasPromo']): ?>
+                                                <span class="text-decoration-line-through me-1"><?= number_format($item['basePrice'], 2, ',', ' ') ?> €</span>
+                                                <span class="fw-semibold text-danger"><?= number_format($item['price'], 2, ',', ' ') ?> €</span>
+                                            <?php else: ?>
+                                                <?= number_format($item['price'], 2, ',', ' ') ?> €
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <!-- Diminuer -->
+                                        <form method="post" action="panier_action.php" class="d-inline cart-form">
+                                            <input type="hidden" name="action" value="update">
+                                            <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
+                                            <input type="hidden" name="delta" value="-1">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary">-</button>
+                                        </form>
+
+                                        <span class="mx-2"><?= (int) $item['quantity'] ?></span>
+
+                                        <!-- Augmenter -->
+                                        <form method="post" action="panier_action.php" class="d-inline cart-form">
+                                            <input type="hidden" name="action" value="update">
+                                            <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
+                                            <input type="hidden" name="delta" value="1">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary">+</button>
+                                        </form>
+
+                                        <span class="ms-3" style="min-width:70px;text-align:right;">
+                                            <?= number_format($item['lineTotal'], 2, ',', ' ') ?> €
+                                        </span>
+
+                                        <!-- Supprimer -->
+                                        <form method="post" action="panier_action.php" class="d-inline ms-2 cart-form">
+                                            <input type="hidden" name="action" value="remove">
+                                            <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
-
-                                    <!-- Diminuer -->
-                                    <form method="post" action="panier_action.php" class="d-inline">
-                                        <input type="hidden" name="action" value="update">
-                                        <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
-                                        <input type="hidden" name="delta" value="-1">
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary">-</button>
-                                    </form>
-
-                                    <span class="mx-2"><?= (int) $item['quantity'] ?></span>
-
-                                    <!-- Augmenter -->
-                                    <form method="post" action="panier_action.php" class="d-inline">
-                                        <input type="hidden" name="action" value="update">
-                                        <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
-                                        <input type="hidden" name="delta" value="1">
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary">+</button>
-                                    </form>
-
-                                    <span class="ms-3" style="min-width:70px;text-align:right;">
-                                        <?= number_format($item['lineTotal'], 2, ',', ' ') ?> €
-                                    </span>
-
-                                    <!-- Supprimer -->
-                                    <form method="post" action="panier_action.php" class="d-inline ms-2">
-                                        <input type="hidden" name="action" value="remove">
-                                        <input type="hidden" name="id" value="<?= (int) $item['id'] ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </form>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
                     </div>
-                </div>
-                <div class="modal-footer justify-content-between">
-                    <div>
-                        <strong>Total :</strong>
-                        <span id="cart-total"><?= number_format($cartTotal, 2, ',', ' ') ?> €</span>
-                    </div>
-                    <div>
-                        <button type="button" class="btn-rose" data-bs-dismiss="modal">Continuer mes achats</button>
-                        <a href="<?= url('/checkout.php') ?>" class="btn-rose" id="cart-checkout-btn">Passer commande</a>
-                    </div>
-                </div>
 
+                    <div class="modal-footer justify-content-between">
+                        <div>
+                            <strong>Total :</strong>
+                            <span id="cart-total"><?= number_format($cartTotal, 2, ',', ' ') ?> €</span>
+                        </div>
+                        <div>
+                            <button type="button" class="btn-rose" data-bs-dismiss="modal">Continuer mes achats</button>
+                            <a href="/checkout.php" class="btn-rose" id="cart-checkout-btn">Passer commande</a>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
-    </div>
-    <?php if (!empty($_SESSION['open_cart'])): ?>
-        <?php unset($_SESSION['open_cart']); // On efface la consigne pour les pages suivantes 
-        ?>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var cartModalElement = document.getElementById('cart-modal');
-                if (cartModalElement) {
-                    var cartModal = new bootstrap.Modal(cartModalElement);
-                    cartModal.show();
-                }
-            });
-        </script>
-    <?php endif; ?>
+        <?php if (!empty($_SESSION['open_cart'])): ?>
+            <?php unset($_SESSION['open_cart']); // On efface la consigne pour les pages suivantes 
+            ?>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var cartModalElement = document.getElementById('cart-modal');
+                    if (cartModalElement) {
+                        var cartModal = new bootstrap.Modal(cartModalElement);
+                        cartModal.show();
+                    }
+                });
+            </script>
+        <?php endif; ?>
     </div>
