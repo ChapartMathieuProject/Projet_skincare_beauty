@@ -70,4 +70,46 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 
+<script>
+document.addEventListener('submit', function (e) {
+    const form = e.target.closest('.cart-form');
+    if (!form) return;
+
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    fetch('panier_action.php', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+    })
+        .then((res) => res.json())
+        .then((data) => {
+            const cartItemsEl = document.getElementById('cart-items');
+            if (cartItemsEl) cartItemsEl.innerHTML = data.itemsHtml;
+
+            const cartTotalEl = document.getElementById('cart-total');
+            if (cartTotalEl) cartTotalEl.textContent = data.total;
+
+            const cartCountEl = document.getElementById('cart-count');
+            if (cartCountEl) cartCountEl.textContent = data.count > 0 ? data.count : '';
+
+            const messageContainer = document.getElementById('cart-message-container');
+            if (messageContainer) {
+                messageContainer.innerHTML = data.message
+                    ? '<div class="alert alert-warning" role="alert">' + data.message + '</div>'
+                    : '';
+            }
+
+            const cartModalEl = document.getElementById('cart-modal');
+            if (cartModalEl) {
+                const cartModal = bootstrap.Modal.getOrCreateInstance(cartModalEl);
+                cartModal.show();
+            }
+        })
+        .catch((err) => console.error('Erreur panier :', err));
+});
+</script>
+
 </html>

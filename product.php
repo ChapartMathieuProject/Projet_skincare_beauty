@@ -158,7 +158,7 @@ $similar_products = array_slice($similar_products, 0, 4);
 
             <!-- Quantité + ajout au panier -->
       <div class="d-flex gap-3 mb-3">
-              <form method="post" action="panier_action.php" class="d-flex gap-3 mb-3 flex-fill">
+              <form method="post" action="panier_action.php" class="d-flex gap-3 mb-3 flex-fill cart-form">
     <input type="hidden" name="action" value="add">
     <input type="hidden" name="id" value="<?= (int) $product->getId() ?>">
     <input type="hidden" name="quantity" id="qty-input" value="1">
@@ -268,7 +268,7 @@ $similar_products = array_slice($similar_products, 0, 4);
                                 </span>
 
                                 <!-- Formulaire corrigé qui échappe au JavaScript -->
-                                <form method="post" action="panier_action.php" class="m-0">
+                                <form method="post" action="panier_action.php" class="m-0" cart-form>
                                     <input type="hidden" name="action" value="add">
                                     <input type="hidden" name="id" value="<?= (int) $sp->getId() ?>">
                                     <input type="hidden" name="quantity" value="1">
