@@ -202,5 +202,5 @@ usort($flash_products, function ($a, $b) use ($promotions) {
   </div>
 </section>
 <script src="public/scripts/index.js"></script>
-<script src="public/scripts/cart-manager.js"></script>
+
 <?php include "public/includes/footer.php"; ?>

@@ -267,15 +267,18 @@ $similar_products = array_slice($similar_products, 0, 4);
                                     <?php endif; ?>
                                 </span>
 
-                                <button class="btn-rose btn-bag rounded-circle d-flex align-items-center justify-content-center"
-                                    type="button"
-                                    aria-label="Ajouter au panier"
-                                    data-id="<?= $sp->getId() ?>"
-                                    data-name="<?= htmlspecialchars($sp->getName()) ?>"
-                                    data-price="<?= $final_price_sp ?>"
-                                    data-image="<?= htmlspecialchars($img_sp) ?>">
-                                    <i class="fa-solid fa-bag-shopping"></i>
-                                </button>
+                                <!-- Formulaire corrigé qui échappe au JavaScript -->
+                                <form method="post" action="panier_action.php" class="m-0">
+                                    <input type="hidden" name="action" value="add">
+                                    <input type="hidden" name="id" value="<?= (int) $sp->getId() ?>">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button class="btn-rose btn-bag rounded-circle d-flex align-items-center justify-content-center" 
+                                            type="submit" 
+                                            aria-label="Ajouter au panier"
+                                            onclick="event.stopPropagation();">
+                                        <i class="fa-solid fa-bag-shopping"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
