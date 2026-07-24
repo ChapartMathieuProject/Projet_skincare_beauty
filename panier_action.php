@@ -69,7 +69,8 @@ function cart_payload(PDO $pdo): array
 
     return [
         'items' => $items,
-        'count' => array_sum($cart),
+
+        'count' => array_sum(array_column($items, 'quantity')),
         'total' => round($total, 2),
     ];
 }
@@ -101,6 +102,8 @@ function respond(string $redirect, PDO $pdo): never
 }
 
 
+/* ===== Contrôle d'accès ===== */
+
 if (!isset($_SESSION['user_id'])) {
     if (is_ajax()) {
         http_response_code(401);
@@ -116,9 +119,19 @@ if (!isset($_SESSION['user_id'])) {
     redirect_to('/login.php');
 }
 
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && is_ajax() && ($_GET['action'] ?? '') === 'get') {
+    $payload = cart_payload($pdo);
+    $payload['ok'] = true;
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect_to('/cart.php');
 }
+
 
 
 $action   = $_POST['action']   ?? '';
@@ -146,7 +159,6 @@ switch ($action) {
             break;
         }
 
-        // ↓ les trois lignes qui manquaient
         $stock   = (int) $product->getQuantity();
         $current = $_SESSION['cart'][$id] ?? 0;
         $wanted  = $current + $quantity;
