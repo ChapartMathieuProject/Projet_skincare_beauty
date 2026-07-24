@@ -1,4 +1,4 @@
-<?php
+<?php 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -51,10 +51,15 @@ $cartItems = [];
 $cartTotal = 0;
 
 if (!empty($_SESSION['cart'])) {
+    $productStatement = $pdo->prepare(
+        'SELECT product_id, product_name, product_buy_price, product_margin FROM products WHERE product_id = :id'
+    );
+    $promotionStatement = $pdo->prepare(
+        'SELECT promotion_percent FROM promotions
+         WHERE product_id = :id AND promotion_is_active = 1'
+    );
+
     foreach ($_SESSION['cart'] as $productId => $quantity) {
-        $productStatement = $pdo->prepare(
-            'SELECT product_id, product_name, product_buy_price, product_margin FROM products WHERE product_id = :id'
-        );
         $productStatement->execute(['id' => $productId]);
         $product = $productStatement->fetch();
 
@@ -63,6 +68,14 @@ if (!empty($_SESSION['cart'])) {
         }
 
         $price = $product['product_buy_price'] * (1 + $product['product_margin'] / 100);
+
+        // On applique la promotion active au prix unitaire, si elle existe.
+        $promotionStatement->execute(['id' => $productId]);
+        $promotion = $promotionStatement->fetch();
+
+        if ($promotion !== false) {
+            $price = $price * (1 - $promotion['promotion_percent'] / 100);
+        }
 
         $cartItems[] = [
             'id' => $product['product_id'],
@@ -139,14 +152,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cartItems)) {
         $orderId = (int) $pdo->lastInsertId();
 
         // 5. Lignes de commande (un produit + sa quantité).
+        // 5. Lignes de commande (un produit + sa quantité + le prix unitaire payé).
         $insertLine = $pdo->prepare(
-            'INSERT INTO contains (order_id, product_id, contains_quantity) VALUES (:orderId, :productId, :quantity)'
+            'INSERT INTO contains (order_id, product_id, contains_quantity, contains_unit_price)
+     VALUES (:orderId, :productId, :quantity, :unitPrice)'
         );
         foreach ($cartItems as $item) {
+            
             $insertLine->execute([
                 'orderId' => $orderId,
                 'productId' => $item['id'],
                 'quantity' => $item['quantity'],
+                'unitPrice' => $item['price'],
             ]);
         }
 
@@ -157,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cartItems)) {
 
         header('Location: orders.php');
         exit;
- } catch (PDOException $e) {
+    } catch (PDOException $e) {
         $pdo->rollBack();
         $errorMessage = 'Erreur : ' . $e->getMessage();
     }
@@ -225,25 +242,25 @@ require_once 'public/includes/header.php';
                             <?php endforeach; ?>
                         </select>
                     </div>
-<div class="d-flex justify-content-between mb-3">
-    <span>Frais de livraison</span>
-    <span>
-        <?php if ($deliveryCost === 0): ?>
-            <span class="text-success fw-semibold">Offerte</span>
-        <?php else: ?>
-            <?= number_format($deliveryCost, 2, ',', ' ') ?> €
-        <?php endif; ?>
-    </span>
-</div>
-<?php if ($deliveryCost > 0): ?>
-    <p class="small text-muted mb-3">
-        Plus que <?= number_format(FREE_DELIVERY_THRESHOLD - $cartTotal, 2, ',', ' ') ?> € d'achat pour la livraison offerte !
-    </p>
-<?php endif; ?>
-<div class="d-flex justify-content-between fw-bold mb-4">
-    <span>Total à payer</span>
-    <span><?= number_format($cartTotal + $deliveryCost, 2, ',', ' ') ?> €</span>
-</div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Frais de livraison</span>
+                        <span>
+                            <?php if ($deliveryCost === 0): ?>
+                                <span class="text-success fw-semibold">Offerte</span>
+                            <?php else: ?>
+                                <?= number_format($deliveryCost, 2, ',', ' ') ?> €
+                            <?php endif; ?>
+                        </span>
+                    </div>
+                    <?php if ($deliveryCost > 0): ?>
+                        <p class="small text-muted mb-3">
+                            Plus que <?= number_format(FREE_DELIVERY_THRESHOLD - $cartTotal, 2, ',', ' ') ?> € d'achat pour la livraison offerte !
+                        </p>
+                    <?php endif; ?>
+                    <div class="d-flex justify-content-between fw-bold mb-4">
+                        <span>Total à payer</span>
+                        <span><?= number_format($cartTotal + $deliveryCost, 2, ',', ' ') ?> €</span>
+                    </div>
 
                     <button type="submit" class="btn-rose w-100">Valider ma commande</button>
                 </form>
