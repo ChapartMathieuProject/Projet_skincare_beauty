@@ -4,9 +4,9 @@ name: PHPUnit Tests
 # Déclencheurs : quand lancer ce workflow ?
 on:
   push:
-    branches: [ main ]          # à chaque push sur la branche main, mettre [ main, develop ] si besoin aussi sur la branche develop
+    branches: [ develop ]          # à chaque push sur la branche main, mettre [ main, develop ] si besoin aussi sur la branche develop
   pull_request:
-    branches: [ main ]          # à chaque pull request vers main, mettre [ main, develop ] si besoin aussi sur la branche develop
+    branches: [ develop ]          # à chaque pull request vers main, mettre [ main, develop ] si besoin aussi sur la branche develop
 
 # Les jobs : ce qu'on veut faire
 jobs:

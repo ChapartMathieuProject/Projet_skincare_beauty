@@ -60,10 +60,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const qtyMore = document.getElementById("qty-more");
     const qtyLess = document.getElementById("qty-less");
+    const qtyInput = document.getElementById("qty-input");
 
-    if (qtyMore) qtyMore.addEventListener("click", () => { qty++; qtySpan.textContent = qty; });
-    if (qtyLess) qtyLess.addEventListener("click", () => { qty = Math.max(1, qty - 1); qtySpan.textContent = qty; });
-
+    if (qtyMore) qtyMore.addEventListener("click", () => {
+      qty++;
+      qtySpan.textContent = qty;
+      if (qtyInput) qtyInput.value = qty;
+    });
+    if (qtyLess) qtyLess.addEventListener("click", () => {
+      qty = Math.max(1, qty - 1);
+      qtySpan.textContent = qty;
+      if (qtyInput) qtyInput.value = qty;
+    });
     /* ===== 5. AJOUTER AU PANIER : appel à l'API ========== */
     const btnAdd = document.getElementById("btn-add");
 
