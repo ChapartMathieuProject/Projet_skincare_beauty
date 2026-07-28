@@ -67,11 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ===== 5. AJOUTER AU PANIER : appel à l'API ========== */
     const btnAdd = document.getElementById("btn-add");
 
-    if (btnAdd) {
-      btnAdd.addEventListener("click", () => {
-        addToCart({ id: btnAdd.dataset.id, quantity: qty });
-      });
-    }
+    // if (btnAdd) {
+    //   btnAdd.addEventListener("click", () => {
+    //     addToCart({ id: btnAdd.dataset.id, quantity: qty });
+    //   });
+    // }
   }
 
   /* ===== 6. ONGLETS : afficher le bon panneau ====================== */

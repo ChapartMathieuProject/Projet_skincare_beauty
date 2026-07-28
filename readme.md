@@ -1,0 +1,1 @@
+![PHPUnit Tests](https://github.com/mathieuchapartdv-cell/Projet_skincare_beauty/actions/workflows/phpunit.yml/badge.svg)

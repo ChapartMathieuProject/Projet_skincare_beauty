@@ -100,7 +100,7 @@ include 'public/includes/header.php';
   <div class="container">
 
     <nav aria-label="Fil d'Ariane" class="profile-breadcrumb">
-      <a href="profile.php">
+      <a href="/users.php">
         <i class="fa-solid fa-chevron-left" aria-hidden="true"></i> Mon profil
       </a>
     </nav>

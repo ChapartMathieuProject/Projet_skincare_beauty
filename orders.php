@@ -54,15 +54,13 @@ if ($customer !== false) {
 
     // 3. Requêtes préparées réutilisées pour chaque commande (lignes + produit).
     $linesStatement = $pdo->prepare(
-        'SELECT product_id, contains_quantity FROM contains WHERE order_id = :orderId'
+        'SELECT product_id, contains_quantity, contains_unit_price FROM contains WHERE order_id = :orderId'
     );
     $productStatement = $pdo->prepare(
-        'SELECT product_name, product_buy_price, product_margin
-         FROM products WHERE product_id = :productId'
+        'SELECT product_name FROM products WHERE product_id = :productId'
     );
+    
 
-    // TODO (CB) : aligne ce seuil et ce montant avec ta logique de checkout,
-    // ou remplace par order_shipping_cost si cette colonne existe en base.
     $freeShippingThreshold = 50.00;
     $standardShippingCost  = 4.90;
 
@@ -70,9 +68,7 @@ if ($customer !== false) {
         $linesStatement->execute(['orderId' => $orderRow['order_id']]);
         $lines = $linesStatement->fetchAll();
 
-        // TODO (CB) : le prix de vente réel au moment de la commande n'est pas
-        // stocké en base. On le recalcule ici depuis le prix d'achat + la marge,
-        // ce qui n'est pas fiable si le prix ou la marge changent après coup.
+        
         $total = 0; // sous-total produits, sert aussi au calcul du seuil de gratuité
         $itemsCount = 0;
         $orderLines = []; // détail des produits pour l'affichage étendu (accordéon)
@@ -85,8 +81,8 @@ if ($customer !== false) {
                 continue; // produit supprimé entre-temps
             }
 
-            $sellingPrice = $product['product_buy_price'] * (1 + $product['product_margin'] / 100);
-            $lineTotal = $sellingPrice * $line['contains_quantity'];
+            // Le prix unitaire est celui payé au moment de la commande, plus besoin de le recalculer.
+            $lineTotal = $line['contains_unit_price'] * $line['contains_quantity'];
 
             $total += $lineTotal;
             $itemsCount += $line['contains_quantity'];
@@ -127,7 +123,7 @@ require_once 'public/includes/header.php';
     <div class="container">
 
         <nav aria-label="Fil d'Ariane" class="profile-breadcrumb">
-            <a href="profile.php">
+            <a href="/users.php">
                 <i class="fa-solid fa-chevron-left" aria-hidden="true"></i> Mon profil
             </a>
         </nav>
@@ -182,8 +178,7 @@ require_once 'public/includes/header.php';
                                 data-bs-toggle="collapse"
                                 data-bs-target="#<?= $detailId ?>"
                                 aria-expanded="false"
-                                aria-controls="<?= $detailId ?>"
-                            >
+                                aria-controls="<?= $detailId ?>">
                                 Voir le détail
                                 <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
                             </button>
@@ -198,8 +193,7 @@ require_once 'public/includes/header.php';
                                             src="<?= htmlspecialchars($line['image'], ENT_QUOTES, 'UTF-8') ?>"
                                             alt="<?= htmlspecialchars($line['name'], ENT_QUOTES, 'UTF-8') ?>"
                                             class="order-detail__line-image"
-                                            loading="lazy"
-                                        >
+                                            loading="lazy">
                                         <span class="order-detail__line-info">
                                             <?= (int) $line['quantity'] ?> x
                                             <?= htmlspecialchars($line['name'], ENT_QUOTES, 'UTF-8') ?>

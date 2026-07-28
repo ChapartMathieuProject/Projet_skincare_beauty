@@ -133,6 +133,7 @@ CREATE TABLE addresses(
     address_city VARCHAR(30) NOT NULL,
     address_country VARCHAR(30) NOT NULL,
     address_is_default BOOLEAN NOT NULL DEFAULT 0,
+    address_is_billing BOOLEAN NOT NULL DEFAULT 0,
     FOREIGN KEY (customer_id_account) REFERENCES customers(customer_id_account)
 ) engine= Innodb DEFAULT charset=utf8mb4;
 
