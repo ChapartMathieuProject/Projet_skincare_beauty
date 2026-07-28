@@ -74,4 +74,12 @@ class ProductDAOTest extends TestCase
         }
     }
 
+    public function testFindAllActiveRetourneTableauVide(): void
+    {
+        $this->pdo->method('query')->willReturn($this->stmt);
+        $this->stmt->method('fetchAll')->willReturn([]);
+
+        $this->assertSame([], $this->dao->findAllActive());
+    }
+
 }
