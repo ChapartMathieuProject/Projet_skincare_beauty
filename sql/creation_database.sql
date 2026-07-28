@@ -233,6 +233,7 @@ CREATE TABLE contains (
     order_id INT NOT NULL,
     product_id INT NOT NULL,
     contains_quantity INT NOT NULL DEFAULT 1,
+    contains_unit_price DECIMAL(15,2) NOT NULL,
     PRIMARY KEY (order_id, product_id),
     FOREIGN KEY (order_id) REFERENCES orders(order_id),
     FOREIGN KEY (product_id) REFERENCES products(product_id)
