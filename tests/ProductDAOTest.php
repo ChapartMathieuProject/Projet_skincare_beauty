@@ -53,4 +53,25 @@ class ProductDAOTest extends TestCase
 
         $this->assertNull($produit);
     }
+
+    public function testFindAllActiveRetourneUnTableauDeProduits(): void
+    {
+        $lignes = [
+            ['product_id' => 1, 'product_name' => 'A', 'product_is_status' => 1],
+            ['product_id' => 2, 'product_name' => 'B', 'product_is_status' => 1],
+        ];
+
+        $this->pdo->method('query')->willReturn($this->stmt);
+        $this->stmt->method('fetchAll')->willReturn($lignes);
+
+        $produits = $this->dao->findAllActive();
+
+        $this->assertIsArray($produits);
+        $this->assertCount(2, $produits);
+        foreach ($produits as $produit) {
+            $this->assertInstanceOf(Product::class, $produit);
+            $this->assertTrue($produit->isStatus());
+        }
+    }
+
 }
