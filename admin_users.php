@@ -1,25 +1,61 @@
-
 <?php 
-
+ 
 require_once "public/includes/db.php";
-
+ 
 $users = [];
 foreach ($pdo->query("SELECT user_id, user_mail FROM users") as $row) {
     $users[$row["user_id"]] = $row["user_mail"];
 }
-
-$orders_count = [];
-foreach ($pdo->query("SELECT customer_id_account, COUNT(*) AS nb FROM orders GROUP BY customer_id_account") as $row) {
-    $orders_count[$row["customer_id_account"]] = $row["nb"];
+ 
+$statuses = []; 
+foreach ($pdo->query("SELECT order_type_id, order_type_name FROM order_status") as $s) {
+    $statuses[$s["order_type_id"]] = $s["order_type_name"];
 }
-
+ 
+$status_class_map = [
+    'En attente'     => 'statut-attente',
+    'En préparation' => 'statut-preparation',
+    'Expédiée'       => 'statut-expediee',
+    'Livrée'         => 'statut-livree',
+];
+ 
+$mois_fr = [1=>'janvier',2=>'février',3=>'mars',4=>'avril',5=>'mai',6=>'juin',
+            7=>'juillet',8=>'août',9=>'septembre',10=>'octobre',11=>'novembre',12=>'décembre'];
+ 
+ 
+$order_totals = [];   // order_id => total €
+foreach ($pdo->query("SELECT order_id, contains_quantity, contains_unit_price FROM contains") as $l) {
+    $oid = $l["order_id"];
+    $order_totals[$oid] = ($order_totals[$oid] ?? 0) + $l["contains_quantity"] * $l["contains_unit_price"];
+}
+ 
+$customer_orders = [];  
+$customer_spent  = []; 
+ 
+foreach ($pdo->query("SELECT order_id, order_number, order_date, order_type_id, customer_id_account FROM orders ORDER BY order_date DESC") as $o) {
+    $cid    = $o["customer_id_account"];
+    $ototal = $order_totals[$o["order_id"]] ?? 0;
+    $sname  = $statuses[$o["order_type_id"]] ?? '—';
+ 
+    $d       = new DateTime($o["order_date"]);
+    $date_fr = $d->format('j') . ' ' . $mois_fr[(int) $d->format('n')] . ' ' . $d->format('Y');
+ 
+    $customer_orders[$cid][] = [
+        'number' => $o["order_number"],
+        'date'   => $date_fr,
+        'total'  => number_format($ototal, 2, ',', ' ') . ' €',
+        'status' => $sname,
+        'class'  => $status_class_map[$sname] ?? '',
+    ];
+    $customer_spent[$cid] = ($customer_spent[$cid] ?? 0) + $ototal;
+}
+ 
 $customers = $pdo->query("SELECT * FROM customers ORDER BY customer_name")->fetchAll();
-
-
-$menu_actif = 'clients'; //<!-- Changer le 'clients' en fonction de la page -->
+ 
+$menu_actif = 'clients';
 include "public/includes/header_admin.php"; 
 ?>
-
+ 
 <div class="admin-main">
     <header class="admin-topbar">
         <nav class="breadcrumb-admin">
@@ -50,10 +86,13 @@ include "public/includes/header_admin.php";
                     </thead>
                     <tbody>
                         <?php foreach ($customers as $c):
+                            $cid       = $c['customer_id_account'];
                             $full_name = $c['customer_firstname'] . ' ' . $c['customer_name'];
                             $initials  = mb_strtoupper(mb_substr($c['customer_firstname'], 0, 1) . mb_substr($c['customer_name'], 0, 1));
                             $mail      = $users[$c['user_id']] ?? '';
-                            $nb_orders = $orders_count[$c['customer_id_account']] ?? 0;
+                            $orders    = $customer_orders[$cid] ?? [];
+                            $nb_orders = count($orders);
+                            $spent     = number_format($customer_spent[$cid] ?? 0, 2, ',', ' ') . ' €';
                         ?>
                         <tr>
                             <td>
@@ -70,12 +109,14 @@ include "public/includes/header_admin.php";
                             <td class="col-actions">
                                 <button type="button" class="btn-row-action"
                                     data-bs-toggle="modal" data-bs-target="#client-modal"
-                                    data-id="<?= (int) $c['customer_id_account'] ?>"
+                                    data-id="<?= (int) $cid ?>"
                                     data-avatar="<?= htmlspecialchars($initials) ?>"
                                     data-nom="<?= htmlspecialchars($full_name) ?>"
                                     data-email="<?= htmlspecialchars($mail) ?>"
                                     data-tel="<?= htmlspecialchars($c['customer_phone']) ?>"
                                     data-commandes="<?= (int) $nb_orders ?>"
+                                    data-total="<?= htmlspecialchars($spent) ?>"
+                                    data-orders='<?= htmlspecialchars(json_encode($orders, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>'
                                     aria-label="Voir la fiche client">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
@@ -87,11 +128,6 @@ include "public/includes/header_admin.php";
             </div>
         </section>
  
-        <!-- ===================================================================
-             MODALE FICHE CLIENT (une seule, partagée par toutes les lignes).
-             Vide pour l'instant : le JS lira les data-… du bouton cliqué
-             (event.relatedTarget) et remplira les emplacements #cm-… ci-dessous.
-             =================================================================== -->
         <div class="modal fade" id="client-modal" tabindex="-1" aria-labelledby="cm-name" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content client-modal">
@@ -169,14 +205,6 @@ include "public/includes/header_admin.php";
                                             <th>Statut</th>
                                         </tr>
                                     </thead>
-                                    <!-- Le JS injectera les <tr> ici. Modèle d'une ligne :
-                                         <tr>
-                                           <td class="order-num">#CMD-0000</td>
-                                           <td>00 mois 0000</td>
-                                           <td class="order-total">0,00 €</td>
-                                           <td><span class="statut-badge statut-livree"><span class="point"></span>Livrée</span></td>
-                                         </tr>
-                                    -->
                                     <tbody id="cm-orders"></tbody>
                                 </table>
                             </div>
@@ -184,7 +212,6 @@ include "public/includes/header_admin.php";
  
                     </div>
  
-                    <!-- Pied : fermeture + lien fiche complète (href posé par le JS) -->
                     <div class="modal-footer">
                         <button type="button" class="btn-draft" data-bs-dismiss="modal">Fermer</button>
                         <a class="btn-admin-primary" id="cm-full-link" href="#">Voir la fiche complète</a>
@@ -197,8 +224,6 @@ include "public/includes/header_admin.php";
     </div>
 </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
- 
-</body>
- 
-</html>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="public/scripts/admin_users.js"></script>
