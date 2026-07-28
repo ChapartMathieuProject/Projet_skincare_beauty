@@ -42,4 +42,15 @@ class ProductDAOTest extends TestCase
         $this->assertSame("Super crème", $produit->getDescription());
         $this->assertSame(12, $produit->getQuantity());
     }
+
+    public function testFindBySlugRetourneNullSiIntrouvable(): void
+    {
+        $this->pdo->method('prepare')->willReturn($this->stmt);
+        $this->stmt->method('execute')->willReturn(true);
+        $this->stmt->method('fetch')->willReturn(false);
+
+        $produit = $this->dao->findBySlug('slug-inexistant');
+
+        $this->assertNull($produit);
+    }
 }
