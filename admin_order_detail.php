@@ -67,7 +67,7 @@ if ($order) {
 
     $total = 0;
     foreach ($lines as $l) {
-        $total += $l['quantity'] * $l['unit_price'];
+        $total += $l['contains_quantity'] * $l['contains_unit_price'];
     }
 
     $d       = new DateTime($order['order_date']);
@@ -202,7 +202,7 @@ include "public/includes/header_admin.php";
                                     $prod     = $products[$l['product_id']] ?? null;
                                     $name     = $prod ? $prod['name'] : ('Produit #' . (int) $l['product_id']);
                                     $slug     = $prod['slug'] ?? '';
-                                    $subtotal = $l['quantity'] * $l['unit_price'];
+                                    $subtotal = $l['contains_quantity'] * $l['contains_unit_price'];
                                 ?>
                                 <tr>
                                     <td>
@@ -212,8 +212,8 @@ include "public/includes/header_admin.php";
                                             <?= htmlspecialchars($name) ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= number_format($l['unit_price'], 2, ',', ' ') ?> €</td>
-                                    <td><?= (int) $l['quantity'] ?></td>
+                                    <td><?= number_format($l['contains_unit_price'], 2, ',', ' ') ?> €</td>
+                                    <td><?= (int) $l['contains_quantity'] ?></td>
                                     <td class="order-total"><?= number_format($subtotal, 2, ',', ' ') ?> €</td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -287,12 +287,12 @@ include "public/includes/header_admin.php";
                                             <?php foreach ($lines as $l):
                                                 $prod     = $products[$l['product_id']] ?? null;
                                                 $name     = $prod ? $prod['name'] : ('Produit #' . (int) $l['product_id']);
-                                                $subtotal = $l['quantity'] * $l['unit_price'];
+                                                $subtotal = $l['contains_quantity'] * $l['contains_unit_price'];
                                             ?>
                                             <tr>
                                                 <td><?= htmlspecialchars($name) ?></td>
-                                                <td><?= number_format($l['unit_price'], 2, ',', ' ') ?> €</td>
-                                                <td><?= (int) $l['quantity'] ?></td>
+                                                <td><?= number_format($l['contains_unit_price'], 2, ',', ' ') ?> €</td>
+                                                <td><?= (int) $l['contains_quantity'] ?></td>
                                                 <td class="order-total"><?= number_format($subtotal, 2, ',', ' ') ?> €</td>
                                             </tr>
                                             <?php endforeach; ?>
