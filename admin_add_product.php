@@ -1,6 +1,8 @@
-
-<?php 
+<?php
 require_once "public/includes/db.php";
+require_once __DIR__ . '/app/core/base_path.php';
+require_once __DIR__ . '/app/core/helpers.php';
+
 
 $company_id = 1; //TODO : à recup depuis la session admin plus tard
 
@@ -10,12 +12,12 @@ $errors = [];
 
 /* ---------- TRAITEMENT DU FORMULAIRE (uniquement en POST) ---------- */
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST'){
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_id     = !empty($_POST['product_id']) ? (int) $_POST['product_id'] : null;
     $name           = htmlspecialchars(trim($_POST['nom'] ?? ''));
     $ean            = htmlspecialchars(trim($_POST['ean'] ?? ''));
     $composition    = htmlspecialchars(trim($_POST['composition'] ?? ''));
-    $description    = htmlspecialchars(trim($_POST['description'] ?? '')); 
+    $description    = htmlspecialchars(trim($_POST['description'] ?? ''));
     $buy_price      = htmlspecialchars(str_replace(',', '.', trim($_POST['prix_achat'] ?? '')));
     $margin         = htmlspecialchars((int) ($_POST['marge'] ?? 0));
     $quantity       = htmlspecialchars((int) ($_POST['stock'] ?? 0));
@@ -24,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     $type_id        = (int) ($_POST['product_type_id'] ?? 0);
     $is_status      = isset($_POST['actif']) ? 1 : 0;
 
-    if($name === '')                        $errors[] = "Le nom du produit est obligatoire.";
+    if ($name === '')                        $errors[] = "Le nom du produit est obligatoire.";
     if (!preg_match('/^\d{13}$/', $ean))    $errors[] = "L'EAN doit comporter exactement 13 chiffres.";
     if ($brand_id <= 0)                     $errors[] = "Choisis une marque.";
     if ($type_id <= 0)                      $errors[] = "Choisis une catégorie.";
@@ -35,23 +37,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         $stmt->execute([$brand_id]);
         $producer_id = $stmt->fetchColumn();
 
-        if(!$producer_id) {
+        if (!$producer_id) {
             $errors[] = "Marque introuvable.";
         } else {
             try {
-                if ($product_id){
+                if ($product_id) {
                     $sql = "UPDATE products SET
                                 product_name = ?, product_ean = ?, product_composition = ?,
                                 product_description = ?, product_is_status = ?, product_buy_price = ?,
                                 product_margin = ?, product_quantity = ?, product_alert = ?,
                                 producer_id = ?, brand_id = ?
                             WHERE product_id = ?";
-                    
+
                     $pdo->prepare($sql)->execute([
-                        $name, $ean, $composition, $description, $is_status, $buy_price,
-                        $margin, $quantity, $alert, $producer_id, $brand_id, $product_id,
+                        $name,
+                        $ean,
+                        $composition,
+                        $description,
+                        $is_status,
+                        $buy_price,
+                        $margin,
+                        $quantity,
+                        $alert,
+                        $producer_id,
+                        $brand_id,
+                        $product_id,
                     ]);
-                    $saved_id =$product_id;
+                    $saved_id = $product_id;
                 } else {
                     $sql = "INSERT INTO products
                                 (product_name, product_ean, product_composition, product_description,
@@ -59,12 +71,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
                                 product_alert, producer_id, brand_id, company_id_account)
                             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
                     $pdo->prepare($sql)->execute([
-                        $name, $ean, $composition, $description, $is_status, $buy_price,
-                        $margin, $quantity, $alert, $producer_id, $brand_id, $company_id,
+                        $name,
+                        $ean,
+                        $composition,
+                        $description,
+                        $is_status,
+                        $buy_price,
+                        $margin,
+                        $quantity,
+                        $alert,
+                        $producer_id,
+                        $brand_id,
+                        $company_id,
                     ]);
                     $saved_id = (int) $pdo->lastInsertId();
                 }
-                
+
                 $pdo->prepare(
                     "INSERT INTO lien_product_type (product_id, product_type_id)
                     VALUES (?, ?)
@@ -77,17 +99,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
                 $stmt->execute([$saved_id]);
                 $slug = $stmt->fetchColumn();
 
-                header("Location: product.php?slug=" . urlencode($slug));
+                header("Location: " . url('/produit/' . $slug));
                 exit;
-
             } catch (PDOException $e) {
-                if ($e->getCode() ==='23000'){ //Le 23000 est un code d'erreur SQL standard : il signale une violation de contrainte 
+                if ($e->getCode() === '23000') { //Le 23000 est un code d'erreur SQL standard : il signale une violation de contrainte 
                     $errors[] = "Cet EAN existe déjà : il doit être unique.";
                 } else {
                     $errors[] = "Erreur d'enregistrement :" . $e->getMessage();
                 }
             }
-        } 
+        }
     }
 }
 
@@ -99,9 +120,16 @@ $brands = $pdo->query("SELECT brand_id, brand_name FROM brands ORDER BY brand_na
 $types = $pdo->query("SELECT product_type_id, product_type_name FROM product_types ORDER BY product_type_name")->fetchAll();
 
 $p = [
-    'product_name' => '', 'product_ean' => '', 'product_composition' => '', 'product_description' => '',
-    'product_is_status' => 1, 'product_buy_price' => '', 'product_margin' => '', 'product_quantity' => '',
-    'product_alert' => '', 'brand_id' => 0,
+    'product_name' => '',
+    'product_ean' => '',
+    'product_composition' => '',
+    'product_description' => '',
+    'product_is_status' => 1,
+    'product_buy_price' => '',
+    'product_margin' => '',
+    'product_quantity' => '',
+    'product_alert' => '',
+    'brand_id' => 0,
 ];
 $current_type = 0;
 
@@ -119,7 +147,7 @@ if ($edit_id) {
     }
 }
 
- 
+
 
 
 $mode_edition = $edit_id !== null;
@@ -138,7 +166,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errors) {
     $current_type             = (int) ($_POST['product_type_id'] ?? 0);
 }
 
-function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8'); }
+function e($v)
+{
+    return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8');
+}
 ?>
 
 
@@ -151,7 +182,7 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
             <span class="current"><?= $mode_edition ? 'Modifier' : 'Nouveau produit' ?></span>
         </nav>
         <h1><?= $mode_edition ? 'Modifier le produit' : 'Créer un produit' ?></h1>
- 
+
         <div class="topbar-actions">
             <button type="submit" form="form-product" class="btn-admin-primary">
                 <i class="fa-solid fa-floppy-disk"></i>
@@ -159,13 +190,13 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
             </button>
         </div>
     </header>
- 
+
     <form id="form-product" class="admin-content" method="post" action="" enctype="multipart/form-data">
- 
+
         <?php if ($mode_edition): ?>
             <input type="hidden" name="product_id" value="<?= (int) $edit_id ?>">
         <?php endif; ?>
- 
+
         <!-- Messages -->
         <?php if (!empty($_GET['saved'])): ?>
             <div class="profile-alert profile-alert--success">
@@ -179,27 +210,27 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
                 </ul>
             </div>
         <?php endif; ?>
- 
+
         <!-- ====== 1. Informations générales ====== -->
         <section class="admin-card">
             <div class="card-title">
                 <span class="num">1</span>
                 <h2>Informations générales</h2>
             </div>
- 
+
             <div class="row g-4">
                 <div class="col-12 col-md-6">
                     <label class="form-label-admin" for="nom">Nom du produit <span class="req">*</span></label>
                     <input class="input-admin" type="text" id="nom" name="nom"
-                           value="<?= e($p['product_name']) ?>" required>
+                        value="<?= e($p['product_name']) ?>" required>
                 </div>
                 <div class="col-12 col-md-6">
                     <label class="form-label-admin" for="ean">EAN (13 chiffres) <span class="req">*</span></label>
                     <input class="input-admin" type="text" id="ean" name="ean"
-                           value="<?= e($p['product_ean']) ?>"
-                           pattern="\d{13}" maxlength="13" inputmode="numeric" required>
+                        value="<?= e($p['product_ean']) ?>"
+                        pattern="\d{13}" maxlength="13" inputmode="numeric" required>
                 </div>
- 
+
                 <div class="col-12 col-md-6">
                     <label class="form-label-admin" for="brand_id">Marque <span class="req">*</span></label>
                     <select class="input-admin" id="brand_id" name="brand_id">
@@ -224,58 +255,58 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
                         <?php endforeach; ?>
                     </select>
                 </div>
- 
+
                 <div class="col-12">
                     <label class="form-label-admin" for="description">Description <span class="hint">— 500 caractères max</span></label>
                     <textarea class="input-admin mono" id="description" name="description" rows="4"
-                              maxlength="500" placeholder="Présentez le produit…"><?= e($p['product_description']) ?></textarea>
+                        maxlength="500" placeholder="Présentez le produit…"><?= e($p['product_description']) ?></textarea>
                 </div>
                 <div class="col-12">
                     <label class="form-label-admin" for="composition">Composition (INCI) <span class="hint">— 200 caractères max</span></label>
                     <textarea class="input-admin mono" id="composition" name="composition" rows="3"
-                              maxlength="200" placeholder="Aqua, Glycerin…"><?= e($p['product_composition']) ?></textarea>
+                        maxlength="200" placeholder="Aqua, Glycerin…"><?= e($p['product_composition']) ?></textarea>
                 </div>
             </div>
         </section>
- 
+
         <!-- ====== 2. Prix & stock (1 seul jeu, pas de variantes) ====== -->
         <section class="admin-card">
             <div class="card-title">
                 <span class="num">2</span>
                 <h2>Prix &amp; stock</h2>
             </div>
- 
+
             <div class="row g-4">
                 <div class="col-12 col-md-3">
                     <label class="form-label-admin" for="prix_achat">Prix d'achat (€) <span class="req">*</span></label>
                     <input class="input-admin" type="text" id="prix_achat" name="prix_achat"
-                           value="<?= e($p['product_buy_price']) ?>" placeholder="15,00">
+                        value="<?= e($p['product_buy_price']) ?>" placeholder="15,00">
                 </div>
                 <div class="col-12 col-md-3">
                     <label class="form-label-admin" for="marge">Marge (%)</label>
                     <input class="input-admin" type="number" id="marge" name="marge"
-                           value="<?= e($p['product_margin']) ?>" min="0">
+                        value="<?= e($p['product_margin']) ?>" min="0">
                 </div>
                 <div class="col-12 col-md-3">
                     <label class="form-label-admin" for="stock">Stock</label>
                     <input class="input-admin" type="number" id="stock" name="stock"
-                           value="<?= e($p['product_quantity']) ?>" min="0">
+                        value="<?= e($p['product_quantity']) ?>" min="0">
                 </div>
                 <div class="col-12 col-md-3">
                     <label class="form-label-admin" for="alerte">Seuil d'alerte</label>
                     <input class="input-admin" type="number" id="alerte" name="alerte"
-                           value="<?= e($p['product_alert']) ?>" min="0">
+                        value="<?= e($p['product_alert']) ?>" min="0">
                 </div>
             </div>
         </section>
- 
+
         <!-- ====== 3. Disponibilité ====== -->
         <section class="admin-card">
             <div class="card-title">
                 <span class="num">3</span>
                 <h2>Disponibilité</h2>
             </div>
- 
+
             <div class="toggle-row">
                 <span class="label">
                     Produit actif
@@ -288,7 +319,7 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
                 </label>
             </div>
         </section>
- 
+
         <!-- ====== 4. Images (affichage seulement — traitement à venir) ====== -->
         <section class="admin-card">
             <div class="card-title">
@@ -305,10 +336,11 @@ function e($v) { return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8
                 <label class="upload-zone"><input type="file" name="images[]" accept="image/*" hidden><i class="fa-solid fa-plus"></i></label>
             </div>
         </section>
- 
+
     </form>
 </div>
 </div>
- 
+
 </body>
+
 </html>
