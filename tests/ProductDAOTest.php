@@ -82,4 +82,12 @@ class ProductDAOTest extends TestCase
         $this->assertSame([], $this->dao->findAllActive());
     }
 
+        public function testFindByIdsAvecTableauVideNInterrogePasLaBase(): void
+    {
+        $this->pdo->expects($this->never())->method('prepare');
+        $this->pdo->expects($this->never())->method('query');
+
+        $this->assertSame([], $this->dao->findByIds([]));
+    }
+
 }
