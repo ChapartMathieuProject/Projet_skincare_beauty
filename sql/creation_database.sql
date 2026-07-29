@@ -509,7 +509,7 @@ INSERT INTO user_types (user_type_name) VALUES
 
 
 INSERT INTO users (user_mail, user_type_id, user_password) VALUES
-    ('admin@skincare.com',      '2', 'Admin1234!'),
+    ('admin@skincare.com',      '2', '$2y$10$ARRxmgoMjHjvmo3wvfD77eQlP63SVS1VBISVCjRSz3MiEWEl6rhk6'),
     ('sophie.martin@email.com', '1', 'Client1234!'),
     ('lucas.dupont@email.com',  '1', 'Client1234!'),
     ('emma.bernard@email.com',  '1', 'Client1234!');
