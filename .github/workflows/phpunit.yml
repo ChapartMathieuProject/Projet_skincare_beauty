@@ -1,5 +1,5 @@
 # Nom affiché dans l'interface GitHub Actions
-name: PHPUnit Tests
+name: PHPUnit Tests & Docker
 
 # Déclencheurs : quand lancer ce workflow ?
 on:
