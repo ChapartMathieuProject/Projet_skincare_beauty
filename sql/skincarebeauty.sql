@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : jeu. 30 juil. 2026 à 13:03
+-- Généré le : jeu. 30 juil. 2026 à 15:03
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -105,8 +105,7 @@ CREATE TABLE `addresses` (
 
 INSERT INTO `addresses` (`address_id`, `customer_id_account`, `address_label`, `address_name`, `address_firstname`, `address_adress_1`, `address_adress_2`, `address_adress_3`, `address_adress_4`, `address_postcode`, `address_city`, `address_country`, `address_is_default`, `address_is_billing`) VALUES
 (1, 1, 'Domicile', 'Martin', 'Sophie', '12 rue des Lilas', NULL, NULL, NULL, '86100', 'Châtellerault', 'France', 1, 0),
-(2, 2, 'Domicile', 'Dupont', 'Lucas', '5 avenue Victor Hugo', NULL, NULL, NULL, '75002', 'Paris', 'France', 1, 0),
-(3, 4, 'lkpjj', 'paul', 'jean', 'pojjpo', NULL, NULL, NULL, 'opjpo', 'jipojpo', 'France', 0, 0);
+(2, 2, 'Domicile', 'Dupont', 'Lucas', '5 avenue Victor Hugo', NULL, NULL, NULL, '75002', 'Paris', 'France', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -130,8 +129,7 @@ CREATE TABLE `bills` (
 
 INSERT INTO `bills` (`bill_id`, `bill_number`, `bill_delivery_date`, `bill_number_delivery`, `order_id`, `delivery_id`) VALUES
 (1, 'FAC0000001', NULL, NULL, 1, NULL),
-(2, 'FAC0000002', NULL, NULL, 2, NULL),
-(3, 'FAC0000003', NULL, NULL, 3, NULL);
+(2, 'FAC0000002', NULL, NULL, 2, NULL);
 
 --
 -- Déclencheurs `bills`
@@ -249,8 +247,7 @@ CREATE TABLE `contains` (
 INSERT INTO `contains` (`order_id`, `product_id`, `contains_quantity`, `contains_unit_price`) VALUES
 (1, 1, 1, 0.00),
 (1, 4, 1, 0.00),
-(2, 16, 1, 0.00),
-(3, 14, 4, 52.50);
+(2, 16, 1, 0.00);
 
 -- --------------------------------------------------------
 
@@ -276,8 +273,7 @@ CREATE TABLE `customers` (
 INSERT INTO `customers` (`customer_id_account`, `customer_name`, `customer_firstname`, `customer_title`, `customer_phone`, `gender_id`, `user_id`) VALUES
 (1, 'Martin', 'Sophie', 'Mme', '06 12 34 56 78', 2, 2),
 (2, 'Dupont', 'Lucas', 'M.', '06 23 45 67 89', 1, 3),
-(3, 'Bernard', 'Emma', 'Mme', '06 34 56 78 90', 2, 4),
-(4, 'paul', 'jean', 'M.', '', 1, 5);
+(3, 'Bernard', 'Emma', 'Mme', '06 34 56 78 90', 2, 4);
 
 -- --------------------------------------------------------
 
@@ -303,8 +299,7 @@ CREATE TABLE `deliveries` (
 
 INSERT INTO `deliveries` (`delivery_id`, `delivery_number`, `delivery_cost`, `delivery_tracking_number`, `delivery_date`, `customer_id_account`, `address_id`, `delivery_type_id`) VALUES
 (1, 'EXP0000001', 4.99, 'TRK0001', '2026-05-10 10:00:00', 1, 1, 1),
-(2, 'EXP0000002', 0.00, 'TRK0002', '2026-05-12 14:30:00', 2, 2, 2),
-(3, 'EXP0000003', 0.00, 'TRACK-6A689DD7DB6DB', '2026-07-31 14:17:27', 4, 3, 5);
+(2, 'EXP0000002', 0.00, 'TRK0002', '2026-05-12 14:30:00', 2, 2, 2);
 
 --
 -- Déclencheurs `deliveries`
@@ -414,12 +409,6 @@ INSERT INTO `lien_product_type` (`product_id`, `product_type_id`) VALUES
 (16, 3),
 (17, 3),
 (18, 3),
-(25, 3),
-(27, 3),
-(28, 3),
-(30, 3),
-(33, 3),
-(35, 3),
 (19, 4),
 (20, 4),
 (21, 4),
@@ -454,8 +443,7 @@ CREATE TABLE `orders` (
 
 INSERT INTO `orders` (`order_id`, `order_number`, `order_date`, `order_date_annulation`, `order_promotion`, `order_type_id`, `payment_type_id`, `company_id_account`, `customer_id_account`, `delivery_type_id`, `deliveries_id`) VALUES
 (1, 'CMD0000001', '2026-05-09 09:15:00', NULL, NULL, 1, 1, 1, 1, 1, 1),
-(2, 'CMD0000002', '2026-05-11 16:40:00', NULL, 10, 2, 3, 1, 2, 2, 2),
-(3, 'CMD0000003', '2026-07-28 14:17:27', NULL, NULL, 1, 5, 1, 4, 5, 3);
+(2, 'CMD0000002', '2026-05-11 16:40:00', NULL, 10, 2, 3, 1, 2, 2, 2);
 
 --
 -- Déclencheurs `orders`
@@ -521,7 +509,7 @@ CREATE TABLE `password_resets` (
 --
 
 INSERT INTO `password_resets` (`password_reset_id`, `user_id`, `reset_token`, `reset_expires_at`) VALUES
-(1, 1, '9f82c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', '2026-07-28 15:16:30'),
+(1, 1, '9f82c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', '2026-07-30 16:00:52'),
 (2, 2, 'a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890', '2026-07-02 18:00:00');
 
 -- --------------------------------------------------------
@@ -632,13 +620,7 @@ INSERT INTO `products` (`product_id`, `product_name`, `product_ean`, `product_co
 (21, 'La Vie Est Belle', '3600000000021', 'Parfum', 'Eau de parfum', 1, 70.00, 60, 60, 6, 'la-vie-est-belle', 2, 3, 1),
 (22, 'Phyto Corrective Masque', '3600000000022', 'Extraits botaniques', 'Masque apaisant', 1, 22.00, 50, 70, 7, 'phyto-corrective-masque', 1, 1, 1),
 (23, 'Cellular Hydralift Firming Mask', '3600000000023', 'Peptides', 'Masque fermeté', 1, 28.00, 50, 70, 7, 'cellular-hydralift-firming-mask', 2, 4, 1),
-(24, 'Masque de nuit réparateur', '3600000000024', 'Beurre de karité', 'Masque de nuit', 1, 24.00, 50, 70, 7, 'masque-de-nuit-reparateur', 2, 4, 1),
-(25, 'TEST1', '1234567898520', 'MAIS NON', 'OULALAL', 1, 10.00, 20, 20, 2, 'test1', 1, 1, 1),
-(27, 'TEST1', '1234567898521', 'MAIS NON', 'OULALAL', 1, 10.00, 20, 20, 2, 'test1-1', 1, 1, 1),
-(28, 'TEST2', '1234567898522', 'MAIS NON', 'OULALAL', 1, 10.00, 20, 20, 2, 'test2', 1, 1, 1),
-(30, 'TEST3', '1234567898523', 'MAIS NON', 'OULALAL', 1, 10.00, 20, 20, 2, 'test3', 1, 1, 1),
-(33, 'TEST4', '1234567898524', 'MAIS NON', 'OULALAL', 1, 10.00, 20, 20, 2, 'test4', 1, 1, 1),
-(35, 'TEST5', '1234567898525', 'MAIS NON', 'OULALAL', 1, 10.00, 20, 20, 2, 'test5', 1, 1, 1);
+(24, 'Masque de nuit réparateur', '3600000000024', 'Beurre de karité', 'Masque de nuit', 1, 24.00, 50, 70, 7, 'masque-de-nuit-reparateur', 2, 4, 1);
 
 --
 -- Déclencheurs `products`
@@ -772,7 +754,7 @@ CREATE TABLE `promotions` (
 --
 
 INSERT INTO `promotions` (`promotion_id`, `product_id`, `promotion_percent`, `promotion_is_active`) VALUES
-(1, 1, 20, 0),
+(1, 1, 20, 1),
 (2, 4, 27, 1);
 
 -- --------------------------------------------------------
@@ -794,11 +776,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `user_mail`, `user_password`, `user_type_id`) VALUES
-(1, 'admin@skincare.com', 'Admin1234!', 2),
+(1, 'admin@skincare.com', '$2y$10$ARRxmgoMjHjvmo3wvfD77eQlP63SVS1VBISVCjRSz3MiEWEl6rhk6', 2),
 (2, 'sophie.martin@email.com', 'Client1234!', 1),
 (3, 'lucas.dupont@email.com', 'Client1234!', 1),
-(4, 'emma.bernard@email.com', 'Client1234!', 1),
-(5, 'jeanpaul@gmail.com', '$2y$10$GFpHGZTUwOcVi5fYXD14W.kCOg05lBo5/e9FGGbZfKEehJm/Ue6Da', 1);
+(4, 'emma.bernard@email.com', 'Client1234!', 1);
 
 -- --------------------------------------------------------
 
@@ -1016,13 +997,13 @@ ALTER TABLE `user_types`
 -- AUTO_INCREMENT pour la table `addresses`
 --
 ALTER TABLE `addresses`
-  MODIFY `address_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `address_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT pour la table `bills`
 --
 ALTER TABLE `bills`
-  MODIFY `bill_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `bill_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT pour la table `brands`
@@ -1052,13 +1033,13 @@ ALTER TABLE `companies`
 -- AUTO_INCREMENT pour la table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `customer_id_account` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `customer_id_account` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT pour la table `deliveries`
 --
 ALTER TABLE `deliveries`
-  MODIFY `delivery_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `delivery_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT pour la table `delivery_types`
@@ -1076,7 +1057,7 @@ ALTER TABLE `genders`
 -- AUTO_INCREMENT pour la table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT pour la table `order_status`
@@ -1112,7 +1093,7 @@ ALTER TABLE `producers`
 -- AUTO_INCREMENT pour la table `products`
 --
 ALTER TABLE `products`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT pour la table `product_types`
@@ -1130,7 +1111,7 @@ ALTER TABLE `promotions`
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT pour la table `user_types`
