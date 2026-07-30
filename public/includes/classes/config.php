@@ -3,7 +3,7 @@
 function getConnexion(): \PDO
 {
     $host     = getenv('DB_HOST')     ?: '127.0.0.1';
-    $dbname   = getenv('DB_NAME')     ?: 'Skincarebeauty';
+    $dbname   = getenv('DB_NAME')     ?: 'skincarebeauty';
     $user     = getenv('DB_USER')     ?: 'root';
     $password = getenv('DB_PASSWORD') ?: 'jean';
 
