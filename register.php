@@ -18,6 +18,7 @@ $firstName    = '';
 $lastName     = '';
 $title        = '';
 $email        = '';
+$phone        = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'register') {
@@ -25,14 +26,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $lastName        = trim($_POST['last_name'] ?? '');
         $title           = trim($_POST['title'] ?? '');
         $email           = trim($_POST['email'] ?? '');
+        $phone           = trim($_POST['phone'] ?? '');
         $password        = $_POST['password'] ?? '';
         $confirmPassword = $_POST['confirm_password'] ?? '';
         $acceptTerms     = isset($_POST['accept_terms']);
 
-        if (empty($firstName) || empty($lastName) || empty($title) || empty($email) || empty($password) || empty($confirmPassword)) {
+        if (empty($firstName) || empty($lastName) || empty($title) || empty($email) || empty($phone) || empty($password) || empty($confirmPassword)) {
             $errorMessage = 'Veuillez remplir tous les champs.';
         } elseif (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
             $errorMessage = 'L\'adresse e-mail saisie n\'est pas valide.';
+        } elseif (preg_match('/^[0-9 .+()-]{10,14}$/', $phone) !== 1) {
+            $errorMessage = 'Le numéro de téléphone saisi n\'est pas valide.';
         } elseif (strlen($password) < 8) {
             $errorMessage = 'Le mot de passe doit contenir au moins 8 caractères.';
         } elseif ($password !== $confirmPassword) {
@@ -64,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 // On déduit le gender_id à partir de la civilité choisie par l'utilisateur (1 = M., 2 = Mme).
                 $genderId = ($title === 'Mme') ? 2 : 1;
 
-                // On crée la fiche client liée. Le téléphone n'est pas demandé dans ce formulaire, donc vide pour l'instant.
+                // On crée la fiche client liée.
                 $insertCustomer = $pdo->prepare(
                     'INSERT INTO customers (customer_name, customer_firstname, customer_title, customer_phone, gender_id, user_id)
                      VALUES (:lastName, :firstName, :title, :phone, :genderId, :userId)'
@@ -73,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     'lastName'  => $lastName,
                     'firstName' => $firstName,
                     'title'     => $title,
-                    'phone'     => '',
+                    'phone'     => $phone,
                     'genderId'  => $genderId,
                     'userId'    => $newUserId,
                 ]);
@@ -155,6 +159,20 @@ include 'public/includes/header.php';
             class="form-input-profile"
             value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>"
             autocomplete="email"
+            required
+          >
+        </div>
+
+        <div class="form-group-profile">
+          <label for="phone" class="form-label-profile">Téléphone</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            class="form-input-profile"
+            value="<?= htmlspecialchars($phone, ENT_QUOTES, 'UTF-8') ?>"
+            autocomplete="tel"
+            pattern="^[0-9 .+()-]{10,14}$"
             required
           >
         </div>
