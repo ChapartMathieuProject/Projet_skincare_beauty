@@ -4,28 +4,90 @@ require_once "public/includes/db.php";
 
 $q = trim($_GET['q'] ?? '');
 
-$sql = "SELECT p.product_id, p.product_name, p.product_slug,
-               p.product_buy_price, p.product_margin, p.product_quantity,
-               p.product_alert, p.product_is_status,
-               b.brand_name,
-               pt.product_type_name,
-               pr.promotion_percent, pr.promotion_is_active
-        FROM products p
-        JOIN brands b            ON b.brand_id = p.brand_id
-        LEFT JOIN lien_product_type lpt ON lpt.product_id = p.product_id
-        LEFT JOIN product_types pt      ON pt.product_type_id = lpt.product_type_id
-        LEFT JOIN promotions pr         ON pr.product_id = p.product_id";
-
+$sql    = "SELECT product_id, product_name, product_slug,
+                  product_buy_price, product_margin, product_quantity,
+                  product_alert, product_is_status, brand_id
+           FROM products";
 $params = [];
+
 if ($q !== '') {
-    $sql = $sql . " WHERE p.product_name LIKE ?";
+    $sql = $sql . " WHERE product_name LIKE ?";
     $params[] = '%' . $q . '%';
 }
-$sql = $sql . " ORDER BY p.product_name";
- 
+$sql = $sql . " ORDER BY product_name";
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
-$products = $stmt->fetchAll();
+$rows = $stmt->fetchAll();
+
+$marques_par_id   = [];   // brand_id      => brand_name
+$type_par_produit = [];   // product_id    => product_type_name
+$promo_par_produit = [];  // product_id    => ['percent' => .., 'active' => ..]
+
+if ($rows) {
+    $product_ids = array_column($rows, 'product_id');
+    $in_prod     = implode(',', array_fill(0, count($product_ids), '?'));
+
+    $brand_ids = array_values(array_unique(array_column($rows, 'brand_id')));
+    if ($brand_ids) {
+        $in_brand = implode(',', array_fill(0, count($brand_ids), '?'));
+        $st = $pdo->prepare("SELECT brand_id, brand_name FROM brands WHERE brand_id IN ($in_brand)");
+        $st->execute($brand_ids);
+        foreach ($st->fetchAll() as $b) {
+            $marques_par_id[(int) $b['brand_id']] = $b['brand_name'];
+        }
+    }
+
+    $st = $pdo->prepare("SELECT product_id, product_type_id FROM lien_product_type WHERE product_id IN ($in_prod)");
+    $st->execute($product_ids);
+    $liens = $st->fetchAll();
+
+    $noms_types = [];
+    $type_ids   = array_values(array_unique(array_column($liens, 'product_type_id')));
+    if ($type_ids) {
+        $in_type = implode(',', array_fill(0, count($type_ids), '?'));
+        $st = $pdo->prepare("SELECT product_type_id, product_type_name FROM product_types WHERE product_type_id IN ($in_type)");
+        $st->execute($type_ids);
+        foreach ($st->fetchAll() as $t) {
+            $noms_types[(int) $t['product_type_id']] = $t['product_type_name'];
+        }
+    }
+
+    foreach ($liens as $lien) {
+        $pid = (int) $lien['product_id'];
+        $tid = (int) $lien['product_type_id'];
+        if (!isset($type_par_produit[$pid]) && isset($noms_types[$tid])) {
+            $type_par_produit[$pid] = $noms_types[$tid];
+        }
+    }
+
+    $st = $pdo->prepare(
+        "SELECT product_id, promotion_percent, promotion_is_active
+         FROM promotions
+         WHERE product_id IN ($in_prod)"
+    );
+    $st->execute($product_ids);
+    foreach ($st->fetchAll() as $pr) {
+        $promo_par_produit[(int) $pr['product_id']] = [
+            'percent' => (int) $pr['promotion_percent'],
+            'active'  => (int) $pr['promotion_is_active'],
+        ];
+    }
+}
+
+$products = [];
+foreach ($rows as $row) {
+    $pid   = (int) $row['product_id'];
+    $bid   = (int) $row['brand_id'];
+    $promo = $promo_par_produit[$pid] ?? null;
+
+    $row['brand_name']          = $marques_par_id[$bid] ?? null;
+    $row['product_type_name']   = $type_par_produit[$pid] ?? null;
+    $row['promotion_percent']   = $promo['percent'] ?? null;
+    $row['promotion_is_active'] = $promo['active'] ?? null;
+
+    $products[] = $row;
+}
 
 // Helpers
 function euro($n)
@@ -43,7 +105,7 @@ function prix_vente($buy, $margin)
 
 ?>
 
-<?php $menu_actif = 'produits'; ?> <!-- Changer le 'produits' en fonction de la page -->
+<?php $menu_actif = 'produits'; ?>
 <?php include "public/includes/header_admin.php"; ?>
 
 <div class="admin-main">
@@ -67,14 +129,14 @@ function prix_vente($buy, $margin)
                            placeholder="Rechercher un produit par nom…">
                 </div>
             </form>
-            <P class="results-count">
-                <?= count($products) ?> produit <?= count($products) > 1 ? "s" : "" ?>
+            <p class="results-count">
+                <?= count($products) ?> produit<?= count($products) > 1 ? "s" : "" ?>
                 <?= $q !== "" ? 'pour " ' . e($q) . ' "' : '' ?>
-            </P>
+            </p>
             <?php if (!$products): ?>
                 <div class="profile-empty">
                     <i class="fa-solid fa-box-open"></i>
-                    <p class="mb-0">Aucun produit <?= $q !== "" ? "ne correspond à cette recherche" : "pour le moment" ?> . </p>
+                    <p class="mb-0">Aucun produit <?= $q !== "" ? "ne correspond à cette recherche" : "pour le moment" ?>.</p>
                 </div>
             <?php else: ?>
 
@@ -84,7 +146,7 @@ function prix_vente($buy, $margin)
                             <tr>
                                 <th>Produit</th>
                                 <th>Catégorie</th>
-                                <th>Prix de prix_vente</th>
+                                <th>Prix de vente</th>
                                 <th>Stock</th>
                                 <th>Statut</th>
                                 <th>Promotion</th>
@@ -94,16 +156,18 @@ function prix_vente($buy, $margin)
                         <tbody>
                             <?php
                             foreach ($products as $prod) :
-                                $vente = prix_vente($prod["product_buy_price"], $prod["product_margin"]);
-                                $actif = (int) $prod["product_is_status"] === 1;
-                                $stockBas = $prod["product_alert"] !== null && (int) $prod["promotion_is_active"] === 1;
+                                $vente    = prix_vente($prod["product_buy_price"], $prod["product_margin"]);
+                                $actif    = (int) $prod["product_is_status"] === 1;
+                                $stockBas = $prod["product_alert"] !== null
+                                            && (int) $prod["product_quantity"] <= (int) $prod["product_alert"];
+                                $enPromo  = (int) $prod["promotion_is_active"] === 1;
                             ?>
                                 <tr>
                                     <td class="clien-cell">
                                         <span class="nom"><?= e($prod["product_name"]) ?></span>
                                         <span class="mail"><?= e($prod["brand_name"]) ?></span>
                                     </td>
-                                    <td><?= $prod["product_type_name"] ? e($prod["product_name"]) : "-" ?></td>
+                                    <td><?= $prod["product_type_name"] ? e($prod["product_type_name"]) : "-" ?></td>
                                     <td class="order-total"><?= euro($vente) ?></td>
                                     <td>
                                         <?php if ($stockBas): ?>
@@ -117,6 +181,13 @@ function prix_vente($buy, $margin)
                                             <span class="statut-badge statut-active"><span class="point"></span>Actif</span>
                                         <?php else: ?>
                                             <span class="statut-badge statut-expiree"><span class="point"></span>Inactif</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if ($enPromo): ?>
+                                            <span class="badge badge-reduction">-<?= (int) $prod["promotion_percent"] ?>%</span>
+                                        <?php else: ?>
+                                            -
                                         <?php endif; ?>
                                     </td>
 
