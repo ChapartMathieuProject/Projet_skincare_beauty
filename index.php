@@ -16,6 +16,9 @@ $uri = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 if (BASE_PATH !== "" && str_starts_with($uri, BASE_PATH)) {
     $uri = substr($uri, strlen(BASE_PATH));
 }
+if (str_ends_with($uri, "/index.php")) {
+    $uri = substr($uri, 0, -strlen("/index.php"));
+}
 $uri = "/" . trim($uri, "/");
 
 $routes = require __DIR__ . "/app/routes.php";

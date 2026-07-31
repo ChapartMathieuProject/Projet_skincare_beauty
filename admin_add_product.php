@@ -4,13 +4,11 @@ require_once __DIR__ . '/app/core/base_path.php';
 require_once __DIR__ . '/app/core/helpers.php';
 
 
-$company_id = 1; //TODO : à recup depuis la session admin plus tard
+$company_id = 1;
 
 $edit_id = (isset($_GET['id']) && ctype_digit($_GET['id'])) ? (int) $_GET['id'] : null;
 
 $errors = [];
-
-/* ---------- TRAITEMENT DU FORMULAIRE (uniquement en POST) ---------- */
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_id     = !empty($_POST['product_id']) ? (int) $_POST['product_id'] : null;
@@ -32,8 +30,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($type_id <= 0)                      $errors[] = "Choisis une catégorie.";
     if (!is_numeric($buy_price))            $errors[] = "Le prix d'achat est invalide.";
 
+    $valid_images = [];
+
+    $allowed_mime = [
+        'image/jpeg' => 'jpg',
+        'image/png'  => 'png',
+        'image/webp' => 'webp',
+    ];
+    $max_size   = 2 * 1024 * 1024;
+    $upload_dir = __DIR__ . '/images/';
+
+    if (isset($_FILES['images']['name'])) {
+        $count = count($_FILES['images']['name']);
+        for ($i = 0; $i < $count; $i++) {
+            $error = $_FILES['images']['error'][$i];
+
+            if ($error === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+            if ($error !== UPLOAD_ERR_OK) {
+                $errors[] = "Erreur lors de l'envoi d'une image (code $error).";
+                continue;
+            }
+
+            $tmp  = $_FILES['images']['tmp_name'][$i];
+            $size = $_FILES['images']['size'][$i];
+
+            if ($size > $max_size) {
+                $errors[] = "Une image dépasse la taille maximale de 2 Mo.";
+                continue;
+            }
+
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime  = $finfo->file($tmp);
+
+            if (!isset($allowed_mime[$mime])) {
+                $errors[] = "Format non autorisé (JPEG, PNG ou WebP uniquement).";
+                continue;
+            }
+
+            $valid_images[] = ['tmp' => $tmp, 'ext' => $allowed_mime[$mime]];
+        }
+    }
+
+    if ($valid_images && !is_writable($upload_dir)) {
+        $errors[] = "Le dossier d'images n'est pas accessible en écriture.";
+    }
+
     if (!$errors) {
-        $stmt = $pdo->prepare("SELECT producer_id FROM brands WHERE brand_id = ?"); // Pour déduire la marque en rapport avec le fabricant
+        $stmt = $pdo->prepare("SELECT producer_id FROM brands WHERE brand_id = ?");
         $stmt->execute([$brand_id]);
         $producer_id = $stmt->fetchColumn();
 
@@ -93,8 +138,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ON DUPLICATE KEY UPDATE product_type_id = VALUES(product_type_id)"
                 )->execute([$saved_id, $type_id]);
 
+                foreach ($valid_images as $img) {
+                    $filename    = 'prod_' . bin2hex(random_bytes(6)) . '.' . $img['ext'];
+                    $destination = $upload_dir . $filename;
 
-                // Pour récupérer la création du SLUG pour la redirection vers la page produit
+                    if (move_uploaded_file($img['tmp'], $destination)) {
+                        $picture_path = 'images/' . $filename;
+                        $pdo->prepare(
+                            "INSERT INTO pictures (product_id, picture_path) VALUES (?, ?)"
+                        )->execute([$saved_id, $picture_path]);
+                    } else {
+                        $errors[] = "Impossible d'enregistrer une image sur le serveur.";
+                    }
+                }
+
                 $stmt = $pdo->prepare("SELECT product_slug FROM products WHERE product_id = ?");
                 $stmt->execute([$saved_id]);
                 $slug = $stmt->fetchColumn();
@@ -102,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: " . url('/produit/' . $slug));
                 exit;
             } catch (PDOException $e) {
-                if ($e->getCode() === '23000') { //Le 23000 est un code d'erreur SQL standard : il signale une violation de contrainte 
+                if ($e->getCode() === '23000') {
                     $errors[] = "Cet EAN existe déjà : il doit être unique.";
                 } else {
                     $errors[] = "Erreur d'enregistrement :" . $e->getMessage();
@@ -112,7 +169,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-/* ---------- CHARGEMENT POUR L'AFFICHAGE ---------- */
 
 $menu_actif = "ajouter un produits";
 
@@ -143,7 +199,7 @@ if ($edit_id) {
         $t->execute([$edit_id]);
         $current_type = (int) $t->fetchColumn();
     } else {
-        $edit_id = null; // Si id inexistant on retourne sur la création
+        $edit_id = null;
     }
 }
 
@@ -171,7 +227,6 @@ function e($v)
     return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8');
 }
 ?>
-
 
 <?php include "public/includes/header_admin.php"; ?>
 <?php $menu_actif = 'ajouter un produit'; ?> <!-- Changer le 'ajouter un produit' en fonction de la page -->
@@ -324,7 +379,7 @@ function e($v)
         <section class="admin-card">
             <div class="card-title">
                 <span class="num">4</span>
-                <h2>Images du produit <span class="hint">— upload non enregistré pour l'instant</span></h2>
+                <h2>Images du produit <span class="hint">— JPEG, PNG ou WebP, 2 Mo max</span></h2>
             </div>
             <div class="upload-grid">
                 <label class="upload-zone is-primary">
@@ -340,7 +395,7 @@ function e($v)
     </form>
 </div>
 </div>
-
+<script src="<?= url('/public/scripts/admin_add_product.js') ?>"></script>
 </body>
 
 </html>

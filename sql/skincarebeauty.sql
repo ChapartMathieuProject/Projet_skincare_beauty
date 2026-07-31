@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : lun. 06 juil. 2026 à 09:34
+-- Généré le : jeu. 30 juil. 2026 à 15:03
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -95,16 +95,17 @@ CREATE TABLE `addresses` (
   `address_postcode` varchar(5) NOT NULL,
   `address_city` varchar(30) NOT NULL,
   `address_country` varchar(30) NOT NULL,
-  `address_is_default` tinyint(1) NOT NULL DEFAULT 0
+  `address_is_default` tinyint(1) NOT NULL DEFAULT 0,
+  `address_is_billing` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Déchargement des données de la table `addresses`
 --
 
-INSERT INTO `addresses` (`address_id`, `customer_id_account`, `address_label`, `address_name`, `address_firstname`, `address_adress_1`, `address_adress_2`, `address_adress_3`, `address_adress_4`, `address_postcode`, `address_city`, `address_country`, `address_is_default`) VALUES
-(1, 1, 'Domicile', 'Martin', 'Sophie', '12 rue des Lilas', NULL, NULL, NULL, '86100', 'Châtellerault', 'France', 1),
-(2, 2, 'Domicile', 'Dupont', 'Lucas', '5 avenue Victor Hugo', NULL, NULL, NULL, '75002', 'Paris', 'France', 1);
+INSERT INTO `addresses` (`address_id`, `customer_id_account`, `address_label`, `address_name`, `address_firstname`, `address_adress_1`, `address_adress_2`, `address_adress_3`, `address_adress_4`, `address_postcode`, `address_city`, `address_country`, `address_is_default`, `address_is_billing`) VALUES
+(1, 1, 'Domicile', 'Martin', 'Sophie', '12 rue des Lilas', NULL, NULL, NULL, '86100', 'Châtellerault', 'France', 1, 0),
+(2, 2, 'Domicile', 'Dupont', 'Lucas', '5 avenue Victor Hugo', NULL, NULL, NULL, '75002', 'Paris', 'France', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -173,6 +174,33 @@ INSERT INTO `brands` (`brand_id`, `brand_name`, `producer_id`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `carts`
+--
+
+DROP TABLE IF EXISTS `carts`;
+CREATE TABLE `carts` (
+  `cart_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `cart_created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `cart_items`
+--
+
+DROP TABLE IF EXISTS `cart_items`;
+CREATE TABLE `cart_items` (
+  `cart_item_id` int(11) NOT NULL,
+  `cart_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `cart_item_quantity` int(11) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `companies`
 --
 
@@ -206,18 +234,20 @@ INSERT INTO `companies` (`company_id_account`, `company_name_account`, `company_
 
 DROP TABLE IF EXISTS `contains`;
 CREATE TABLE `contains` (
+  `order_id` int(11) NOT NULL,
   `product_id` int(11) NOT NULL,
-  `order_id` int(11) DEFAULT NULL
+  `contains_quantity` int(11) NOT NULL DEFAULT 1,
+  `contains_unit_price` decimal(15,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Déchargement des données de la table `contains`
 --
 
-INSERT INTO `contains` (`product_id`, `order_id`) VALUES
-(1, 1),
-(4, 1),
-(16, 2);
+INSERT INTO `contains` (`order_id`, `product_id`, `contains_quantity`, `contains_unit_price`) VALUES
+(1, 1, 1, 0.00),
+(1, 4, 1, 0.00),
+(2, 16, 1, 0.00);
 
 -- --------------------------------------------------------
 
@@ -479,7 +509,7 @@ CREATE TABLE `password_resets` (
 --
 
 INSERT INTO `password_resets` (`password_reset_id`, `user_id`, `reset_token`, `reset_expires_at`) VALUES
-(1, 1, '9f82c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', '2026-07-06 10:05:50'),
+(1, 1, '9f82c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', '2026-07-30 16:00:52'),
 (2, 2, 'a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890', '2026-07-02 18:00:00');
 
 -- --------------------------------------------------------
@@ -746,7 +776,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `user_mail`, `user_password`, `user_type_id`) VALUES
-(1, 'admin@skincare.com', 'Admin1234!', 2),
+(1, 'admin@skincare.com', '$2y$10$ARRxmgoMjHjvmo3wvfD77eQlP63SVS1VBISVCjRSz3MiEWEl6rhk6', 2),
 (2, 'sophie.martin@email.com', 'Client1234!', 1),
 (3, 'lucas.dupont@email.com', 'Client1234!', 1),
 (4, 'emma.bernard@email.com', 'Client1234!', 1);
@@ -800,6 +830,21 @@ ALTER TABLE `brands`
   ADD KEY `producer_id` (`producer_id`);
 
 --
+-- Index pour la table `carts`
+--
+ALTER TABLE `carts`
+  ADD PRIMARY KEY (`cart_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Index pour la table `cart_items`
+--
+ALTER TABLE `cart_items`
+  ADD PRIMARY KEY (`cart_item_id`),
+  ADD KEY `cart_id` (`cart_id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
 -- Index pour la table `companies`
 --
 ALTER TABLE `companies`
@@ -809,8 +854,8 @@ ALTER TABLE `companies`
 -- Index pour la table `contains`
 --
 ALTER TABLE `contains`
-  ADD PRIMARY KEY (`product_id`),
-  ADD KEY `order_id` (`order_id`);
+  ADD PRIMARY KEY (`order_id`,`product_id`),
+  ADD KEY `product_id` (`product_id`);
 
 --
 -- Index pour la table `customers`
@@ -967,6 +1012,18 @@ ALTER TABLE `brands`
   MODIFY `brand_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT pour la table `carts`
+--
+ALTER TABLE `carts`
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `cart_items`
+--
+ALTER TABLE `cart_items`
+  MODIFY `cart_item_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT pour la table `companies`
 --
 ALTER TABLE `companies`
@@ -1086,11 +1143,24 @@ ALTER TABLE `brands`
   ADD CONSTRAINT `brands_ibfk_1` FOREIGN KEY (`producer_id`) REFERENCES `producers` (`producer_id`);
 
 --
+-- Contraintes pour la table `carts`
+--
+ALTER TABLE `carts`
+  ADD CONSTRAINT `carts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
+
+--
+-- Contraintes pour la table `cart_items`
+--
+ALTER TABLE `cart_items`
+  ADD CONSTRAINT `cart_items_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`cart_id`),
+  ADD CONSTRAINT `cart_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`);
+
+--
 -- Contraintes pour la table `contains`
 --
 ALTER TABLE `contains`
-  ADD CONSTRAINT `contains_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`),
-  ADD CONSTRAINT `contains_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`);
+  ADD CONSTRAINT `contains_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
+  ADD CONSTRAINT `contains_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`);
 
 --
 -- Contraintes pour la table `customers`

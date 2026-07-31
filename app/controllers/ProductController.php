@@ -30,7 +30,7 @@ class ProductController extends Controller
         foreach ($this->pdo->query("SELECT product_id, product_type_id FROM lien_product_type") as $row) {
             $product_type_of[(int) $row["product_id"]] = (int) $row["product_type_id"];
         }
-        
+
         $promotions = [];
         foreach ($this->pdo->query("SELECT product_id, promotion_percent FROM promotions WHERE promotion_is_active = 1") as $row) {
             $promotions[(int) $row["product_id"]] = (int) $row["promotion_percent"];
@@ -45,6 +45,12 @@ class ProductController extends Controller
 
         $current_id = $product->getId();
         $type_id    = $product_type_of[$current_id] ?? null;
+
+        $stmt = $this->pdo->prepare(
+            "SELECT picture_path FROM pictures WHERE product_id = ? ORDER BY picture_id"
+        );
+        $stmt->execute([$current_id]);
+        $gallery = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
         $similar_products = [];
         foreach ($productDAO->findAllActive() as $p) {
@@ -65,6 +71,7 @@ class ProductController extends Controller
             "product_type_of"  => $product_type_of,
             "promotions"       => $promotions,
             "pictures"         => $pictures,
+            "gallery"          => $gallery,
         ]);
     }
 }

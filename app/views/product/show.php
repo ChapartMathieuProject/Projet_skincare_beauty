@@ -7,6 +7,7 @@
 /** @var array $product_type_of */
 /** @var array $promotions */
 /** @var array $pictures */
+/** @var array $gallery */
 
 $resolveImage = function (?string $path): string {
   $default = 'images/_C-E-Ferulic-30ml_SkinCeuticals.jpg';
@@ -14,6 +15,9 @@ $resolveImage = function (?string $path): string {
 };
 
 $current_id = $product->getId();
+
+$gallery      = $gallery ?? [];
+$gallery_urls = array_map($resolveImage, $gallery);
 
 $brand      = $brands[$product->getBrandId()] ?? null;
 $brand_name = $brand !== null ? $brand->getName() : 'Marque';
@@ -25,7 +29,8 @@ $type_slug = $type !== null ? $type->getSlug() : '';
 
 $promo_percent = $promotions[$current_id] ?? null;
 $has_promo     = $promo_percent !== null;
-$img_main      = $resolveImage($pictures[$current_id] ?? null);
+
+$img_main = $gallery_urls[0] ?? $resolveImage($pictures[$current_id] ?? null);
 
 $base_price  = $product->getSellPrice();
 $final_price = $base_price;
@@ -61,12 +66,17 @@ if ($has_promo) {
           <img src="<?= htmlspecialchars($img_main) ?>" alt="<?= htmlspecialchars($product->getName()) ?>">
         </div>
 
-        <div class="d-flex gap-2 mt-3">
-          <button class="vignette active" data-titre="flacon — vue face"></button>
-          <button class="vignette" data-titre="texture / swatch"></button>
-          <button class="vignette" data-titre="packaging"></button>
-          <button class="vignette" data-titre="en situation"></button>
-        </div>
+        <?php if (!empty($gallery_urls)): ?>
+          <div class="d-flex gap-2 mt-3">
+            <?php foreach ($gallery_urls as $i => $thumb): ?>
+              <button type="button"
+                class="vignette <?= $i === 0 ? 'active' : '' ?>"
+                data-full="<?= htmlspecialchars($thumb) ?>"
+                style="background-image:url('<?= htmlspecialchars($thumb) ?>');background-size:cover;background-position:center;">
+              </button>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
       </div>
     </div>
 
@@ -100,7 +110,6 @@ if ($has_promo) {
         </button>
       </div>
 
-      <!-- Quantité + ajout au panier -->
       <div class="d-flex gap-3 mb-3">
         <form method="post" action="<?= url('/panier_action.php') ?>" class="cart-form js-cart d-flex gap-3 mb-3 flex-fill">
           <input type="hidden" name="action" value="add">
@@ -222,5 +231,21 @@ if ($has_promo) {
 <?php endif; ?>
 
 <script src="<?= url('/public/scripts/product.js') ?>"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const mainImg   = document.querySelector('.img-main img');
+  const vignettes = document.querySelectorAll('.vignette[data-full]');
+  if (!mainImg) return;
+
+  vignettes.forEach(v => {
+    v.addEventListener('click', () => {
+      mainImg.src = v.dataset.full;
+      vignettes.forEach(x => x.classList.remove('active'));
+      v.classList.add('active');
+    });
+  });
+});
+</script>
 
 <?php require __DIR__ . '/../../../public/includes/footer.php'; ?>

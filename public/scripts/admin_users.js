@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('client-modal');
     if (!modal) return;
@@ -13,6 +14,11 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.querySelector('#cm-phone').textContent        = d.tel || '—';
         modal.querySelector('#cm-orders-count').textContent = d.commandes || '0';
         modal.querySelector('#cm-total').textContent        = d.total || '—';
+
+
+        modal.querySelector('#cm-customer-id').value = d.id || '';
+        const roleSelect = modal.querySelector('#cm-role');
+        if (roleSelect) roleSelect.value = d.role || '1';
 
         modal.querySelector('#cm-registered').textContent       = '—';
         modal.querySelector('#cm-address-shipping').textContent = '—';
