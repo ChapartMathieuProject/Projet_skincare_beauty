@@ -11,9 +11,18 @@ services:
       DB_NAME: ${DB_NAME} 
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      MAIL_HOST: mail
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
     depends_on:
       db:
         condition: service_healthy
+      mail:
+        condition: service_started
     networks:
       - skincarebeauty_network
     restart: unless-stopped
@@ -53,9 +62,20 @@ services:
       - skincarebeauty_network
     restart: unless-stopped
 
+  mail:
+    image: axllent/mailpit:latest
+    container_name: skincarebeauty_mail
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - skincarebeauty_network
+    restart: unless-stopped     
+
 volumes:
   db_data:
 
 networks:
   skincarebeauty_network:
     driver: bridge
+
