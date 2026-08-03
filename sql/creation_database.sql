@@ -652,4 +652,72 @@ INSERT INTO password_resets (
 );
 
 
+-- MODULE : Programme de fidélité 
+
+DROP TABLE IF EXISTS loyalty_vouchers;
+DROP TABLE IF EXISTS loyalty_points;
+DROP TABLE IF EXISTS loyalty_tiers;
+
+
+-- Table de référence : les paliers 
+
+CREATE TABLE loyalty_tiers (
+  loyalty_tier_id               INT AUTO_INCREMENT,
+  loyalty_tier_name             VARCHAR(20) NOT NULL,
+  loyalty_tier_min_points       INT NOT NULL,
+  loyalty_tier_discount_percent INT NOT NULL DEFAULT 0,
+  loyalty_tier_is_free_shipping BOOLEAN NOT NULL DEFAULT 0,
+  PRIMARY KEY (loyalty_tier_id),
+  UNIQUE (loyalty_tier_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+--Journal des mouvements de points 
+
+CREATE TABLE loyalty_points (
+  loyalty_point_id         INT AUTO_INCREMENT,
+  customer_id_account      INT NOT NULL,
+  order_id                 INT DEFAULT NULL,
+  loyalty_point_amount     INT NOT NULL,
+  loyalty_point_type       VARCHAR(20) NOT NULL,
+  loyalty_point_label      VARCHAR(100) NOT NULL,
+  loyalty_point_expires_at DATE DEFAULT NULL,
+  loyalty_point_created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (loyalty_point_id),
+  FOREIGN KEY (customer_id_account) REFERENCES customers(customer_id_account),
+  FOREIGN KEY (order_id) REFERENCES orders(order_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Index 
+
+CREATE INDEX idx_loyalty_points_customer
+  ON loyalty_points (customer_id_account, loyalty_point_created_at);
+
+
+-- Bons de réduction 
+
+CREATE TABLE loyalty_vouchers (
+  loyalty_voucher_id         INT AUTO_INCREMENT,
+  customer_id_account        INT NOT NULL,
+  loyalty_voucher_code       VARCHAR(20) NOT NULL,
+  loyalty_voucher_amount     DECIMAL(10,2) NOT NULL,
+  loyalty_voucher_points_used INT NOT NULL,
+  loyalty_voucher_is_used    BOOLEAN NOT NULL DEFAULT 0,
+  loyalty_voucher_expires_at DATE NOT NULL,
+  loyalty_voucher_created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (loyalty_voucher_id),
+  UNIQUE (loyalty_voucher_code),
+  FOREIGN KEY (customer_id_account) REFERENCES customers(customer_id_account)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- Jeu de données  les 3 paliers
+
+INSERT INTO loyalty_tiers
+  (loyalty_tier_name, loyalty_tier_min_points, loyalty_tier_discount_percent, loyalty_tier_is_free_shipping)
+VALUES
+  ('Bronze', 0,    0,  0),
+  ('Argent', 500,  5,  0),
+  ('Or',     1500, 10, 1);
   
