@@ -283,6 +283,42 @@ CREATE TABLE cart_items (
     FOREIGN KEY (product_id) REFERENCES products(product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE return_types (
+    return_type_id   INT PRIMARY KEY AUTO_INCREMENT,
+    return_type_name VARCHAR(50) NOT NULL UNIQUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+CREATE TABLE ticket_status (
+    ticket_status_id   INT PRIMARY KEY AUTO_INCREMENT,
+    ticket_status_name VARCHAR(50) NOT NULL UNIQUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE tickets (
+    ticket_id            INT PRIMARY KEY AUTO_INCREMENT,
+    ticket_return_number VARCHAR(15) NOT NULL UNIQUE,
+    ticket_comment       VARCHAR(500) NOT NULL,
+    ticket_created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    order_id             INT NOT NULL,
+    return_type_id       INT NOT NULL,
+    ticket_status_id     INT NOT NULL,
+    user_id              INT NOT NULL, 
+    FOREIGN KEY (order_id)         REFERENCES orders(order_id),
+    FOREIGN KEY (return_type_id)   REFERENCES return_types(return_type_id),
+    FOREIGN KEY (ticket_status_id) REFERENCES ticket_status(ticket_status_id),
+    FOREIGN KEY (user_id)          REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE ticket_history (
+    ticket_history_id         INT PRIMARY KEY AUTO_INCREMENT,
+    ticket_history_action     VARCHAR(255) NOT NULL,
+    ticket_history_created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ticket_id                 INT NOT NULL,
+    user_id                   INT NOT NULL, 
+    FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id),
+    FOREIGN KEY (user_id)   REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 DELIMITER $$
 --
 -- Fonctions
@@ -651,5 +687,17 @@ INSERT INTO password_resets (
   '2026-07-02 18:00:00'
 );
 
+INSERT INTO return_types (return_type_name) VALUES
+    ('NPAI'), ('Adresse incomplète'), ('Colis non réclamé');
 
+INSERT INTO ticket_status (ticket_status_name) VALUES
+    ('Ouvert'), ('En cours'), ('Clôturé');
+
+-- Jeu d'essai du Worflow
+INSERT INTO tickets (ticket_return_number, ticket_comment, order_id, return_type_id, ticket_status_id, user_id) VALUES
+    ('RET-2026-0001', 'Colis revenu NPAI, client injoignable.', 1, 1, 2, 1);
+
+INSERT INTO ticket_history (ticket_history_action, ticket_id, user_id) VALUES
+    ('Retour créé par Admin Skincare', 1, 1),
+    ('Numéro de retour RET-2026-0001 généré, e-mail envoyé au client', 1, 1);
   
