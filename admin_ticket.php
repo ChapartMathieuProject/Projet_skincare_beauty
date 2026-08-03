@@ -83,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["action"] ?? "") === "creat
                 "user_id"               => $agent_id,
             ]));
 
-            $historyDAO->log($ticket_id, TICKET::STATUS_EN_COURS);
+            $ticketDAO->updateStatus($ticket_id, Ticket::STATUS_EN_COURS);
             $historyDAO->log($ticket_id, $agent_id,
                 "Numéro de retour $numero généré - ticket passé « En cours » par $agent_name");
             
