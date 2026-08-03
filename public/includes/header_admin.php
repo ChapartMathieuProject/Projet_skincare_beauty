@@ -28,6 +28,7 @@ $menu_actif = $menu_actif ?? '';
                 <a href="admin_products.php" class="<?= $menu_actif === 'produits'   ? 'active' : '' ?>">Produits</a>
                 <a href="admin_add_product.php" class="<?= $menu_actif === 'ajouter un produits'   ? 'active' : '' ?>">Ajouter un produit</a>
                 <a href="admin_orders.php" class="<?= $menu_actif === 'commandes'  ? 'active' : '' ?>">Commandes</a>
+                <a href="admin_tickets.php" class="<?= $menu_actif === 'sav' ? 'active' : '' ?>">SAV — Retours</a>
                 <a href="admin_users.php" class="<?= $menu_actif === 'clients'    ? 'active' : '' ?>">Clients</a>
                 <a href="admin_promotions.php" class="<?= $menu_actif === 'promotions' ? 'active' : '' ?>">Promotions</a>
                 <a href="admin_setting.php" class="<?= $menu_actif === 'reglages'   ? 'active' : '' ?>">Réglages</a>
