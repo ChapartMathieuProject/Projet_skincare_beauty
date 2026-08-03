@@ -2,7 +2,9 @@
     "name": "skincarebeauty/app",
     "description": "Projet Fil rouge_ Skin Care Beauty",
     "type": "project",
-    "require": {},
+    "require": {
+        "phpmailer/phpmailer": "^7.1"
+    },
     "require-dev": {
         "phpunit/phpunit": "^11.0"
     },
