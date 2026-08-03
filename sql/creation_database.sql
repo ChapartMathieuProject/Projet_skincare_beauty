@@ -673,7 +673,7 @@ CREATE TABLE loyalty_tiers (
 
 
 
---Journal des mouvements de points 
+-- Journal des mouvements de points 
 
 CREATE TABLE loyalty_points (
   loyalty_point_id         INT AUTO_INCREMENT,
