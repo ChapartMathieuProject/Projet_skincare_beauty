@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 require_once "public/includes/db.php";
 
@@ -23,7 +23,7 @@ foreach ($pdo->query("SELECT ticket_status_id, ticket_status_name FROM ticket_st
     $ticket_statuses[$s["ticket_status_id"]] = $s["ticket_status_name"];
 }
 
-$return_types = [] ;
+$return_types = [];
 foreach ($pdo->query("SELECT return_type_id, return_type_name FROM return_types") as $t) {
     $return_types[$t["return_type_id"]] = $t["return_type_name"];
 }
@@ -38,11 +38,6 @@ foreach ($pdo->query("SELECT order_type_id, order_type_name FROM order_status") 
     $order_statuses[$s["order_type_id"]] = $s["order_type_name"];
 }
 
-$order_statuses = [];
-foreach ($pdo->query("SELECT order_type_id, order_type_name FROM order_status") as $s) {
-    $order_statuses[$s["order_type_id"]] = $s["order_type_name"];
-}
-
 $orders_map = [];
 foreach ($pdo->query("SELECT order_id, order_number, order_type_id, customer_id_account FROM orders") as $o) {
     $orders_map[$o["order_id"]] = $o;
@@ -50,7 +45,7 @@ foreach ($pdo->query("SELECT order_id, order_number, order_type_id, customer_id_
 
 $eligible_orders = [];
 foreach ($orders_map as $oid => $o) {
-    if (($orger_statuses[$o["order_type_id"]] ?? "") === "Expédié") {
+    if (($order_statuses[$o["order_type_id"]] ?? "") === "Expédié") {
         $eligible_orders[$oid] = $o;
     }
 }
@@ -58,7 +53,7 @@ foreach ($orders_map as $oid => $o) {
 if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["action"] ?? "") === "create_ticket") {
     $order_id       = (int) ($_POST["order_id"] ?? 0);
     $return_type_id = (int) ($_POST["return_type_id"] ?? 0);
-    $comment        = trim($_POST["ticker_comment"] ?? "");
+    $comment        = trim($_POST["ticket_comment"] ?? "");
 
     if (!isset($eligible_orders[$order_id])) {
         $errorMessage = "Commande invalide ou non expédié.";
@@ -84,16 +79,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["action"] ?? "") === "creat
             ]));
 
             $ticketDAO->updateStatus($ticket_id, Ticket::STATUS_EN_COURS);
-            $historyDAO->log($ticket_id, $agent_id,
-                "Numéro de retour $numero généré - ticket passé « En cours » par $agent_name");
-            
+            $historyDAO->log(
+                $ticket_id,
+                $agent_id,
+                "Numéro de retour $numero généré - ticket passé « En cours » par $agent_name"
+            );
+
             $pdo->commit();
 
             // Peut-être mettre l'envoi de l'émail PHPMailer ici, à voir
 
             header("Location: admin_tickets.php?created=" . urlencode($numero));
             exit;
-
         } catch (Exception $e) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
@@ -134,7 +131,7 @@ $status_badges = [
         </div>
     <?php endif; ?>
 
-    <!-- Formulaire de création -->
+    <!-- ── Formulaire de création (Étape 1 : l'autorisation) ── -->
     <section class="admin-card">
         <h2>Ouvrir un ticket de retour</h2>
         <form method="POST" action="admin_tickets.php">
@@ -164,11 +161,11 @@ $status_badges = [
                       rows="3" maxlength="500" required
                       placeholder="Ex : colis revenu NPAI, client injoignable par téléphone."></textarea>
 
-            <button type="submit" class="btn-admin-primary">Créer le ticket</button>
+            <button type="submit" class="btn-publish">Créer le ticket</button>
         </form>
     </section>
 
-    <!-- Liste des tickets -->
+    <!-- ── Liste des tickets ── -->
     <p class="results-count">
         <?= count($tickets) ?> ticket<?= count($tickets) > 1 ? 's' : '' ?>
     </p>
@@ -191,9 +188,9 @@ $status_badges = [
                 <?php else: ?>
                     <?php foreach ($tickets as $t): ?>
                         <?php
-                            $order    = $orders_map[$t->getOrderId()] ?? null;
-                            $client   = $order ? ($customers[$order['customer_id_account']] ?? '—') : '—';
-                            $statut   = $ticket_statuses[$t->getStatusId()] ?? '—';
+                            $order  = $orders_map[$t->getOrderId()] ?? null;
+                            $client = $order ? ($customers[$order['customer_id_account']] ?? '—') : '—';
+                            $statut = $ticket_statuses[$t->getStatusId()] ?? '—';
                         ?>
                         <tr>
                             <td><strong><?= htmlspecialchars($t->getReturnNumber(), ENT_QUOTES, 'UTF-8') ?></strong></td>
@@ -202,12 +199,12 @@ $status_badges = [
                             <td><?= htmlspecialchars($return_types[$t->getReturnTypeId()] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars($t->getCreatedAtFormatted(), ENT_QUOTES, 'UTF-8') ?></td>
                             <td>
-                                <span class="<?= $status_badges[$t->getStatusId()] ?? '' ?>">
-                                    <?= htmlspecialchars($statut, ENT_QUOTES, 'UTF-8') ?>
+                                <span class="statut-badge <?= $status_badges[$t->getStatusId()] ?? '' ?>">
+                                    <span class="point"></span><?= htmlspecialchars($statut, ENT_QUOTES, 'UTF-8') ?>
                                 </span>
                             </td>
                             <td class="col-actions">
-                                <a href="admin_ticket_detail.php?id=<?= $t->getId() ?>" title="Voir le détail">
+                                <a class="btn-row-action" href="admin_ticket_detail.php?id=<?= $t->getId() ?>" aria-label="Voir le ticket">
                                     <i class="fa-solid fa-eye" aria-hidden="true"></i>
                                 </a>
                             </td>
@@ -219,5 +216,5 @@ $status_badges = [
     </div>
 </div>
 
-<?php include "public/includes/footer.php"; ?>
-
+</body>
+</html>

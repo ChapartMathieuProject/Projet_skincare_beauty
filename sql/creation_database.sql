@@ -700,4 +700,3 @@ INSERT INTO tickets (ticket_return_number, ticket_comment, order_id, return_type
 INSERT INTO ticket_history (ticket_history_action, ticket_id, user_id) VALUES
     ('Retour créé par Admin Skincare', 1, 1),
     ('Numéro de retour RET-2026-0001 généré, e-mail envoyé au client', 1, 1);
-  
