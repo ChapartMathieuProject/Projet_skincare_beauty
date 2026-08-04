@@ -2663,3 +2663,233 @@ select.input-admin {
     object-fit: cover;
     border-radius: 4px;
 }
+
+/* ============ PROGRAMME DE FIDELITE ============ */
+
+.loyalty-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.loyalty-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e0db;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.loyalty-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--border-rose);
+}
+
+.loyalty-card__header i {
+  color: var(--rose);
+}
+
+.loyalty-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--texte);
+  margin: 0;
+}
+
+.loyalty-card__body {
+  padding: 1.5rem;
+}
+
+.loyalty-card--balance .loyalty-card__body {
+  background: linear-gradient(to bottom right, var(--beige), #ffffff);
+}
+
+/* Carte solde */
+
+.loyalty-balance {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--rose-fonce);
+  line-height: 1;
+  margin: 0;
+}
+
+.loyalty-balance span {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--footer-muted);
+}
+
+.loyalty-tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #ffffff;
+  border: 1px solid var(--border-rose);
+  border-radius: 50rem;
+  padding: 0.4rem 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--texte);
+  margin-top: 1.25rem;
+}
+
+.loyalty-tier i {
+  color: var(--rose);
+}
+
+.loyalty-hint {
+  font-size: 0.9rem;
+  color: var(--footer-muted);
+  margin: 0.75rem 0 0;
+}
+
+.loyalty-progress {
+  height: 6px;
+  background-color: var(--border-rose);
+  border-radius: 50rem;
+  overflow: hidden;
+  margin-top: 1.25rem;
+}
+
+.loyalty-progress__bar {
+  height: 100%;
+  background-color: var(--rose);
+  border-radius: 50rem;
+}
+
+/* Carte conversion */
+
+.loyalty-convert-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+
+.loyalty-convert-form label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--footer-muted);
+  margin-bottom: 0.35rem;
+}
+
+.loyalty-select {
+  border: 1px solid #e5e0db;
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  color: var(--texte);
+  background-color: #ffffff;
+  min-width: 240px;
+}
+
+.loyalty-select:focus {
+  outline: none;
+  border-color: var(--rose);
+  box-shadow: 0 0 0 3px rgba(212, 165, 165, 0.18);
+}
+
+/* Tableaux dans les cartes */
+
+.loyalty-card__body--flush {
+  padding: 0;
+}
+
+.loyalty-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.loyalty-table th {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06rem;
+  text-transform: uppercase;
+  color: var(--footer-muted);
+  text-align: left;
+  padding: 0.85rem 1.5rem;
+  background-color: #fbf9f8;
+  border-bottom: 1px solid #f2eeea;
+}
+
+.loyalty-table td {
+  padding: 1rem 1.5rem;
+  font-size: 0.92rem;
+  color: var(--texte);
+  border-bottom: 1px solid #f2eeea;
+}
+
+.loyalty-table tr:last-child td {
+  border-bottom: none;
+}
+
+.loyalty-code {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-weight: 600;
+  letter-spacing: 0.05rem;
+}
+
+.loyalty-badge {
+  display: inline-block;
+  border-radius: 50rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.loyalty-badge--available {
+  background-color: #eaf3ea;
+  color: #6f9e6f;
+}
+
+.loyalty-badge--used {
+  background-color: #f1eeec;
+  color: var(--footer-muted);
+}
+
+.loyalty-badge--expired {
+  background-color: #fceaea;
+  color: #c0717a;
+}
+
+.loyalty-amount--credit {
+  color: #6f9e6f;
+  font-weight: 600;
+}
+
+.loyalty-amount--debit {
+  color: var(--rose-fonce);
+  font-weight: 600;
+}
+
+.loyalty-empty {
+  color: var(--footer-muted);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+@media (max-width: 576px) {
+  .loyalty-balance {
+    font-size: 2rem;
+  }
+
+  .loyalty-convert-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .loyalty-select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .loyalty-table th,
+  .loyalty-table td {
+    padding: 0.75rem 1rem;
+  }
+}

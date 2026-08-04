@@ -41,6 +41,15 @@ $userInitials = getUserInitials($currentUser['user_name']);
 
 // Définition des 5 cartes de navigation du profil
 $profileCards = [
+
+    [
+        'id' => 'loyalty',
+        'title' => 'Programme de fidélité',
+        'desc' => 'Consultez vos points, votre palier et vos bons de réduction.',
+        'link' => 'loyalty.php',
+        'icon' => 'fa-solid fa-gift',
+    ],
+    
     [
         'id' => 'commandes',
         'title' => 'Vos Commandes',
