@@ -176,8 +176,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cartItems)) {
         }
 
         try {
-            $loyaltyService = new LoyaltyService(new LoyaltyPointDAO($pdo));
-            $pointsEarned   = $loyaltyService->addPointsForOrder($customerId, $orderId, $orderTotal);
+            require_once 'public/includes/mailer.php';
+
+            $loyaltyService = new LoyaltyService(
+                new LoyaltyPointDAO($pdo),
+                new LoyaltyTierDAO($pdo),
+                $mailer
+            );
+
+            $pointsEarned = $loyaltyService->addPointsForOrder(
+                $customerId,
+                $orderId,
+                $orderTotal,
+                $_SESSION['user_mail'] ?? null
+            );
+
             $_SESSION['loyalty_points_earned'] = $pointsEarned;
         } catch (Throwable $e) {
             error_log('Fidelite : echec attribution points commande ' . $orderId . ' - ' . $e->getMessage());
