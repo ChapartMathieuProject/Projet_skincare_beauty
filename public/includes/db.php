@@ -3,12 +3,17 @@
 require_once __DIR__ . '/classes/Entity/Product.php';
 require_once __DIR__ . '/classes/Entity/Brand.php';
 require_once __DIR__ . '/classes/Entity/ProductType.php';
+require_once __DIR__ . '/classes/Entity/LoyaltyPoint.php';
+
+// Services 
+require_once __DIR__ . '/classes/Service/LoyaltyService.php';
 
 // DAO
 require_once __DIR__ . '/classes/DAO/DAO.php';
 require_once __DIR__ . '/classes/DAO/ProductDAO.php';
 require_once __DIR__ . '/classes/DAO/BrandDAO.php';
 require_once __DIR__ . '/classes/DAO/ProductTypeDAO.php';
+require_once __DIR__ . '/classes/DAO/LoyaltyPointDAO.php';
 
 
 $host    = getenv('DB_HOST')     ?: 'localhost';
