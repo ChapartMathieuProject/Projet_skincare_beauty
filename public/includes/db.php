@@ -7,6 +7,7 @@ require_once __DIR__ . '/classes/Entity/Ticket.php';
 require_once __DIR__ . '/classes/Entity/TicketHistory.php';
 require_once __DIR__ . '/classes/Entity/LoyaltyPoint.php';
 require_once __DIR__ . '/classes/Entity/LoyaltyTier.php';
+require_once __DIR__ . '/classes/Entity/LoyaltyVoucher.php';
 
 // Services 
 require_once __DIR__ . '/classes/Service/LoyaltyService.php';
@@ -20,6 +21,7 @@ require_once __DIR__ . '/classes/DAO/TicketDAO.php';
 require_once __DIR__ . '/classes/DAO/TicketHistoryDAO.php';
 require_once __DIR__ . '/classes/DAO/LoyaltyPointDAO.php';
 require_once __DIR__ . '/classes/DAO/LoyaltyTierDAO.php';
+require_once __DIR__ . '/classes/DAO/LoyaltyVoucherDAO.php';
 
 require_once __DIR__ . '/classes/Service/MailService.php';
 

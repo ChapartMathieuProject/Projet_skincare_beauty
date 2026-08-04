@@ -178,10 +178,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cartItems)) {
         try {
             require_once 'public/includes/mailer.php';
 
-            $loyaltyService = new LoyaltyService(
+         $loyaltyService = new LoyaltyService(
                 new LoyaltyPointDAO($pdo),
                 new LoyaltyTierDAO($pdo),
-                $mailer
+                new LoyaltyVoucherDAO($pdo),
+                $mailer,
+                $pdo
             );
 
             $pointsEarned = $loyaltyService->addPointsForOrder(
