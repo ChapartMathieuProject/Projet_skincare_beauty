@@ -176,7 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cartItems)) {
         }
 
         try {
-            require_once 'public/includes/mailer.php';
+            require_once 'public/includes/Mailer.php';
 
          $loyaltyService = new LoyaltyService(
                 new LoyaltyPointDAO($pdo),

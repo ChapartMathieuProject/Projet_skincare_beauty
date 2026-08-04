@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 require_once 'public/includes/db.php';
-require_once 'public/includes/mailer.php';
+require_once 'public/includes/Mailer.php';
 
 $customerStatement = $pdo->prepare('SELECT * FROM customers WHERE user_id = :userId');
 $customerStatement->execute(['userId' => $_SESSION['user_id']]);
