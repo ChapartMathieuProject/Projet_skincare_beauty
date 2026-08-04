@@ -5,6 +5,7 @@ require_once __DIR__ . '/classes/Entity/Brand.php';
 require_once __DIR__ . '/classes/Entity/ProductType.php';
 require_once __DIR__ . '/classes/Entity/LoyaltyPoint.php';
 require_once __DIR__ . '/classes/Entity/LoyaltyTier.php';
+require_once __DIR__ . '/classes/Entity/LoyaltyVoucher.php';
 
 // Services 
 require_once __DIR__ . '/classes/Service/LoyaltyService.php';
@@ -16,6 +17,7 @@ require_once __DIR__ . '/classes/DAO/BrandDAO.php';
 require_once __DIR__ . '/classes/DAO/ProductTypeDAO.php';
 require_once __DIR__ . '/classes/DAO/LoyaltyPointDAO.php';
 require_once __DIR__ . '/classes/DAO/LoyaltyTierDAO.php';
+require_once __DIR__ . '/classes/DAO/LoyaltyVoucherDAO.php';
 
 $host    = getenv('DB_HOST')     ?: 'localhost';
 $db      = getenv('DB_NAME')     ?: 'Skincarebeauty';

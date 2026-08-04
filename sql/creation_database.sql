@@ -1,4 +1,4 @@
-DROP DATABASE IF EXISTS Skincarebeauty;
+﻿DROP DATABASE IF EXISTS Skincarebeauty;
 
 create database Skincarebeauty CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 use Skincarebeauty; 
@@ -184,8 +184,8 @@ CREATE TABLE deliveries (
     delivery_tracking_number VARCHAR(50) NOT NULL,
     delivery_date            DATETIME NOT NULL,
     customer_id_account      INT NOT NULL,
-    address_id               INT NOT NULL,            -- corrigé : "adress_id" -> address_id + FK
-    delivery_type_id         INT NOT NULL,            -- colonne ajoutée (manquait)
+    address_id               INT NOT NULL,            -- corrigÃ© : "adress_id" -> address_id + FK
+    delivery_type_id         INT NOT NULL,            -- colonne ajoutÃ©e (manquait)
     FOREIGN KEY (customer_id_account) REFERENCES customers(customer_id_account),
     FOREIGN KEY (address_id)          REFERENCES addresses(address_id),
     FOREIGN KEY (delivery_type_id)    REFERENCES delivery_types(delivery_type_id)
@@ -253,7 +253,7 @@ CREATE TABLE lien_product_type(
     FOREIGN KEY (product_type_id) REFERENCES product_types(product_type_id)
 )engine= Innodb Default charset=utf8mb4;
 
--- TABLE : tokens de réinitialisation de mot de passe
+-- TABLE : tokens de rÃ©initialisation de mot de passe
 CREATE TABLE password_resets (
     password_reset_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id            INT NOT NULL,
@@ -291,35 +291,35 @@ DROP FUNCTION IF EXISTS `generate_slug`$$
 CREATE DEFINER=`root`@`localhost` FUNCTION `generate_slug` (`input_text` VARCHAR(250)) RETURNS VARCHAR(250) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci DETERMINISTIC BEGIN
     DECLARE slug VARCHAR(250);
 
-    -- Remplacer les caractères accentués manuellement
+    -- Remplacer les caractÃ¨res accentuÃ©s manuellement
     SET slug = input_text;
-    SET slug = REPLACE(slug, 'à', 'a');
-    SET slug = REPLACE(slug, 'á', 'a');
-    SET slug = REPLACE(slug, 'â', 'a');
-    SET slug = REPLACE(slug, 'ä', 'a');
-    SET slug = REPLACE(slug, 'ã', 'a');
-    SET slug = REPLACE(slug, 'å', 'a');
-    SET slug = REPLACE(slug, 'è', 'e');
-    SET slug = REPLACE(slug, 'é', 'e');
-    SET slug = REPLACE(slug, 'ê', 'e');
-    SET slug = REPLACE(slug, 'ë', 'e');
-    SET slug = REPLACE(slug, 'ì', 'i');
-    SET slug = REPLACE(slug, 'í', 'i');
-    SET slug = REPLACE(slug, 'î', 'i');
-    SET slug = REPLACE(slug, 'ï', 'i');
-    SET slug = REPLACE(slug, 'ò', 'o');
-    SET slug = REPLACE(slug, 'ó', 'o');
-    SET slug = REPLACE(slug, 'ô', 'o');
-    SET slug = REPLACE(slug, 'ö', 'o');
-    SET slug = REPLACE(slug, 'õ', 'o');
-    SET slug = REPLACE(slug, 'ù', 'u');
-    SET slug = REPLACE(slug, 'ú', 'u');
-    SET slug = REPLACE(slug, 'û', 'u');
-    SET slug = REPLACE(slug, 'ü', 'u');
-    SET slug = REPLACE(slug, 'ç', 'c');
-    SET slug = REPLACE(slug, 'ñ', 'n');
-    SET slug = REPLACE(slug, 'ý', 'y');
-    SET slug = REPLACE(slug, 'ÿ', 'y');
+    SET slug = REPLACE(slug, 'Ã ', 'a');
+    SET slug = REPLACE(slug, 'Ã¡', 'a');
+    SET slug = REPLACE(slug, 'Ã¢', 'a');
+    SET slug = REPLACE(slug, 'Ã¤', 'a');
+    SET slug = REPLACE(slug, 'Ã£', 'a');
+    SET slug = REPLACE(slug, 'Ã¥', 'a');
+    SET slug = REPLACE(slug, 'Ã¨', 'e');
+    SET slug = REPLACE(slug, 'Ã©', 'e');
+    SET slug = REPLACE(slug, 'Ãª', 'e');
+    SET slug = REPLACE(slug, 'Ã«', 'e');
+    SET slug = REPLACE(slug, 'Ã¬', 'i');
+    SET slug = REPLACE(slug, 'Ã­', 'i');
+    SET slug = REPLACE(slug, 'Ã®', 'i');
+    SET slug = REPLACE(slug, 'Ã¯', 'i');
+    SET slug = REPLACE(slug, 'Ã²', 'o');
+    SET slug = REPLACE(slug, 'Ã³', 'o');
+    SET slug = REPLACE(slug, 'Ã´', 'o');
+    SET slug = REPLACE(slug, 'Ã¶', 'o');
+    SET slug = REPLACE(slug, 'Ãµ', 'o');
+    SET slug = REPLACE(slug, 'Ã¹', 'u');
+    SET slug = REPLACE(slug, 'Ãº', 'u');
+    SET slug = REPLACE(slug, 'Ã»', 'u');
+    SET slug = REPLACE(slug, 'Ã¼', 'u');
+    SET slug = REPLACE(slug, 'Ã§', 'c');
+    SET slug = REPLACE(slug, 'Ã±', 'n');
+    SET slug = REPLACE(slug, 'Ã½', 'y');
+    SET slug = REPLACE(slug, 'Ã¿', 'y');
 
     -- Convertir en minuscules
     SET slug = LOWER(slug);
@@ -327,7 +327,7 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `generate_slug` (`input_text` VARCHAR
     -- Remplacer les espaces et tirets multiples par un seul tiret
     SET slug = REPLACE(slug, ' ', '-');
 
-    -- Supprimer les caractères non alphanumériques ou tirets
+    -- Supprimer les caractÃ¨res non alphanumÃ©riques ou tirets
     SET slug = REGEXP_REPLACE(slug, '[^a-z0-9-]', '');
 
     RETURN slug;
@@ -338,7 +338,7 @@ DELIMITER ;
 
 
 --
--- Déclencheurs `product_types`
+-- DÃ©clencheurs `product_types`
 --
 DROP TRIGGER IF EXISTS `before_insert_product_types`;
 DELIMITER $$
@@ -347,17 +347,17 @@ CREATE TRIGGER `before_insert_product_types` BEFORE INSERT ON `product_types` FO
     DECLARE unique_slug VARCHAR(250);
     DECLARE counter INT DEFAULT 0;
 
-    -- Générer un slug de base
+    -- GÃ©nÃ©rer un slug de base
     SET base_slug = generate_slug(NEW.product_type_name);
 
-    -- Vérifier l'unicité et ajuster si nécessaire
+    -- VÃ©rifier l'unicitÃ© et ajuster si nÃ©cessaire
     SET unique_slug = base_slug;
     WHILE EXISTS (SELECT 1 FROM product_types WHERE product_type_slug COLLATE utf8mb4_unicode_ci = unique_slug) DO
         SET counter = counter + 1;
         SET unique_slug = CONCAT(base_slug, '-', counter);
     END WHILE;
 
-    -- Attribuer le slug unique à la nouvelle ligne
+    -- Attribuer le slug unique Ã  la nouvelle ligne
     SET NEW.product_type_slug = unique_slug;
 END
 $$
@@ -372,19 +372,19 @@ CREATE TRIGGER `before_update_product_types` BEFORE UPDATE ON `product_types` FO
     DECLARE unique_slug VARCHAR(250);
     DECLARE counter INT DEFAULT 0;
 
-    -- Vérifier si Nom_categorie a changé
+    -- VÃ©rifier si Nom_categorie a changÃ©
     IF OLD.product_type_name <> NEW.product_type_name THEN
-        -- Générer un slug de base
+        -- GÃ©nÃ©rer un slug de base
         SET base_slug = generate_slug(NEW.product_type_name);
 
-        -- Vérifier l'unicité et ajuster si nécessaire
+        -- VÃ©rifier l'unicitÃ© et ajuster si nÃ©cessaire
         SET unique_slug = base_slug;
         WHILE EXISTS (SELECT 1 FROM product_types WHERE product_type_slug COLLATE utf8mb4_unicode_ci = unique_slug) DO
             SET counter = counter + 1;
             SET unique_slug = CONCAT(base_slug, '-', counter);
         END WHILE;
 
-        -- Attribuer le slug unique à la ligne mise à jour
+        -- Attribuer le slug unique Ã  la ligne mise Ã  jour
         SET NEW.product_type_slug = unique_slug;
   END IF;
 END
@@ -396,7 +396,7 @@ DELIMITER ;
 
 
 --
--- Déclencheurs `products`
+-- DÃ©clencheurs `products`
 --
 DROP TRIGGER IF EXISTS before_insert_products;
 DELIMITER $$
@@ -437,7 +437,7 @@ DELIMITER ;
 
 
 --
--- Déclencheurs `orders`
+-- DÃ©clencheurs `orders`
 --
 
 DROP TRIGGER IF EXISTS `before_generate_num_orders`;
@@ -467,7 +467,7 @@ DELIMITER ;
 
 
 --
--- Déclencheurs `deliveries`
+-- DÃ©clencheurs `deliveries`
 --
 DROP TRIGGER IF EXISTS `before_generate_num_deliveries`;
 DELIMITER $$
@@ -487,7 +487,7 @@ DELIMITER ;
 
 
 --
--- Déclencheurs `bills`
+-- DÃ©clencheurs `bills`
 --
 DROP TRIGGER IF EXISTS `before_generate_num_bills`;
 DELIMITER $$
@@ -524,10 +524,10 @@ INSERT INTO companies (
     company_postcode, company_city, company_country
 ) VALUES
     ('loreal', 'company1234', 'Camil SA', '123 Rue de Paris', '17 mai',
-     'Bâtiment A', '2ème étage', '75001', 'Paris', 'France');
+     'BÃ¢timent A', '2Ã¨me Ã©tage', '75001', 'Paris', 'France');
 
 INSERT INTO delivery_types (delivery_type_name) VALUES
-    ('Livraison à domicile'), ('Retrait sur place'),
+    ('Livraison Ã  domicile'), ('Retrait sur place'),
     ('Mondial Relay'), ('UPS'), ('Chronopost');
 
 INSERT INTO payement_types (payement_type_name) VALUES
@@ -535,10 +535,10 @@ INSERT INTO payement_types (payement_type_name) VALUES
     ('Google Pay'), ('Apple Pay');
 
 INSERT INTO order_status (order_type_name) VALUES
-    ('En cours'), ('Expédié'), ('Annulé');
+    ('En cours'), ('ExpÃ©diÃ©'), ('AnnulÃ©');
 
 INSERT INTO producers (producer_name) VALUES
-    ('Roche-posay'), ("L'Oréal");
+    ('Roche-posay'), ("L'OrÃ©al");
 
 
 
@@ -550,7 +550,7 @@ INSERT INTO brands (brand_name, producer_id) VALUES
     ('Professional Makeup', 2);
 
 INSERT INTO product_types (product_type_name) VALUES
-    ('Sérum'), ('Crème'), ('Gel'), ('Parfum'), ('Masque');
+    ('SÃ©rum'), ('CrÃ¨me'), ('Gel'), ('Parfum'), ('Masque');
 
 INSERT INTO customers
     (customer_name, customer_firstname, customer_title, customer_phone, gender_id, user_id) VALUES
@@ -563,35 +563,35 @@ INSERT INTO products
     (product_name, product_ean, product_composition, product_description,
      product_is_status, product_buy_price, product_margin, product_quantity, product_alert,
      producer_id, brand_id, company_id_account) VALUES
-    ('P-Tiox',                 '3600000000001', 'Aqua, Glycerin', 'Sérum anti-âge',        1, 15.00, 60, 100, 10, 1, 1, 1),
-    ('Age Interrupter',        '3600000000002', 'Aqua, Glycerin', 'Sérum anti-âge',        1, 18.00, 55, 100, 10, 1, 1, 1),
-    ('H.A Intensifier',        '3600000000003', 'Acide hyaluronique', 'Sérum hydratant',   1, 20.00, 50, 100, 10, 1, 1, 1),
-    ('C.E Ferulic',            '3600000000004', 'Vitamine C, E', 'Sérum antioxydant',      1, 25.00, 50, 100, 10, 1, 1, 1),
-    ('Phloretin CF',           '3600000000005', 'Phloretine', 'Sérum éclat',               1, 24.00, 50, 100, 10, 1, 1, 1),
-    ('Cell Cycle Catalyst',    '3600000000006', 'AHA', 'Sérum exfoliant',                  1, 22.00, 50, 100, 10, 1, 1, 1),
-    ('Serum 10',               '3600000000007', 'Vitamine C', 'Sérum éclat',               1, 16.00, 55, 100, 10, 1, 2, 1),
-    ('Discoloration Defense',  '3600000000008', 'Niacinamide', 'Sérum anti-taches',        1, 19.00, 50, 100, 10, 1, 2, 1),
-    ('Blemish Age Defense',    '3600000000009', 'Acide salicylique', 'Sérum imperfections',1, 21.00, 50, 100, 10, 1, 2, 1),
-    ('Mela B3 Serum',          '3600000000010', 'Mélasyl, Niacinamide', 'Sérum anti-taches',1, 23.00, 50, 100, 10, 1, 1, 1),
-    ('Collagen III Amplifier', '3600000000011', 'Peptides', 'Sérum fermeté',               1, 26.00, 50, 100, 10, 1, 1, 1),
-    ('Phyto Corrective',       '3600000000012', 'Extraits botaniques', 'Sérum apaisant',   1, 20.00, 50, 100, 10, 1, 1, 1),
-    ('Age Interrupter Triple Lipid Restore', '3600000000013', 'Céramides', 'Crème anti-âge', 1, 30.00, 50, 80, 8, 2, 3, 1),
-    ('Hydra Beauty Micro Gel Crème',         '3600000000014', 'Camélia', 'Crème hydratante', 1, 35.00, 50, 80, 8, 2, 3, 1),
-    ('Sublimage La Crème Lumière',           '3600000000015', 'PFA', 'Crème lumière',        1, 40.00, 50, 80, 8, 2, 3, 1),
+    ('P-Tiox',                 '3600000000001', 'Aqua, Glycerin', 'SÃ©rum anti-Ã¢ge',        1, 15.00, 60, 100, 10, 1, 1, 1),
+    ('Age Interrupter',        '3600000000002', 'Aqua, Glycerin', 'SÃ©rum anti-Ã¢ge',        1, 18.00, 55, 100, 10, 1, 1, 1),
+    ('H.A Intensifier',        '3600000000003', 'Acide hyaluronique', 'SÃ©rum hydratant',   1, 20.00, 50, 100, 10, 1, 1, 1),
+    ('C.E Ferulic',            '3600000000004', 'Vitamine C, E', 'SÃ©rum antioxydant',      1, 25.00, 50, 100, 10, 1, 1, 1),
+    ('Phloretin CF',           '3600000000005', 'Phloretine', 'SÃ©rum Ã©clat',               1, 24.00, 50, 100, 10, 1, 1, 1),
+    ('Cell Cycle Catalyst',    '3600000000006', 'AHA', 'SÃ©rum exfoliant',                  1, 22.00, 50, 100, 10, 1, 1, 1),
+    ('Serum 10',               '3600000000007', 'Vitamine C', 'SÃ©rum Ã©clat',               1, 16.00, 55, 100, 10, 1, 2, 1),
+    ('Discoloration Defense',  '3600000000008', 'Niacinamide', 'SÃ©rum anti-taches',        1, 19.00, 50, 100, 10, 1, 2, 1),
+    ('Blemish Age Defense',    '3600000000009', 'Acide salicylique', 'SÃ©rum imperfections',1, 21.00, 50, 100, 10, 1, 2, 1),
+    ('Mela B3 Serum',          '3600000000010', 'MÃ©lasyl, Niacinamide', 'SÃ©rum anti-taches',1, 23.00, 50, 100, 10, 1, 1, 1),
+    ('Collagen III Amplifier', '3600000000011', 'Peptides', 'SÃ©rum fermetÃ©',               1, 26.00, 50, 100, 10, 1, 1, 1),
+    ('Phyto Corrective',       '3600000000012', 'Extraits botaniques', 'SÃ©rum apaisant',   1, 20.00, 50, 100, 10, 1, 1, 1),
+    ('Age Interrupter Triple Lipid Restore', '3600000000013', 'CÃ©ramides', 'CrÃ¨me anti-Ã¢ge', 1, 30.00, 50, 80, 8, 2, 3, 1),
+    ('Hydra Beauty Micro Gel CrÃ¨me',         '3600000000014', 'CamÃ©lia', 'CrÃ¨me hydratante', 1, 35.00, 50, 80, 8, 2, 3, 1),
+    ('Sublimage La CrÃ¨me LumiÃ¨re',           '3600000000015', 'PFA', 'CrÃ¨me lumiÃ¨re',        1, 40.00, 50, 80, 8, 2, 3, 1),
     ('Advanced Hyalu B5 Gel',  '3600000000016', 'Acide hyaluronique, B5', 'Gel hydratant',  1, 18.00, 55, 90, 9, 1, 1, 1),
     ('Phyto Corrective Gel',   '3600000000017', 'Extraits botaniques', 'Gel apaisant',      1, 19.00, 50, 90, 9, 1, 1, 1),
     ('Discoloration Defense Gel','3600000000018', 'Niacinamide', 'Gel anti-taches',         1, 20.00, 50, 90, 9, 1, 2, 1),
     ('Kayali',                 '3600000000019', 'Parfum', 'Eau de parfum',                  1, 45.00, 60, 60, 6, 2, 3, 1),
-    ('N°5',                    '3600000000020', 'Parfum', 'Eau de parfum',                  1, 80.00, 60, 60, 6, 2, 3, 1),
+    ('NÂ°5',                    '3600000000020', 'Parfum', 'Eau de parfum',                  1, 80.00, 60, 60, 6, 2, 3, 1),
     ('La Vie Est Belle',       '3600000000021', 'Parfum', 'Eau de parfum',                  1, 70.00, 60, 60, 6, 2, 3, 1),
     ('Phyto Corrective Masque','3600000000022', 'Extraits botaniques', 'Masque apaisant',   1, 22.00, 50, 70, 7, 1, 1, 1),
-    ('Cellular Hydralift Firming Mask','3600000000023', 'Peptides', 'Masque fermeté',       1, 28.00, 50, 70, 7, 2, 4, 1),
-    ('Masque de nuit réparateur','3600000000024', 'Beurre de karité', 'Masque de nuit',     1, 24.00, 50, 70, 7, 2, 4, 1);
+    ('Cellular Hydralift Firming Mask','3600000000023', 'Peptides', 'Masque fermetÃ©',       1, 28.00, 50, 70, 7, 2, 4, 1),
+    ('Masque de nuit rÃ©parateur','3600000000024', 'Beurre de karitÃ©', 'Masque de nuit',     1, 24.00, 50, 70, 7, 2, 4, 1);
 
 -- Lien produit <-> type (via la table d'association lien_product_type)
 INSERT INTO lien_product_type (product_id, product_type_id) VALUES
-    (1,1),(2,1),(3,1),(4,1),(5,1),(6,1),(7,1),(8,1),(9,1),(10,1),(11,1),(12,1),  -- Sérums
-    (13,2),(14,2),(15,2),                                                         -- Crèmes
+    (1,1),(2,1),(3,1),(4,1),(5,1),(6,1),(7,1),(8,1),(9,1),(10,1),(11,1),(12,1),  -- SÃ©rums
+    (13,2),(14,2),(15,2),                                                         -- CrÃ¨mes
     (16,3),(17,3),(18,3),                                                         -- Gels
     (19,4),(20,4),(21,4),                                                         -- Parfums
     (22,5),(23,5),(24,5);                                                         -- Masques
@@ -605,7 +605,7 @@ INSERT INTO addresses
     (customer_id_account, address_label, address_name, address_firstname,
      address_adress_1, address_adress_2, address_adress_3, address_adress_4,
      address_postcode, address_city, address_country, address_is_default) VALUES
-    (1, 'Domicile', 'Martin', 'Sophie', '12 rue des Lilas',     NULL, NULL, NULL, '86100', 'Châtellerault', 'France', 1),
+    (1, 'Domicile', 'Martin', 'Sophie', '12 rue des Lilas',     NULL, NULL, NULL, '86100', 'ChÃ¢tellerault', 'France', 1),
     (2, 'Domicile', 'Dupont', 'Lucas',  '5 avenue Victor Hugo', NULL, NULL, NULL, '75002', 'Paris',         'France', 1);
 
 -- Livraisons
@@ -630,7 +630,7 @@ INSERT INTO contains (product_id, order_id) VALUES
 INSERT INTO promotions (product_id, promotion_percent, promotion_is_active) VALUES
     (1, 20, 1),
     (4, 27, 1);
--- Insertion des réinitialisations de mot de passe
+-- Insertion des rÃ©initialisations de mot de passe
 INSERT INTO password_resets (
   user_id, 
   reset_token, 
@@ -652,14 +652,15 @@ INSERT INTO password_resets (
 );
 
 
--- MODULE : Programme de fidélité 
+-- MODULE : Programme de fidÃ©litÃ© 
+
 
 DROP TABLE IF EXISTS loyalty_vouchers;
 DROP TABLE IF EXISTS loyalty_points;
 DROP TABLE IF EXISTS loyalty_tiers;
 
 
--- Table de référence : les paliers 
+-- Table de rÃ©fÃ©rence : les paliers 
 
 CREATE TABLE loyalty_tiers (
   loyalty_tier_id               INT AUTO_INCREMENT,
@@ -695,7 +696,7 @@ CREATE INDEX idx_loyalty_points_customer
   ON loyalty_points (customer_id_account, loyalty_point_created_at);
 
 
--- Bons de réduction 
+-- Bons de rÃ©duction 
 
 CREATE TABLE loyalty_vouchers (
   loyalty_voucher_id         INT AUTO_INCREMENT,
@@ -712,7 +713,7 @@ CREATE TABLE loyalty_vouchers (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- Jeu de données  les 3 paliers
+-- Jeu de donnÃ©es  les 3 paliers
 
 INSERT INTO loyalty_tiers
   (loyalty_tier_name, loyalty_tier_min_points, loyalty_tier_discount_percent, loyalty_tier_is_free_shipping)

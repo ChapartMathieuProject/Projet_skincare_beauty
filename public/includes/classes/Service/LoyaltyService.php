@@ -1,26 +1,31 @@
 <?php
 
 class LoyaltyService
-{  
-
+{
     public const POINTS_PER_EURO = 1;
-    
     public const POINTS_PER_VOUCHER = 100;
     public const VOUCHER_VALUE = 5.00;
     public const POINTS_LIFETIME_MONTHS = 12;
- 
+    public const VOUCHER_LIFETIME_MONTHS = 6;
+
     private LoyaltyPointDAO $loyaltyPointDAO;
     private LoyaltyTierDAO $loyaltyTierDAO;
+    private LoyaltyVoucherDAO $loyaltyVoucherDAO;
     private MailerInterface $mailer;
+    private PDO $pdo;
 
     public function __construct(
         LoyaltyPointDAO $loyaltyPointDAO,
         LoyaltyTierDAO $loyaltyTierDAO,
-        MailerInterface $mailer
+        LoyaltyVoucherDAO $loyaltyVoucherDAO,
+        MailerInterface $mailer,
+        PDO $pdo
     ) {
-        $this->loyaltyPointDAO = $loyaltyPointDAO;
-        $this->loyaltyTierDAO  = $loyaltyTierDAO;
-        $this->mailer          = $mailer;
+        $this->loyaltyPointDAO   = $loyaltyPointDAO;
+        $this->loyaltyTierDAO    = $loyaltyTierDAO;
+        $this->loyaltyVoucherDAO = $loyaltyVoucherDAO;
+        $this->mailer            = $mailer;
+        $this->pdo               = $pdo;
     }
 
     public function addPointsForOrder(
@@ -69,6 +74,62 @@ class LoyaltyService
         return $pointsEarned;
     }
 
+    public function convertPointsToVoucher(int $customerId, int $pointsToConvert): LoyaltyVoucher
+    {
+        if ($pointsToConvert <= 0) {
+            throw new InvalidArgumentException('Le nombre de points a convertir doit etre positif.');
+        }
+
+        if ($pointsToConvert % self::POINTS_PER_VOUCHER !== 0) {
+            throw new InvalidArgumentException(
+                'Les points doivent etre convertis par tranches de ' . self::POINTS_PER_VOUCHER . '.'
+            );
+        }
+
+        $balance = $this->getBalance($customerId);
+
+        if ($balance < $pointsToConvert) {
+            throw new InvalidArgumentException(
+                'Solde insuffisant : ' . $balance . ' points disponibles sur ' . $pointsToConvert . ' demandes.'
+            );
+        }
+
+        $amount = ($pointsToConvert / self::POINTS_PER_VOUCHER) * self::VOUCHER_VALUE;
+
+        $expiresAt = (new DateTimeImmutable())
+            ->modify('+' . self::VOUCHER_LIFETIME_MONTHS . ' months')
+            ->format('Y-m-d');
+
+        $this->pdo->beginTransaction();
+
+        try {
+            $debit = new LoyaltyPoint([
+                'customer_id_account'  => $customerId,
+                'order_id'             => null,
+                'loyalty_point_amount' => -$pointsToConvert,
+                'loyalty_point_type'   => LoyaltyPoint::TYPE_SPEND,
+                'loyalty_point_label'  => 'Conversion en bon de reduction',
+            ]);
+            $this->loyaltyPointDAO->create($debit);
+
+            $voucher = new LoyaltyVoucher([
+                'customer_id_account'         => $customerId,
+                'loyalty_voucher_code'        => $this->generateVoucherCode(),
+                'loyalty_voucher_amount'      => $amount,
+                'loyalty_voucher_points_used' => $pointsToConvert,
+                'loyalty_voucher_expires_at'  => $expiresAt,
+            ]);
+            $this->loyaltyVoucherDAO->create($voucher);
+
+            $this->pdo->commit();
+
+            return $voucher;
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
     public function getBalance(int $customerId): int
     {
         return $this->loyaltyPointDAO->getBalanceByCustomer($customerId);
@@ -77,6 +138,11 @@ class LoyaltyService
     public function getHistory(int $customerId, int $limit = 50): array
     {
         return $this->loyaltyPointDAO->findByCustomer($customerId, $limit);
+    }
+
+    public function getVouchers(int $customerId): array
+    {
+        return $this->loyaltyVoucherDAO->findByCustomer($customerId);
     }
 
     public function getTier(int $customerId): ?LoyaltyTier
@@ -129,5 +195,14 @@ class LoyaltyService
               . '<p>Merci de votre fidelite,<br>L equipe SkinCareBeauty</p>';
 
         return $this->mailer->send($customerEmail, $subject, $body);
+    }
+
+    private function generateVoucherCode(): string
+    {
+        do {
+            $code = 'FID-' . strtoupper(bin2hex(random_bytes(4)));
+        } while ($this->loyaltyVoucherDAO->findByCode($code) !== null);
+
+        return $code;
     }
 }
