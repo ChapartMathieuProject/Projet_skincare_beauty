@@ -1,4 +1,4 @@
-<?php 
+<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -158,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cartItems)) {
      VALUES (:orderId, :productId, :quantity, :unitPrice)'
         );
         foreach ($cartItems as $item) {
-            
+
             $insertLine->execute([
                 'orderId' => $orderId,
                 'productId' => $item['id'],
@@ -169,7 +169,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cartItems)) {
 
         $pdo->commit();
 
-        // 6. Panier vidé après commande validée.
+
+        $orderTotal = 0.0;
+        foreach ($cartItems as $item) {
+            $orderTotal += $item['price'] * $item['quantity'];
+        }
+
+        try {
+            $loyaltyService = new LoyaltyService(new LoyaltyPointDAO($pdo));
+            $pointsEarned   = $loyaltyService->addPointsForOrder($customerId, $orderId, $orderTotal);
+            $_SESSION['loyalty_points_earned'] = $pointsEarned;
+        } catch (Throwable $e) {
+            error_log('Fidelite : echec attribution points commande ' . $orderId . ' - ' . $e->getMessage());
+        }
+
         $_SESSION['cart'] = [];
 
         header('Location: orders.php');

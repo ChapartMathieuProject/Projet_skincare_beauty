@@ -59,7 +59,7 @@ if ($customer !== false) {
     $productStatement = $pdo->prepare(
         'SELECT product_name FROM products WHERE product_id = :productId'
     );
-    
+
 
     $freeShippingThreshold = 50.00;
     $standardShippingCost  = 4.90;
@@ -68,7 +68,7 @@ if ($customer !== false) {
         $linesStatement->execute(['orderId' => $orderRow['order_id']]);
         $lines = $linesStatement->fetchAll();
 
-        
+
         $total = 0; // sous-total produits, sert aussi au calcul du seuil de gratuité
         $itemsCount = 0;
         $orderLines = []; // détail des produits pour l'affichage étendu (accordéon)
@@ -132,6 +132,13 @@ require_once 'public/includes/header.php';
             <i class="fa-solid fa-box" aria-hidden="true"></i>
             Vos Commandes
         </h1>
+
+        <?php if (!empty($_SESSION['loyalty_points_earned'])): ?>
+            <div class="alert alert-success">
+                Vous avez gagné <?= (int) $_SESSION['loyalty_points_earned'] ?> points de fidélité.
+            </div>
+            <?php unset($_SESSION['loyalty_points_earned']); ?>
+        <?php endif; ?>
 
         <?php if (empty($orders)): ?>
             <div class="profile-empty">
