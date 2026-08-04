@@ -11,6 +11,8 @@ services:
       DB_NAME: ${DB_NAME} 
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      MAIL_HOST : mailpit
+      MAIL_PORT: 1025
     depends_on:
       db:
         condition: service_healthy
@@ -49,6 +51,16 @@ services:
       - "8081:80"
     depends_on:
       - db
+    networks:
+      - skincarebeauty_network
+    restart: unless-stopped
+  
+  mailpit:
+    image: axllent/mailpit
+    container_name: skincarebeauty_mailpit
+    ports:
+      - "8025:8025" 
+      - "1025:1025" 
     networks:
       - skincarebeauty_network
     restart: unless-stopped

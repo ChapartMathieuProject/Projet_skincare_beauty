@@ -56,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["action"] ?? "") === "creat
     $comment        = trim($_POST["ticket_comment"] ?? "");
 
     if (!isset($eligible_orders[$order_id])) {
-        $errorMessage = "Commande invalide ou non expédié.";
+        $errorMessage = "Commande invalide ou non expédiée.";
     } elseif (!isset($return_types[$return_type_id])) {
         $errorMessage = "Type de retour invalide.";
     } elseif ($comment === "" || mb_strlen($comment) > 500) {
@@ -68,8 +68,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["action"] ?? "") === "creat
         try {
             $pdo->beginTransaction();
 
-            $numero     = $ticketDAO->generateReturnNumber($ticketDAO->getNextSequence());
-            $ticket_id  = $ticketDAO->create(new Ticket([
+            $numero    = $ticketDAO->generateReturnNumber($ticketDAO->getNextSequence());
+            $ticket_id = $ticketDAO->create(new Ticket([
                 "ticket_return_number"  => $numero,
                 "ticket_comment"        => $comment,
                 "order_id"              => $order_id,
@@ -77,6 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["action"] ?? "") === "creat
                 "ticket_status_id"      => Ticket::STATUS_OUVERT,
                 "user_id"               => $agent_id,
             ]));
+            $historyDAO->log($ticket_id, $agent_id, "Retour créé par $agent_name");
 
             $ticketDAO->updateStatus($ticket_id, Ticket::STATUS_EN_COURS);
             $historyDAO->log(
@@ -87,7 +88,28 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["action"] ?? "") === "creat
 
             $pdo->commit();
 
-            // Peut-être mettre l'envoi de l'émail PHPMailer ici, à voir
+            $stmt = $pdo->prepare("SELECT customer_name, customer_firstname, user_id FROM customers WHERE customer_id_account = :cid");
+            $stmt->execute([":cid" => $eligible_orders[$order_id]["customer_id_account"]]);
+            $c = $stmt->fetch();
+
+            if ($c) {
+                $stmt = $pdo->prepare("SELECT user_mail FROM users WHERE user_id = :uid");
+                $stmt->execute([":uid" => $c["user_id"]]);
+                $client_mail = $stmt->fetchColumn();
+
+                if ($client_mail) {
+                    $mailer = new MailService();
+                    $sent   = $mailer->sendReturnInstructions(
+                        $client_mail,
+                        $c["customer_firstname"] . " " . $c["customer_name"],
+                        $numero,
+                        $eligible_orders[$order_id]["order_number"]
+                    );
+                    $historyDAO->log($ticket_id, $agent_id, $sent
+                        ? "E-mail d'instructions envoyé à $client_mail"
+                        : "Échec de l'envoi de l'e-mail à $client_mail (" . $mailer->getLastError() . ")");
+                }
+            }
 
             header("Location: admin_tickets.php?created=" . urlencode($numero));
             exit;
@@ -102,9 +124,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["action"] ?? "") === "creat
 
 $tickets = $ticketDAO->findAll();
 $status_badges = [
-    Ticket::STATUS_OUVERT   => "status-attente",
+    Ticket::STATUS_OUVERT   => "statut-attente",
     Ticket::STATUS_EN_COURS => "statut-preparation",
-    Ticket::STATUS_CLOTURE  => "statut-livrée",
+    Ticket::STATUS_CLOTURE  => "statut-livree",
 ];
 
 ?>
@@ -131,7 +153,6 @@ $status_badges = [
         </div>
     <?php endif; ?>
 
-    <!-- ── Formulaire de création (Étape 1 : l'autorisation) ── -->
     <section class="admin-card">
         <h2>Ouvrir un ticket de retour</h2>
         <form method="POST" action="admin_tickets.php">
@@ -165,7 +186,6 @@ $status_badges = [
         </form>
     </section>
 
-    <!-- ── Liste des tickets ── -->
     <p class="results-count">
         <?= count($tickets) ?> ticket<?= count($tickets) > 1 ? 's' : '' ?>
     </p>

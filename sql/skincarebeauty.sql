@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : jeu. 30 juil. 2026 à 15:03
+-- Généré le : mar. 04 août 2026 à 08:41
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -105,7 +105,8 @@ CREATE TABLE `addresses` (
 
 INSERT INTO `addresses` (`address_id`, `customer_id_account`, `address_label`, `address_name`, `address_firstname`, `address_adress_1`, `address_adress_2`, `address_adress_3`, `address_adress_4`, `address_postcode`, `address_city`, `address_country`, `address_is_default`, `address_is_billing`) VALUES
 (1, 1, 'Domicile', 'Martin', 'Sophie', '12 rue des Lilas', NULL, NULL, NULL, '86100', 'Châtellerault', 'France', 1, 0),
-(2, 2, 'Domicile', 'Dupont', 'Lucas', '5 avenue Victor Hugo', NULL, NULL, NULL, '75002', 'Paris', 'France', 1, 0);
+(2, 2, 'Domicile', 'Dupont', 'Lucas', '5 avenue Victor Hugo', NULL, NULL, NULL, '75002', 'Paris', 'France', 1, 0),
+(3, 4, 'jeanpaul', 'paul', 'jean', 'On est la', NULL, NULL, NULL, '85452', 'Chacha', 'France', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -129,7 +130,8 @@ CREATE TABLE `bills` (
 
 INSERT INTO `bills` (`bill_id`, `bill_number`, `bill_delivery_date`, `bill_number_delivery`, `order_id`, `delivery_id`) VALUES
 (1, 'FAC0000001', NULL, NULL, 1, NULL),
-(2, 'FAC0000002', NULL, NULL, 2, NULL);
+(2, 'FAC0000002', NULL, NULL, 2, NULL),
+(3, 'FAC0000003', NULL, NULL, 3, NULL);
 
 --
 -- Déclencheurs `bills`
@@ -247,7 +249,8 @@ CREATE TABLE `contains` (
 INSERT INTO `contains` (`order_id`, `product_id`, `contains_quantity`, `contains_unit_price`) VALUES
 (1, 1, 1, 0.00),
 (1, 4, 1, 0.00),
-(2, 16, 1, 0.00);
+(2, 16, 1, 0.00),
+(3, 1, 5, 19.20);
 
 -- --------------------------------------------------------
 
@@ -273,7 +276,8 @@ CREATE TABLE `customers` (
 INSERT INTO `customers` (`customer_id_account`, `customer_name`, `customer_firstname`, `customer_title`, `customer_phone`, `gender_id`, `user_id`) VALUES
 (1, 'Martin', 'Sophie', 'Mme', '06 12 34 56 78', 2, 2),
 (2, 'Dupont', 'Lucas', 'M.', '06 23 45 67 89', 1, 3),
-(3, 'Bernard', 'Emma', 'Mme', '06 34 56 78 90', 2, 4);
+(3, 'Bernard', 'Emma', 'Mme', '06 34 56 78 90', 2, 4),
+(4, 'paul', 'jean', 'M.', '0606060606', 1, 5);
 
 -- --------------------------------------------------------
 
@@ -299,7 +303,8 @@ CREATE TABLE `deliveries` (
 
 INSERT INTO `deliveries` (`delivery_id`, `delivery_number`, `delivery_cost`, `delivery_tracking_number`, `delivery_date`, `customer_id_account`, `address_id`, `delivery_type_id`) VALUES
 (1, 'EXP0000001', 4.99, 'TRK0001', '2026-05-10 10:00:00', 1, 1, 1),
-(2, 'EXP0000002', 0.00, 'TRK0002', '2026-05-12 14:30:00', 2, 2, 2);
+(2, 'EXP0000002', 0.00, 'TRK0002', '2026-05-12 14:30:00', 2, 2, 2),
+(3, 'EXP0000003', 0.00, 'TRACK-6A709B46183CE', '2026-08-06 15:44:38', 4, 3, 5);
 
 --
 -- Déclencheurs `deliveries`
@@ -443,7 +448,8 @@ CREATE TABLE `orders` (
 
 INSERT INTO `orders` (`order_id`, `order_number`, `order_date`, `order_date_annulation`, `order_promotion`, `order_type_id`, `payment_type_id`, `company_id_account`, `customer_id_account`, `delivery_type_id`, `deliveries_id`) VALUES
 (1, 'CMD0000001', '2026-05-09 09:15:00', NULL, NULL, 1, 1, 1, 1, 1, 1),
-(2, 'CMD0000002', '2026-05-11 16:40:00', NULL, 10, 2, 3, 1, 2, 2, 2);
+(2, 'CMD0000002', '2026-05-11 16:40:00', NULL, 10, 2, 3, 1, 2, 2, 2),
+(3, 'CMD0000003', '2026-08-03 15:44:38', NULL, NULL, 1, 5, 1, 4, 5, 3);
 
 --
 -- Déclencheurs `orders`
@@ -509,7 +515,7 @@ CREATE TABLE `password_resets` (
 --
 
 INSERT INTO `password_resets` (`password_reset_id`, `user_id`, `reset_token`, `reset_expires_at`) VALUES
-(1, 1, '9f82c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', '2026-07-30 16:00:52'),
+(1, 1, '9f82c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2', '2026-08-03 15:04:14'),
 (2, 2, 'a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890', '2026-07-02 18:00:00');
 
 -- --------------------------------------------------------
@@ -760,6 +766,102 @@ INSERT INTO `promotions` (`promotion_id`, `product_id`, `promotion_percent`, `pr
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `return_types`
+--
+
+DROP TABLE IF EXISTS `return_types`;
+CREATE TABLE `return_types` (
+  `return_type_id` int(11) NOT NULL,
+  `return_type_name` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `return_types`
+--
+
+INSERT INTO `return_types` (`return_type_id`, `return_type_name`) VALUES
+(2, 'Adresse incomplète'),
+(3, 'Colis non réclamé'),
+(1, 'NPAI');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `tickets`
+--
+
+DROP TABLE IF EXISTS `tickets`;
+CREATE TABLE `tickets` (
+  `ticket_id` int(11) NOT NULL,
+  `ticket_return_number` varchar(15) NOT NULL,
+  `ticket_comment` varchar(500) NOT NULL,
+  `ticket_created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `order_id` int(11) NOT NULL,
+  `return_type_id` int(11) NOT NULL,
+  `ticket_status_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `tickets`
+--
+
+INSERT INTO `tickets` (`ticket_id`, `ticket_return_number`, `ticket_comment`, `ticket_created_at`, `order_id`, `return_type_id`, `ticket_status_id`, `user_id`) VALUES
+(1, 'RET-2026-0001', 'Colis revenu NPAI, client injoignable.', '2026-08-03 14:04:14', 1, 1, 2, 1),
+(2, 'RET-2026-0002', 'Test pour voir si ça fonctionne', '2026-08-03 15:53:13', 2, 2, 3, 1),
+(3, 'RET-2026-0003', 'On est là hein', '2026-08-04 07:40:18', 2, 3, 3, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `ticket_history`
+--
+
+DROP TABLE IF EXISTS `ticket_history`;
+CREATE TABLE `ticket_history` (
+  `ticket_history_id` int(11) NOT NULL,
+  `ticket_history_action` varchar(255) NOT NULL,
+  `ticket_history_created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `ticket_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `ticket_history`
+--
+
+INSERT INTO `ticket_history` (`ticket_history_id`, `ticket_history_action`, `ticket_history_created_at`, `ticket_id`, `user_id`) VALUES
+(1, 'Retour créé par Admin Skincare', '2026-08-03 14:04:14', 1, 1),
+(2, 'Numéro de retour RET-2026-0001 généré, e-mail envoyé au client', '2026-08-03 14:04:14', 1, 1),
+(3, 'Numéro de retour RET-2026-0002 généré - ticket passé « En cours » par admin@skincare.com', '2026-08-03 15:53:13', 2, 1),
+(4, 'Réception du colis confirmée — modification effectuée sur l\'expédition par admin@skincare.com — ticket clôturé', '2026-08-03 19:20:28', 2, 1),
+(5, 'Numéro de retour RET-2026-0003 généré - ticket passé « En cours » par admin@skincare.com', '2026-08-04 07:40:18', 3, 1),
+(6, 'Réception du colis confirmée — modification effectuée sur l\'expédition par admin@skincare.com — ticket clôturé', '2026-08-04 07:40:32', 3, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `ticket_status`
+--
+
+DROP TABLE IF EXISTS `ticket_status`;
+CREATE TABLE `ticket_status` (
+  `ticket_status_id` int(11) NOT NULL,
+  `ticket_status_name` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `ticket_status`
+--
+
+INSERT INTO `ticket_status` (`ticket_status_id`, `ticket_status_name`) VALUES
+(3, 'Clôturé'),
+(2, 'En cours'),
+(1, 'Ouvert');
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `users`
 --
 
@@ -779,7 +881,8 @@ INSERT INTO `users` (`user_id`, `user_mail`, `user_password`, `user_type_id`) VA
 (1, 'admin@skincare.com', '$2y$10$ARRxmgoMjHjvmo3wvfD77eQlP63SVS1VBISVCjRSz3MiEWEl6rhk6', 2),
 (2, 'sophie.martin@email.com', 'Client1234!', 1),
 (3, 'lucas.dupont@email.com', 'Client1234!', 1),
-(4, 'emma.bernard@email.com', 'Client1234!', 1);
+(4, 'emma.bernard@email.com', 'Client1234!', 1),
+(5, 'jeanpaul@gmail.com', '$2y$10$CvfB/uwD5IznM7.PbcEgtu5L/XFsj88/wokczqYUcLS9xU5MDqJTC', 1);
 
 -- --------------------------------------------------------
 
@@ -975,6 +1078,39 @@ ALTER TABLE `promotions`
   ADD UNIQUE KEY `product_id` (`product_id`);
 
 --
+-- Index pour la table `return_types`
+--
+ALTER TABLE `return_types`
+  ADD PRIMARY KEY (`return_type_id`),
+  ADD UNIQUE KEY `return_type_name` (`return_type_name`);
+
+--
+-- Index pour la table `tickets`
+--
+ALTER TABLE `tickets`
+  ADD PRIMARY KEY (`ticket_id`),
+  ADD UNIQUE KEY `ticket_return_number` (`ticket_return_number`),
+  ADD KEY `order_id` (`order_id`),
+  ADD KEY `return_type_id` (`return_type_id`),
+  ADD KEY `ticket_status_id` (`ticket_status_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Index pour la table `ticket_history`
+--
+ALTER TABLE `ticket_history`
+  ADD PRIMARY KEY (`ticket_history_id`),
+  ADD KEY `ticket_id` (`ticket_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Index pour la table `ticket_status`
+--
+ALTER TABLE `ticket_status`
+  ADD PRIMARY KEY (`ticket_status_id`),
+  ADD UNIQUE KEY `ticket_status_name` (`ticket_status_name`);
+
+--
 -- Index pour la table `users`
 --
 ALTER TABLE `users`
@@ -997,13 +1133,13 @@ ALTER TABLE `user_types`
 -- AUTO_INCREMENT pour la table `addresses`
 --
 ALTER TABLE `addresses`
-  MODIFY `address_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `address_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT pour la table `bills`
 --
 ALTER TABLE `bills`
-  MODIFY `bill_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `bill_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT pour la table `brands`
@@ -1033,13 +1169,13 @@ ALTER TABLE `companies`
 -- AUTO_INCREMENT pour la table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `customer_id_account` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `customer_id_account` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT pour la table `deliveries`
 --
 ALTER TABLE `deliveries`
-  MODIFY `delivery_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `delivery_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT pour la table `delivery_types`
@@ -1057,7 +1193,7 @@ ALTER TABLE `genders`
 -- AUTO_INCREMENT pour la table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT pour la table `order_status`
@@ -1108,10 +1244,34 @@ ALTER TABLE `promotions`
   MODIFY `promotion_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT pour la table `return_types`
+--
+ALTER TABLE `return_types`
+  MODIFY `return_type_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT pour la table `tickets`
+--
+ALTER TABLE `tickets`
+  MODIFY `ticket_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT pour la table `ticket_history`
+--
+ALTER TABLE `ticket_history`
+  MODIFY `ticket_history_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT pour la table `ticket_status`
+--
+ALTER TABLE `ticket_status`
+  MODIFY `ticket_status_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT pour la table `user_types`
@@ -1227,6 +1387,22 @@ ALTER TABLE `products`
 --
 ALTER TABLE `promotions`
   ADD CONSTRAINT `promotions_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE;
+
+--
+-- Contraintes pour la table `tickets`
+--
+ALTER TABLE `tickets`
+  ADD CONSTRAINT `tickets_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
+  ADD CONSTRAINT `tickets_ibfk_2` FOREIGN KEY (`return_type_id`) REFERENCES `return_types` (`return_type_id`),
+  ADD CONSTRAINT `tickets_ibfk_3` FOREIGN KEY (`ticket_status_id`) REFERENCES `ticket_status` (`ticket_status_id`),
+  ADD CONSTRAINT `tickets_ibfk_4` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
+
+--
+-- Contraintes pour la table `ticket_history`
+--
+ALTER TABLE `ticket_history`
+  ADD CONSTRAINT `ticket_history_ibfk_1` FOREIGN KEY (`ticket_id`) REFERENCES `tickets` (`ticket_id`),
+  ADD CONSTRAINT `ticket_history_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
 
 --
 -- Contraintes pour la table `users`
