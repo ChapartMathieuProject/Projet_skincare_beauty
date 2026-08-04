@@ -1353,6 +1353,21 @@ body.admin {
   font-weight: 600;
 }
 
+.admin-nav-separator {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, .1);
+  margin: .5rem .5rem;
+}
+
+.admin-nav a.admin-back-site {
+  color: var(--admin-rose-fonce);
+}
+
+.admin-nav a.admin-back-site:hover {
+  color: #fff;
+  background: rgba(196, 143, 143, .15);
+}
+
 .admin-user {
   display: flex;
   align-items: center;

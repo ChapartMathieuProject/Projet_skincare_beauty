@@ -32,6 +32,8 @@ $menu_actif = $menu_actif ?? '';
                 <a href="admin_users.php" class="<?= $menu_actif === 'clients'    ? 'active' : '' ?>">Clients</a>
                 <a href="admin_promotions.php" class="<?= $menu_actif === 'promotions' ? 'active' : '' ?>">Promotions</a>
                 <a href="admin_setting.php" class="<?= $menu_actif === 'reglages'   ? 'active' : '' ?>">Réglages</a>
+                <hr class="admin-nav-separator">
+                <a href="index.php" class="admin-back-site"><i class="fa-solid fa-arrow-left"></i> Retour au site</a>
             </nav>
             <div class="admin-user">
                 <span class="avatar">AL</span>
