@@ -10,8 +10,13 @@
 | Version | Date       | Nature de l'évolution         |
 | ------- | ---------- | ----------------------------- |
 | 1.0.0   | 05/06/2026 | Création de la BDD SQL        |
-| 1.0.1   | 09/06/2026 | Correction du script initial  |
-| 1.1.0   | 04/08/2026 | Ajout du module SAV (tickets de retour) |
+| 1.0.1   | 09/06/2026 | Correction du script initial, insertion des données de test, conventions d'équipe |
+| 1.1.0   | 11/06/2026 | MCD réalisé sous Looping, documentation technique de la BDD |
+| 1.2.0   | 30/06/2026 | Intégration front (accueil, produit, profil, inscription/connexion) + espace admin + `db.php` (PDO), protections XSS |
+| 1.3.0   | 23/07/2026 | Architecture MVC (Router, contrôleurs, vues — home, catégories, produit) + panier en session avec AJAX |
+| 1.4.0   | 28/07/2026 | Checkout, pages admin connectées à la BDD (commandes, clients), premiers tests unitaires (`ProductDAOTest`) + CI GitHub Actions PHPUnit |
+| 1.5.0   | 31/07/2026 | Upload d'images produits, suppression des JOIN restants (résolution PHP), dockerisation (app, db, phpMyAdmin) |
+| 2.0.0   | 04/08/2026 | Module SAV : tables tickets/historique, POO `Ticket`/`TicketHistory` + DAO, workflow de retour, PHPMailer + conteneur Mailpit, tests unitaires `TicketDAOTest` |
 
 ---
 
