@@ -7,15 +7,22 @@ services:
     volumes:
       - .:/var/www/html
     environment:
-      DB_HOST: db  
-      DB_NAME: ${DB_NAME} 
+      DB_HOST: db
+      DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      MAIL_HOST : mailpit
-      MAIL_PORT: 1025
+      MAIL_HOST: ${MAIL_HOST:-mail}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-dev@skincarebeauty.test}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-SkincareBeauty}
     depends_on:
       db:
         condition: service_healthy
+      mail:
+        condition: service_started
     networks:
       - skincarebeauty_network
     restart: unless-stopped
@@ -54,13 +61,13 @@ services:
     networks:
       - skincarebeauty_network
     restart: unless-stopped
-  
-  mailpit:
-    image: axllent/mailpit
-    container_name: skincarebeauty_mailpit
+
+  mail:
+    image: axllent/mailpit:latest
+    container_name: skincarebeauty_mail
     ports:
-      - "8025:8025" 
-      - "1025:1025" 
+      - "8025:8025"
+      - "1025:1025"
     networks:
       - skincarebeauty_network
     restart: unless-stopped
