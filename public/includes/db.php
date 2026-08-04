@@ -6,6 +6,7 @@ require_once __DIR__ . '/classes/Entity/ProductType.php';
 require_once __DIR__ . '/classes/Entity/Ticket.php';
 require_once __DIR__ . '/classes/Entity/TicketHistory.php';
 
+
 // DAO
 require_once __DIR__ . '/classes/DAO/DAO.php';
 require_once __DIR__ . '/classes/DAO/ProductDAO.php';
@@ -13,6 +14,8 @@ require_once __DIR__ . '/classes/DAO/BrandDAO.php';
 require_once __DIR__ . '/classes/DAO/ProductTypeDAO.php';
 require_once __DIR__ . '/classes/DAO/TicketDAO.php';
 require_once __DIR__ . '/classes/DAO/TicketHistoryDAO.php';
+
+require_once __DIR__ . '/classes/Service/MailService.php';
 
 
 $host    = getenv('DB_HOST')     ?: 'localhost';
