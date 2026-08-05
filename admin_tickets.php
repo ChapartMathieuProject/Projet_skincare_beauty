@@ -120,6 +120,7 @@ $status_badges = [
     Ticket::STATUS_OUVERT   => "statut-attente",
     Ticket::STATUS_EN_COURS => "statut-preparation",
     Ticket::STATUS_CLOTURE  => "statut-livree",
+    Ticket::STATUS_REFUSE   => "statut-expiree",
 ];
 
 ?>

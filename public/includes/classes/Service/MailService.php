@@ -51,6 +51,24 @@ class MailService
         return $this->send($toMail, $toName, $subject, $body);
     }
 
+    public function sendReturnRefused(string $toMail, string $toName, string $returnNumber, string $orderNumber): bool
+    {
+        $subject = "Votre demande de retour $returnNumber";
+
+        $body = "
+            <h2>Bonjour " . htmlspecialchars($toName, ENT_QUOTES, 'UTF-8') . ",</h2>
+            <p>Après examen, votre demande de retour
+               <strong>" . htmlspecialchars($returnNumber, ENT_QUOTES, 'UTF-8') . "</strong>
+               concernant la commande
+               <strong>" . htmlspecialchars($orderNumber, ENT_QUOTES, 'UTF-8') . "</strong>
+               n'a pas pu être acceptée.</p>
+            <p>Si vous pensez qu'il s'agit d'une erreur ou pour toute question,
+               notre service SAV reste à votre disposition en répondant à cet e-mail.</p>
+            <p>L'équipe SkinCareBeauty</p>";
+
+        return $this->send($toMail, $toName, $subject, $body);
+    }
+
     private function send(string $toMail, string $toName, string $subject, string $bodyHtml): bool
     {
         $mail = new PHPMailer(true);
