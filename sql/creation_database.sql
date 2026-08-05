@@ -542,14 +542,16 @@ DELIMITER ;
  
 INSERT INTO user_types (user_type_name) VALUES
     ('Client'),
-    ('Administrateur');
+    ('Administrateur'),
+    ('Agent SAV');
  
  
 INSERT INTO users (user_mail, user_type_id, user_password) VALUES
     ('admin@skincare.com',      '2', '$2y$10$ARRxmgoMjHjvmo3wvfD77eQlP63SVS1VBISVCjRSz3MiEWEl6rhk6'),
     ('sophie.martin@email.com', '1', '$2y$10$fWyz/d1Bd8RjbXzBsNv3JeBhEklEtmRS/sLJsRdMlq2sTwsAlUSsy'),
     ('lucas.dupont@email.com',  '1', '$2y$10$fWyz/d1Bd8RjbXzBsNv3JeBhEklEtmRS/sLJsRdMlq2sTwsAlUSsy'),
-    ('emma.bernard@email.com',  '1', '$2y$10$fWyz/d1Bd8RjbXzBsNv3JeBhEklEtmRS/sLJsRdMlq2sTwsAlUSsy');
+    ('emma.bernard@email.com',  '1', '$2y$10$fWyz/d1Bd8RjbXzBsNv3JeBhEklEtmRS/sLJsRdMlq2sTwsAlUSsy'),
+    ('agent.sav@skincare.com',  '3', '$2y$10$iqgmbhUnrA7oVHFix/s79eV3DdVBHhIEs5Kf71yDIxCpsFOFk.Zl.');
  
 INSERT INTO genders (gender_name) VALUES
     ('Monsieur'), ('Madame'), ('Docteur');
@@ -690,7 +692,7 @@ INSERT INTO return_types (return_type_name) VALUES
     ('NPAI'), ('Adresse incomplète'), ('Colis non réclamé');
  
 INSERT INTO ticket_status (ticket_status_name) VALUES
-    ('Ouvert'), ('En cours'), ('Clôturé');
+    ('Ouvert'), ('En cours'), ('Clôturé'), ('Refusé');
  
 -- Jeu d'essai du Worflow
 INSERT INTO tickets (ticket_return_number, ticket_comment, order_id, return_type_id, ticket_status_id, user_id) VALUES
