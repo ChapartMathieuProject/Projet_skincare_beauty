@@ -3,6 +3,20 @@ require_once "public/includes/db.php";
 
 $id = (isset($_GET['id']) && ctype_digit($_GET['id'])) ? (int) $_GET['id'] : 0;
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_status']) && $id > 0) {
+    $newStatus = (int) $_POST['new_status'];
+    $check = $pdo->prepare("SELECT COUNT(*) FROM order_status WHERE order_type_id = ?");
+    $check->execute([$newStatus]);
+    if ($check->fetchColumn()) {
+        $update = $pdo->prepare("UPDATE orders SET order_type_id = ? WHERE order_id = ?");
+        $update->execute([$newStatus, $id]);
+    }
+    header("Location: admin_order_detail.php?id=$id");
+    exit;
+}
+
+$allStatuses = $pdo->query("SELECT order_type_id, order_type_name FROM order_status")->fetchAll();
+
 $stmt = $pdo->prepare("SELECT * FROM orders WHERE order_id = ?");
 $stmt->execute([$id]);
 $order = $stmt->fetch();
@@ -26,10 +40,9 @@ $mois_fr = [1=>'janvier',2=>'février',3=>'mars',4=>'avril',5=>'mai',6=>'juin',
             7=>'juillet',8=>'août',9=>'septembre',10=>'octobre',11=>'novembre',12=>'décembre'];
 
 $status_meta = [
-    'En attente'     => 'statut-attente',
-    'En préparation' => 'statut-preparation',
-    'Expédiée'       => 'statut-expediee',
-    'Livrée'         => 'statut-livree',
+    'En cours' => 'statut-preparation',
+    'Expédié'  => 'statut-expediee',
+    'Annulé'   => 'statut-attente',
 ];
 
 
@@ -149,6 +162,16 @@ include "public/includes/header_admin.php";
                         <span class="info-value">
                             <span class="statut-badge <?= htmlspecialchars($status_class) ?>"><span class="point"></span><?= htmlspecialchars($status_name) ?></span>
                         </span>
+                        <form method="post" style="display:flex; gap:.5rem; margin-top:.5rem;">
+                            <select name="new_status" class="form-select form-select-sm" style="width:auto;">
+                                <?php foreach ($allStatuses as $s): ?>
+                                    <option value="<?= (int) $s['order_type_id'] ?>" <?= $s['order_type_id'] == $order['order_type_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($s['order_type_name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Mettre à jour</button>
+                        </form>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Paiement</span>
