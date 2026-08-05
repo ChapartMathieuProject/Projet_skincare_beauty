@@ -85,6 +85,12 @@ $profileCards = [
         'link' => 'contact.php',
         'icon' => 'fa-solid fa-headset',
     ],
+    [
+        'title' => 'Mes retours',
+        'desc'  => 'Suivre mes demandes de retour de colis',
+        'icon'  => 'fa-solid fa-rotate-left',
+        'link'  => 'return.php',
+    ],
 ];
 
 include 'public/includes/header.php';

@@ -5,6 +5,7 @@ class Ticket
     public const STATUS_OUVERT   = 1;
     public const STATUS_EN_COURS = 2;
     public const STATUS_CLOTURE  = 3;
+    public const STATUS_REFUSE   = 4;
 
     private int    $id;
     private string $returnNumber;

@@ -31,6 +31,17 @@ if ($customer !== false) {
         $orderStatuses[$row['order_type_id']] = $row['order_type_name'];
     }
 
+    // Module SAV : dernier ticket de retour par commande
+    $ticketStatuses = [];
+    foreach ($pdo->query('SELECT ticket_status_id, ticket_status_name FROM ticket_status') as $row) {
+        $ticketStatuses[$row['ticket_status_id']] = $row['ticket_status_name'];
+    }
+
+    $ticketsByOrder = [];
+    foreach ($pdo->query('SELECT order_id, ticket_return_number, ticket_status_id FROM tickets ORDER BY ticket_id') as $row) {
+        $ticketsByOrder[$row['order_id']] = $row; // le plus récent écrase le précédent
+    }
+
     // 1bis. Dictionnaire des images produits (même logique que product.php).
     $pictures = [];
     foreach ($pdo->query('SELECT product_id, picture_path FROM pictures') as $row) {
@@ -111,6 +122,7 @@ if ($customer !== false) {
             'items'        => $itemsCount,
             'lines'        => $orderLines,
             'shippingCost' => $shippingCost,
+            'ticket'       => $ticketsByOrder[$orderRow['order_id']] ?? null,
         ];
     }
 }
@@ -213,6 +225,24 @@ require_once 'public/includes/header.php';
                             </ul>
 
                             <div class="order-detail__shipping">
+                                <?php if ($order['status'] === 'Expédié'): ?>
+                                    <div class="order-detail__return" style="margin-top: .75rem;">
+                                        <?php $ticket = $order['ticket']; ?>
+                                        <?php if ($ticket === null || (int) $ticket['ticket_status_id'] === Ticket::STATUS_REFUSE): ?>
+                                            <a class="btn-rose-sm" href="return_request.php?order=<?= (int) $order['orderId'] ?>">
+                                                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                                                Demander un retour
+                                            </a>
+                                        <?php else: ?>
+                                            <span>
+                                                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                                                Retour <?= htmlspecialchars($ticket['ticket_return_number'], ENT_QUOTES, 'UTF-8') ?>
+                                                — <?= htmlspecialchars($ticketStatuses[$ticket['ticket_status_id']] ?? '—', ENT_QUOTES, 'UTF-8') ?>
+                                                (<a href="return.php">suivre</a>)
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
                                 <?php if ($order['shippingCost'] > 0): ?>
                                     Frais de port :
                                     <?= number_format($order['shippingCost'], 2, ',', ' ') ?> €
