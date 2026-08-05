@@ -49,14 +49,43 @@ class LoyaltyVoucherDAO extends DAO
         return $row ? new LoyaltyVoucher($row) : null;
     }
 
-    public function markAsUsed(int $voucherId): bool
+    public function findUsableByCustomer(int $customerId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM loyalty_vouchers
+             WHERE customer_id_account = :customerId
+               AND loyalty_voucher_is_used = 0
+               AND loyalty_voucher_expires_at >= CURDATE()
+             ORDER BY loyalty_voucher_expires_at ASC'
+        );
+        $stmt->execute([':customerId' => $customerId]);
+
+        $vouchers = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $vouchers[] = new LoyaltyVoucher($row);
+        }
+
+        return $vouchers;
+    }
+     
+    public function markAsUsed(int $voucherId, int $orderId, int $customerId): bool
     {
         $stmt = $this->pdo->prepare(
             'UPDATE loyalty_vouchers
-             SET loyalty_voucher_is_used = 1
-             WHERE loyalty_voucher_id = :id'
+             SET loyalty_voucher_is_used  = 1,
+                 order_id                 = :orderId,
+                 loyalty_voucher_used_at  = NOW()
+             WHERE loyalty_voucher_id     = :id
+               AND customer_id_account    = :customerId
+               AND loyalty_voucher_is_used = 0
+               AND loyalty_voucher_expires_at >= CURDATE()'
         );
+        $stmt->execute([
+            ':id'         => $voucherId,
+            ':orderId'    => $orderId,
+            ':customerId' => $customerId,
+        ]);
 
-        return $stmt->execute([':id' => $voucherId]);
+        return $stmt->rowCount() === 1;
     }
 }

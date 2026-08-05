@@ -158,6 +158,7 @@ CREATE TABLE orders (
     order_date_annulation DATETIME,
     order_promotion INT,
     order_type_id INT NOT NULL,
+    order_discount DECIMAL(10,2) NOT NULL DEFAULT 0,
     payment_type_id INT NOT NULL,
     company_id_account INT NOT NULL,
     customer_id_account INT NOT NULL, 
@@ -304,7 +305,16 @@ CREATE TABLE loyalty_points (
 
 CREATE INDEX idx_loyalty_points_customer
   ON loyalty_points (customer_id_account, loyalty_point_created_at);
- 
+
+CREATE TABLE loyalty_point_expiry_notifications (
+  loyalty_point_expiry_notification_id INT AUTO_INCREMENT PRIMARY KEY,
+  customer_id_account INT NOT NULL,
+  expires_at DATE NOT NULL,
+  notified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (customer_id_account, expires_at),
+  FOREIGN KEY (customer_id_account) REFERENCES customers(customer_id_account)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE loyalty_vouchers (
   loyalty_voucher_id         INT AUTO_INCREMENT,
   customer_id_account        INT NOT NULL,
@@ -312,12 +322,28 @@ CREATE TABLE loyalty_vouchers (
   loyalty_voucher_amount     DECIMAL(10,2) NOT NULL,
   loyalty_voucher_points_used INT NOT NULL,
   loyalty_voucher_is_used    BOOLEAN NOT NULL DEFAULT 0,
+  order_id                   INT DEFAULT NULL,
+  loyalty_voucher_used_at    DATETIME DEFAULT NULL,
   loyalty_voucher_expires_at DATE NOT NULL,
   loyalty_voucher_created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (loyalty_voucher_id),
   UNIQUE (loyalty_voucher_code),
-  FOREIGN KEY (customer_id_account) REFERENCES customers(customer_id_account)
+    FOREIGN KEY (customer_id_account) REFERENCES customers(customer_id_account),
+  FOREIGN KEY (order_id) REFERENCES orders(order_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_loyalty_vouchers_usable
+  ON loyalty_vouchers (customer_id_account, loyalty_voucher_is_used, loyalty_voucher_expires_at);
+
+CREATE TABLE number_sequences (
+  seq_name  VARCHAR(20) PRIMARY KEY,
+  seq_value INT NOT NULL DEFAULT 0
+);
+
+INSERT INTO number_sequences (seq_name, seq_value) VALUES
+  ('orders', 0),
+  ('deliveries', 0),
+  ('bills', 0);
   
 DELIMITER $$
 --
@@ -461,7 +487,7 @@ CREATE TRIGGER before_update_products BEFORE UPDATE ON products FOR EACH ROW BEG
     IF OLD.product_name <> NEW.product_name THEN
         SET base_slug = generate_slug(NEW.product_name);
         SET unique_slug = base_slug;
-        WHILE EXISTS (SELECT 1 FROM products WHERE product_slug = unique_slug AND product_id <> OLD.product_id) DO
+        WHILE EXISTS (SELECT 1 FROM products WHERE product_slug COLLATE utf8mb4_unicode_ci = unique_slug AND product_id <> OLD.product_id) DO
             SET counter = counter + 1;
             SET unique_slug = CONCAT(base_slug, '-', counter);
         END WHILE;
@@ -479,13 +505,8 @@ DELIMITER ;
 DROP TRIGGER IF EXISTS `before_generate_num_orders`;
 DELIMITER $$
 CREATE TRIGGER `before_num_orders` BEFORE INSERT ON `orders` FOR EACH ROW BEGIN
-    DECLARE prefix CHAR(3) DEFAULT 'CMD';
-    DECLARE num INT;
- 
-    SELECT COUNT(*) INTO num FROM orders;
-    SET num = num + 1;
- 
-    SET NEW.order_number = CONCAT(prefix, LPAD(num, 7, '0'));
+    UPDATE number_sequences SET seq_value = LAST_INSERT_ID(seq_value + 1) WHERE seq_name = 'orders';
+    SET NEW.order_number = CONCAT('CMD', LPAD(LAST_INSERT_ID(), 7, '0'));
 END
 $$
 DELIMITER ;
@@ -508,13 +529,8 @@ DELIMITER ;
 DROP TRIGGER IF EXISTS `before_generate_num_deliveries`;
 DELIMITER $$
 CREATE TRIGGER `before_generate_num_deliveries` BEFORE INSERT ON `deliveries` FOR EACH ROW BEGIN
-    DECLARE prefix CHAR(3) DEFAULT 'EXP';
-    DECLARE num INT;
- 
-    SELECT COUNT(*) INTO num FROM deliveries;
-    SET num = num + 1;
- 
-    SET NEW.delivery_number= CONCAT(prefix, LPAD(num, 7, '0'));
+    UPDATE number_sequences SET seq_value = LAST_INSERT_ID(seq_value + 1) WHERE seq_name = 'deliveries';
+    SET NEW.delivery_number = CONCAT('EXP', LPAD(LAST_INSERT_ID(), 7, '0'));
 END
 $$
 DELIMITER ;
@@ -528,13 +544,8 @@ DELIMITER ;
 DROP TRIGGER IF EXISTS `before_generate_num_bills`;
 DELIMITER $$
 CREATE TRIGGER `before_generate_num_bills` BEFORE INSERT ON `bills` FOR EACH ROW BEGIN
-    DECLARE prefix CHAR(3) DEFAULT 'FAC';
-    DECLARE num INT;
- 
-    SELECT COUNT(*) INTO num FROM bills;
-    SET num = num + 1;
- 
-    SET NEW.bill_number = CONCAT(prefix, LPAD(num, 7, '0'));
+    UPDATE number_sequences SET seq_value = LAST_INSERT_ID(seq_value + 1) WHERE seq_name = 'bills';
+    SET NEW.bill_number = CONCAT('FAC', LPAD(LAST_INSERT_ID(), 7, '0'));
 END
 $$
 DELIMITER ;

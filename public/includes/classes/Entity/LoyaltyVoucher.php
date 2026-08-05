@@ -8,6 +8,8 @@ class LoyaltyVoucher
     private float $amount;
     private int $pointsUsed;
     private bool $isUsed = false;
+    private ?int $orderId = null;
+    private ?string $usedAt = null;
     private string $expiresAt;
     private string $createdAt;
 
@@ -36,6 +38,12 @@ class LoyaltyVoucher
         if (isset($data['loyalty_voucher_is_used'])) {
             $this->isUsed = (bool) $data['loyalty_voucher_is_used'];
         }
+        if (array_key_exists('order_id', $data)) {
+            $this->orderId = $data['order_id'] !== null ? (int) $data['order_id'] : null;
+        }
+        if (array_key_exists('loyalty_voucher_used_at', $data)) {
+            $this->usedAt = $data['loyalty_voucher_used_at'];
+        }
         if (isset($data['loyalty_voucher_expires_at'])) {
             $this->expiresAt = $data['loyalty_voucher_expires_at'];
         }
@@ -52,6 +60,8 @@ class LoyaltyVoucher
     public function isUsed(): bool { return $this->isUsed; }
     public function getExpiresAt(): string { return $this->expiresAt; }
     public function getCreatedAt(): string { return $this->createdAt; }
+    public function getOrderId(): ?int { return $this->orderId; }
+    public function getUsedAt(): ?string { return $this->usedAt; }
 
     public function isExpired(): bool
     {

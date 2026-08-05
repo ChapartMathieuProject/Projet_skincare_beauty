@@ -81,4 +81,40 @@ class LoyaltyPointDAO extends DAO
 
         return $stmt->fetchColumn() > 0;
     }
+
+    
+    public function findExpiringSoon(int $days): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT customer_id_account, loyalty_point_expires_at AS expires_at,
+                    SUM(loyalty_point_amount) AS expiring_amount
+             FROM loyalty_points
+             WHERE loyalty_point_type = :type
+               AND loyalty_point_expires_at IS NOT NULL
+               AND loyalty_point_expires_at BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL :days DAY)
+             GROUP BY customer_id_account, loyalty_point_expires_at
+             HAVING expiring_amount > 0'
+        );
+        $stmt->execute([
+            ':type' => LoyaltyPoint::TYPE_EARN,
+            ':days' => $days,
+        ]);
+
+        return $stmt->fetchAll();
+    }
+
+  
+    public function claimExpiryNotification(int $customerId, string $expiresAt): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'INSERT IGNORE INTO loyalty_point_expiry_notifications (customer_id_account, expires_at)
+             VALUES (:customerId, :expiresAt)'
+        );
+        $stmt->execute([
+            ':customerId' => $customerId,
+            ':expiresAt'  => $expiresAt,
+        ]);
+
+        return $stmt->rowCount() === 1;
+    }
 }
