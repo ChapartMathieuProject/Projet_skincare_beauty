@@ -1,14 +1,8 @@
 <?php
 require_once "public/includes/db.php";
+require_once "public/includes/auth.php";
+require_sav();
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isset($_SESSION['user_id']) || (int) ($_SESSION['user_type_id'] ?? 0) !== 2) {
-    header('Location: login.php');
-    exit;
-}
 
 $menu_actif = 'sav';
 

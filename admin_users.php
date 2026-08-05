@@ -1,6 +1,8 @@
 <?php 
 
 require_once "public/includes/db.php";
+require_once "public/includes/auth.php";
+require_sav();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_type_id'], $_POST['customer_id'])) {
     $cid      = (int) $_POST['customer_id'];

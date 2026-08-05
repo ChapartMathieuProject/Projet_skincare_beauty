@@ -1,6 +1,8 @@
 <?php
 
 require_once "public/includes/db.php";
+require_once "public/includes/auth.php";
+require_sav();
 
 $q = trim($_GET['q'] ?? '');
 

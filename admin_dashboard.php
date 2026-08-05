@@ -1,5 +1,10 @@
-<?php $menu_actif = 'dashboard'; ?> <!-- Changer le 'dashboard' en fonction de la page -->
-<?php include "public/includes/header_admin.php"; ?>
+<?php
+require_once "public/includes/auth.php";
+require_sav();
+
+$menu_actif = 'dashboard';
+include "public/includes/header_admin.php";
+?>
 
 <div class="admin-main">
     <header class="admin-topbar">

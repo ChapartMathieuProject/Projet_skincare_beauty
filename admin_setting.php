@@ -1,5 +1,10 @@
-<?php $menu_actif = 'reglages'; ?> <!-- Changer le 'reglages' en fonction de la page -->
-<?php include "public/includes/header_admin.php"; ?>
+<?php
+require_once "public/includes/auth.php";
+require_sav();
+
+$menu_actif = 'reglages';
+include "public/includes/header_admin.php";
+?>
 
 <div class="admin-main">
 
