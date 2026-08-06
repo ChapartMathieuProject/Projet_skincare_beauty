@@ -7,6 +7,9 @@ require_once __DIR__ . '/../public/includes/classes/Entity/ProductType.php';
 require_once __DIR__ . '/../public/includes/classes/Entity/Ticket.php';
 require_once __DIR__ . '/../public/includes/classes/Entity/TicketHistory.php';
 require_once __DIR__ . '/../public/includes/classes/Entity/LoyaltyPoint.php';
+require_once __DIR__ . '/../public/includes/classes/Entity/LoyaltyPoint.php';
+require_once __DIR__ . '/../public/includes/classes/Entity/LoyaltyTier.php';
+require_once __DIR__ . '/../public/includes/classes/Entity/LoyaltyVoucher.php';
 
 
 require_once __DIR__ . '/../public/includes/classes/DAO/ProductDAO.php';
@@ -15,14 +18,12 @@ require_once __DIR__ . '/../public/includes/classes/DAO/ProductTypeDAO.php';
 require_once __DIR__ . '/../public/includes/classes/DAO/TicketDAO.php';
 require_once __DIR__ . '/../public/includes/classes/DAO/TicketHistoryDAO.php';
 require_once __DIR__ . '/../public/includes/classes/DAO/LoyaltyPointDAO.php';
-
-require_once __DIR__ . '/../public/includes/classes/Service/LoyaltyService.php';
-
-require_once __DIR__ . '/../public/includes/classes/Entity/LoyaltyPoint.php';
-require_once __DIR__ . '/../public/includes/classes/Entity/LoyaltyTier.php';
-require_once __DIR__ . '/../public/includes/classes/Entity/LoyaltyVoucher.php';
 require_once __DIR__ . '/../public/includes/classes/DAO/LoyaltyPointDAO.php';
 require_once __DIR__ . '/../public/includes/classes/DAO/LoyaltyTierDAO.php';
 require_once __DIR__ . '/../public/includes/classes/DAO/LoyaltyVoucherDAO.php';
+
+require_once __DIR__ . '/../public/includes/classes/Service/LoyaltyService.php';
 require_once __DIR__ . '/../public/includes/classes/Service/MailerInterface.php';
 require_once __DIR__ . '/../public/includes/classes/Service/LoyaltyService.php';
+
+require_once __DIR__ . '/../public/includes/auth.php';
