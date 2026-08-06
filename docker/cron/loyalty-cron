@@ -1,0 +1,1 @@
+0 9 * * * cd /var/www/html && /usr/local/bin/php cron_notify_expiring_points.php >> /var/log/cron_loyalty.log 2>&1

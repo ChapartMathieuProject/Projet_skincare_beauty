@@ -7,6 +7,7 @@ class LoyaltyService
     public const VOUCHER_VALUE = 5.00;
     public const POINTS_LIFETIME_MONTHS = 12;
     public const VOUCHER_LIFETIME_MONTHS = 6;
+    public const POINTS_EXPIRY_WARNING_DAYS = 3;
 
     private LoyaltyPointDAO $loyaltyPointDAO;
     private LoyaltyTierDAO $loyaltyTierDAO;
@@ -145,6 +146,52 @@ class LoyaltyService
         return $this->loyaltyVoucherDAO->findByCustomer($customerId);
     }
 
+    public function getUsableVouchers(int $customerId): array
+    {
+        return $this->loyaltyVoucherDAO->findUsableByCustomer($customerId);
+    }
+
+    public function getUsableVoucherForCustomer(string $code, int $customerId): LoyaltyVoucher
+    {
+        $voucher = $this->loyaltyVoucherDAO->findByCode($code);
+
+        if ($voucher === null
+            || $voucher->getCustomerId() !== $customerId
+            || !$voucher->isUsable()
+        ) {
+            throw new InvalidArgumentException(
+                "Ce code n'est pas valide, a expire ou a deja ete utilise."
+            );
+        }
+
+        return $voucher;
+    }
+
+    public function computeDiscount(LoyaltyVoucher $voucher, float $orderTotal): float
+    {
+        return min($voucher->getAmount(), max(0.0, $orderTotal));
+    }
+
+    public function computeTierDiscountAmount(?LoyaltyTier $tier, float $amount): float
+    {
+        if ($tier === null || $tier->getDiscountPercent() <= 0) {
+            return 0.0;
+        }
+
+        return round(max(0.0, $amount) * $tier->getDiscountPercent() / 100, 2);
+    }
+
+    public function useVoucherOnOrder(LoyaltyVoucher $voucher, int $orderId, int $customerId): void
+    {
+        $used = $this->loyaltyVoucherDAO->markAsUsed($voucher->getId(), $orderId, $customerId);
+
+        if (!$used) {
+            throw new RuntimeException(
+                "Le bon de reduction a deja ete utilise ou a expire entre-temps."
+            );
+        }
+    }
+
     public function getTier(int $customerId): ?LoyaltyTier
     {
         $lifetimePoints = $this->loyaltyPointDAO->getLifetimeEarnedByCustomer($customerId);
@@ -195,6 +242,72 @@ class LoyaltyService
               . '<p>Merci de votre fidelite,<br>L equipe SkinCareBeauty</p>';
 
         return $this->mailer->send($customerEmail, $subject, $body);
+    }
+
+    public function notifyExpiringPoints(): int
+    {
+        $expiringGroups = $this->loyaltyPointDAO->findExpiringSoon(self::POINTS_EXPIRY_WARNING_DAYS);
+        $sent = 0;
+
+        foreach ($expiringGroups as $group) {
+            $customerId = (int) $group['customer_id_account'];
+            $expiresAt  = $group['expires_at'];
+            $amount     = (int) $group['expiring_amount'];
+
+            if (!$this->loyaltyPointDAO->claimExpiryNotification($customerId, $expiresAt)) {
+                continue;
+            }
+
+            $contact = $this->getCustomerContact($customerId);
+
+            if ($contact === null) {
+                continue;
+            }
+
+            if ($this->sendExpiryWarning($contact['mail'], $contact['name'], $amount, $expiresAt)) {
+                $sent++;
+            }
+        }
+
+        return $sent;
+    }
+
+    private function getCustomerContact(int $customerId): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT u.user_mail, c.customer_firstname, c.customer_name
+             FROM customers c
+             JOIN users u ON u.user_id = c.user_id
+             WHERE c.customer_id_account = :customerId'
+        );
+        $stmt->execute([':customerId' => $customerId]);
+        $row = $stmt->fetch();
+
+        if ($row === false) {
+            return null;
+        }
+
+        return [
+            'mail' => $row['user_mail'],
+            'name' => trim($row['customer_firstname'] . ' ' . $row['customer_name']),
+        ];
+    }
+
+    private function sendExpiryWarning(string $toMail, string $toName, int $amount, string $expiresAt): bool
+    {
+        $dateLabel = (new DateTimeImmutable($expiresAt))->format('d/m/Y');
+
+        $subject = 'Vos points de fidelite expirent bientot';
+
+        $body = '<h1>Vos points expirent le ' . htmlspecialchars($dateLabel) . '</h1>'
+              . '<p>Bonjour ' . htmlspecialchars($toName) . ',</p>'
+              . '<p><strong>' . $amount . ' points</strong> de votre solde de fidelite expireront le '
+              . '<strong>' . htmlspecialchars($dateLabel) . '</strong>.</p>'
+              . '<p>Utilisez-les avant cette date pour ne pas les perdre : convertissez-les en bon de '
+              . 'reduction depuis votre espace fidelite.</p>'
+              . '<p>Merci de votre fidelite,<br>L equipe SkinCareBeauty</p>';
+
+        return $this->mailer->send($toMail, $subject, $body);
     }
 
     private function generateVoucherCode(): string

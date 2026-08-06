@@ -1,5 +1,5 @@
 <?php
-// Protection de la page : accès réservé aux utilisateurs connectés
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -11,8 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once 'public/includes/db.php';
 
-// Les commandes sont rattachées à un client (customers), pas directement à un
-// utilisateur (users). On récupère donc d'abord la fiche client liée.
+
 $customerStatement = $pdo->prepare(
     'SELECT customer_id_account FROM customers WHERE user_id = :userId'
 );
@@ -21,11 +20,11 @@ $customer = $customerStatement->fetch();
 
 $orders = [];
 
-// Un compte administrateur n'a pas de fiche customer : dans ce cas, pas de commandes.
+
 if ($customer !== false) {
     $customerIdAccount = $customer['customer_id_account'];
 
-    // 1. On charge les statuts de commande en dictionnaire (comme dans index.php/product.php).
+    
     $orderStatuses = [];
     foreach ($pdo->query('SELECT order_type_id, order_type_name FROM order_status') as $row) {
         $orderStatuses[$row['order_type_id']] = $row['order_type_name'];
@@ -51,19 +50,24 @@ if ($customer !== false) {
     }
     $defaultImage = 'images/_C-E-Ferulic-30ml_SkinCeuticals.jpg';
 
-    // 2. On récupère les commandes du client, sans JOIN sur order_status.
-    // TODO (CB) : si order_shipping_cost existe en base, l'ajouter ici pour éviter
-    // de recalculer les frais de port plus bas.
+    
+    $deliveryCosts = [];
+    foreach ($pdo->query('SELECT delivery_id, delivery_cost FROM deliveries') as $row) {
+        $deliveryCosts[$row['delivery_id']] = $row['delivery_cost'];
+    }
+
+    
     $ordersStatement = $pdo->prepare(
-        'SELECT order_id, order_number, order_date, order_type_id
-         FROM orders
-         WHERE customer_id_account = :customerIdAccount
-         ORDER BY order_date DESC'
+        'SELECT o.order_id, o.order_number, o.order_date, o.order_type_id,
+                o.order_discount, o.deliveries_id
+         FROM orders o
+         WHERE o.customer_id_account = :customerIdAccount
+         ORDER BY o.order_date DESC'
     );
     $ordersStatement->execute(['customerIdAccount' => $customerIdAccount]);
     $ordersFromDatabase = $ordersStatement->fetchAll();
 
-    // 3. Requêtes préparées réutilisées pour chaque commande (lignes + produit).
+    
     $linesStatement = $pdo->prepare(
         'SELECT product_id, contains_quantity, contains_unit_price FROM contains WHERE order_id = :orderId'
     );
@@ -71,28 +75,24 @@ if ($customer !== false) {
         'SELECT product_name FROM products WHERE product_id = :productId'
     );
 
-
-    $freeShippingThreshold = 50.00;
-    $standardShippingCost  = 4.90;
-
     foreach ($ordersFromDatabase as $orderRow) {
         $linesStatement->execute(['orderId' => $orderRow['order_id']]);
         $lines = $linesStatement->fetchAll();
 
 
-        $total = 0; // sous-total produits, sert aussi au calcul du seuil de gratuité
+        $total = 0; 
         $itemsCount = 0;
-        $orderLines = []; // détail des produits pour l'affichage étendu (accordéon)
+        $orderLines = []; 
 
         foreach ($lines as $line) {
             $productStatement->execute(['productId' => $line['product_id']]);
             $product = $productStatement->fetch();
 
             if ($product === false) {
-                continue; // produit supprimé entre-temps
+                continue; 
             }
 
-            // Le prix unitaire est celui payé au moment de la commande, plus besoin de le recalculer.
+            
             $lineTotal = $line['contains_unit_price'] * $line['contains_quantity'];
 
             $total += $lineTotal;
@@ -106,24 +106,26 @@ if ($customer !== false) {
             ];
         }
 
-        // Frais de port : gratuits au-delà du seuil, sinon coût standard.
-        $shippingCost = $total >= $freeShippingThreshold ? 0.0 : $standardShippingCost;
+        
+        $shippingCost = (float) ($deliveryCosts[$orderRow['deliveries_id']] ?? 0.0);
 
-        // Le total affiché sur la card doit inclure les frais de port quand ils sont payés,
-        // mais le seuil de gratuité ci-dessus reste calculé sur le sous-total produits uniquement.
-        $grandTotal = $total + $shippingCost;
+        $voucherDiscount = (float) $orderRow['order_discount'];
 
-        $orders[] = [
-            'id'           => $orderRow['order_number'],
-            'orderId'      => $orderRow['order_id'],
-            'date'         => date('d F Y', strtotime($orderRow['order_date'])),
-            'status'       => $orderStatuses[$orderRow['order_type_id']] ?? 'Statut inconnu',
-            'total'        => number_format($grandTotal, 2, ',', ' ') . ' €', // <-- inclut les FDP
-            'items'        => $itemsCount,
-            'lines'        => $orderLines,
-            'shippingCost' => $shippingCost,
-            'ticket'       => $ticketsByOrder[$orderRow['order_id']] ?? null,
-        ];
+        
+        $grandTotal = max(0.0, $total + $shippingCost - $voucherDiscount);
+
+    $orders[] = [
+        'id'             => $orderRow['order_number'],
+        'orderId'        => $orderRow['order_id'],
+        'date'           => date('d F Y', strtotime($orderRow['order_date'])),
+        'status'         => $orderStatuses[$orderRow['order_type_id']] ?? 'Statut inconnu',
+        'total'          => number_format($grandTotal, 2, ',', ' ') . ' €', // <-- inclut les FDP
+        'items'          => $itemsCount,
+        'lines'          => $orderLines,
+        'shippingCost'   => $shippingCost,
+        'ticket'         => $ticketsByOrder[$orderRow['order_id']] ?? null,
+        'voucherDiscount' => $voucherDiscount,
+    ];
     }
 }
 
@@ -250,6 +252,13 @@ require_once 'public/includes/header.php';
                                     Frais de port : <strong>Offerts</strong>
                                 <?php endif; ?>
                             </div>
+
+                            <?php if ($order['voucherDiscount'] > 0): ?>
+                                <div class="order-detail__shipping">
+                                    Remise (palier / bon) :
+                                    -<?= number_format($order['voucherDiscount'], 2, ',', ' ') ?> €
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
