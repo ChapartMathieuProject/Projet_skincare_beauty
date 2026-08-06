@@ -8,9 +8,9 @@ services:
       - .:/var/www/html
     environment:
       DB_HOST: db
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-skincarebeauty}
+      DB_USER: ${DB_USER:-skincarebeauty_user}
+      DB_PASSWORD: ${DB_PASSWORD:-azertyui}
       MAIL_HOST: ${MAIL_HOST:-mail}
       MAIL_PORT: ${MAIL_PORT:-1025}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
@@ -35,9 +35,9 @@ services:
       - .:/var/www/html
     environment:
       DB_HOST: db
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-skincarebeauty}
+      DB_USER: ${DB_USER:-skincarebeauty_user}
+      DB_PASSWORD: ${DB_PASSWORD:-azertyui}
       MAIL_HOST: ${MAIL_HOST:-mail}
       MAIL_PORT: ${MAIL_PORT:-1025}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
@@ -59,15 +59,15 @@ services:
     container_name: skincarebeauty_db
     command: --log-bin-trust-function-creators=1
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-jean}
+      MYSQL_DATABASE: ${DB_NAME:-skincarebeauty}
+      MYSQL_USER: ${DB_USER:-skincarebeauty_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-azertyui}
     volumes:
       - db_data:/var/lib/mysql
       - ./sql:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-jean}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -80,8 +80,8 @@ services:
     container_name: skincarebeauty_phpmyadmin
     environment:
       PMA_HOST: db
-      PMA_USER: ${DB_USER}
-      PMA_PASSWORD: ${DB_PASSWORD}
+      PMA_USER: ${DB_USER:-skincarebeauty_user}
+      PMA_PASSWORD: ${DB_PASSWORD:-azertyui}
     ports:
       - "8081:80"
     depends_on:

@@ -19,6 +19,13 @@ cp .env.example .env      # sous Windows PowerShell : copy .env.example .env
 docker compose up -d --build
 ```
 
+Le `.env` n'est pas versionné (il contient les mots de passe). S'il est absent,
+`docker-compose.yml` applique les mêmes valeurs par défaut et le projet démarre
+quand même — la copie reste néanmoins la marche à suivre normale.
+
+⚠️ Après un `git pull` qui modifie la configuration, vérifier que `.env` est
+toujours présent. Le recréer au besoin avec la commande `cp` ci-dessus.
+
 Le premier démarrage prend quelques minutes : construction de l'image PHP,
 téléchargement de MySQL et import automatique de la base.
 
