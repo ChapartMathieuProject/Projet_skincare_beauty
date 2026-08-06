@@ -1,2 +1,6 @@
 vendor/
-.phpunit.reslut.cache/
+.env
+.phpunit.result.cache
+.idea/
+.vscode/
+node_modules/

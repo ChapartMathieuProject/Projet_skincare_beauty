@@ -30,7 +30,7 @@ services:
   cron:
     build: .
     container_name: skincarebeauty_cron
-    entrypoint: ["/usr/local/bin/entrypoint-cron.sh"]
+    entrypoint: ["sh", "/usr/local/bin/entrypoint-cron.sh"]
     volumes:
       - .:/var/www/html
     environment:
