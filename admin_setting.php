@@ -1,6 +1,6 @@
 <?php
 require_once "public/includes/auth.php";
-require_sav();
+require_admin();
 
 $menu_actif = 'reglages';
 include "public/includes/header_admin.php";

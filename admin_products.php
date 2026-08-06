@@ -2,7 +2,7 @@
 
 require_once "public/includes/db.php";
 require_once "public/includes/auth.php";
-require_sav();
+require_admin();
 
 $q = trim($_GET['q'] ?? '');
 

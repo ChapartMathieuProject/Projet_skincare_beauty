@@ -1,7 +1,7 @@
 <?php
 require_once "public/includes/db.php";
 require_once "public/includes/auth.php";
-require_sav();
+require_admin();
 
 $statut = $_GET['statut'] ?? 'toutes';
 if (!in_array($statut, ['toutes', 'actives', 'desactivees'], true)) {

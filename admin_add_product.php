@@ -3,7 +3,7 @@ require_once "public/includes/db.php";
 require_once __DIR__ . '/app/core/base_path.php';
 require_once __DIR__ . '/app/core/helpers.php';
 require_once "public/includes/auth.php";
-require_sav();
+require_admin();
 
 
 $company_id = 1;

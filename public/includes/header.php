@@ -18,7 +18,9 @@ if (session_status() === PHP_SESSION_NONE) {
 $isLoggedIn = isset($_SESSION['user_id']);
 $userName   = $_SESSION['user_name'] ?? 'Invité';
 $userEmail  = $_SESSION['user_mail'] ?? '';
-$isAdmin    = ($_SESSION['user_type_id'] ?? null) === 2;
+$userTypeId = (int) ($_SESSION['user_type_id'] ?? 0);
+$isAdmin    = $userTypeId === 2;
+$isSavAgent = $userTypeId === 3;
 ?>
 
 <!DOCTYPE html>
@@ -89,6 +91,8 @@ $isAdmin    = ($_SESSION['user_type_id'] ?? null) === 2;
                     <?php if ($isLoggedIn): ?>
                         <?php if ($isAdmin): ?>
                             <a href="<?= url('/admin_dashboard.php') ?>" class="btn-rose">Tableau de bord admin</a>
+                        <?php elseif ($isSavAgent): ?>
+                            <a href="<?= url('/admin_tickets.php') ?>" class="btn-rose">Gestion des retours</a>
                         <?php else: ?>
                             <a href="<?= url('/users.php') ?>" class="btn-rose">Mon profil</a>
                         <?php endif; ?>

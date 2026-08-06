@@ -43,4 +43,12 @@ class TicketHistoryDAO extends DAO
             'user_id'               => $userId,
         ]));
     }
+
+    public function updateAction(int $historyId, string $action): bool
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE ticket_history SET ticket_history_action = :action WHERE ticket_history_id = :pk"
+        );
+        return $stmt->execute([':action' => $action, ':pk' => $historyId]);
+    }
 }

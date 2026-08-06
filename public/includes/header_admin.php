@@ -23,15 +23,19 @@ $menu_actif = $menu_actif ?? '';
                 <div class="brand">SkinCareBeauty</div>
                 <div class="sub">Espace Administrateur</div>
             </div>
-            <nav class="admin-nav"> 
-                <a href="admin_dashboard.php" class="<?= $menu_actif === 'dashboard'  ? 'active' : '' ?>">Tableau de bord</a>
-                <a href="admin_products.php" class="<?= $menu_actif === 'produits'   ? 'active' : '' ?>">Produits</a>
-                <a href="admin_add_product.php" class="<?= $menu_actif === 'ajouter un produits'   ? 'active' : '' ?>">Ajouter un produit</a>
-                <a href="admin_orders.php" class="<?= $menu_actif === 'commandes'  ? 'active' : '' ?>">Commandes</a>
+<nav class="admin-nav">
+                <?php if (is_admin()): ?>
+                    <a href="admin_dashboard.php" class="<?= $menu_actif === 'dashboard'  ? 'active' : '' ?>">Tableau de bord</a>
+                    <a href="admin_products.php" class="<?= $menu_actif === 'produits'   ? 'active' : '' ?>">Produits</a>
+                    <a href="admin_add_product.php" class="<?= $menu_actif === 'ajouter un produits'   ? 'active' : '' ?>">Ajouter un produit</a>
+                    <a href="admin_orders.php" class="<?= $menu_actif === 'commandes'  ? 'active' : '' ?>">Commandes</a>
+                <?php endif; ?>
                 <a href="admin_tickets.php" class="<?= $menu_actif === 'sav' ? 'active' : '' ?>">SAV — Retours</a>
-                <a href="admin_users.php" class="<?= $menu_actif === 'clients'    ? 'active' : '' ?>">Clients</a>
-                <a href="admin_promotions.php" class="<?= $menu_actif === 'promotions' ? 'active' : '' ?>">Promotions</a>
-                <a href="admin_setting.php" class="<?= $menu_actif === 'reglages'   ? 'active' : '' ?>">Réglages</a>
+                <?php if (is_admin()): ?>
+                    <a href="admin_users.php" class="<?= $menu_actif === 'clients'    ? 'active' : '' ?>">Clients</a>
+                    <a href="admin_promotions.php" class="<?= $menu_actif === 'promotions' ? 'active' : '' ?>">Promotions</a>
+                    <a href="admin_setting.php" class="<?= $menu_actif === 'reglages'   ? 'active' : '' ?>">Réglages</a>
+                <?php endif; ?>
                 <hr class="admin-nav-separator">
                 <a href="index.php" class="admin-back-site"><i class="fa-solid fa-arrow-left"></i> Retour au site</a>
             </nav>

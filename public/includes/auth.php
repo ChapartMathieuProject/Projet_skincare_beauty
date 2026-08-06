@@ -29,8 +29,13 @@ function require_sav(): void
 
 function require_admin(): void
 {
-    if (!is_admin()) {
-        header('Location: login.php');
+    if (is_admin()) {
+        return;
+    }
+    if (is_sav()) {
+        header('Location: admin_tickets.php');
         exit;
     }
+    header('Location: login.php');
+    exit;
 }

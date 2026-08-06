@@ -138,6 +138,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'confi
     }
 }
 
+// ── Correction d'historique : modification (RÉSERVÉ ADMINISTRATEUR) ──
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'update_history') {
+
+    if (!is_admin()) {
+        $errorMessage = "Action réservée à l'administrateur.";
+    } else {
+        $history_id = (int) ($_POST['history_id'] ?? 0);
+        $new_action = trim($_POST['history_action'] ?? '');
+        $line       = $history_id > 0 ? $historyDAO->find($history_id) : null;
+
+        if ($line === null || $line->getTicketId() !== $ticket->getId()) {
+            $errorMessage = "Ligne d'historique introuvable pour ce ticket.";
+        } elseif ($new_action === '' || mb_strlen($new_action) > 255) {
+            $errorMessage = 'Le libellé est obligatoire (255 caractères maximum).';
+        } else {
+            $historyDAO->updateAction($history_id, $new_action);
+            header('Location: admin_ticket_detail.php?id=' . $ticket->getId() . '&history_updated=1');
+            exit;
+        }
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_history') {
+
+    if (!is_admin()) {
+        $errorMessage = "Action réservée à l'administrateur.";
+    } else {
+        $history_id = (int) ($_POST['history_id'] ?? 0);
+        $line       = $history_id > 0 ? $historyDAO->find($history_id) : null;
+
+        if ($line === null || $line->getTicketId() !== $ticket->getId()) {
+            $errorMessage = "Ligne d'historique introuvable pour ce ticket.";
+        } else {
+            $historyDAO->delete($history_id);
+            header('Location: admin_ticket_detail.php?id=' . $ticket->getId() . '&history_deleted=1');
+            exit;
+        }
+    }
+}
+
 $ticket_statuses = [];
 foreach ($pdo->query("SELECT ticket_status_id, ticket_status_name FROM ticket_status") as $s) {
     $ticket_statuses[$s['ticket_status_id']] = $s['ticket_status_name'];
@@ -184,6 +224,12 @@ $statut_name = $ticket_statuses[$ticket->getStatusId()] ?? '—';
         <div class="alert alert-success" role="alert">
             Réception confirmée — le ticket est <strong>clôturé</strong>.
         </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['history_updated'])): ?>
+        <div class="alert alert-success" role="alert">Ligne d'historique modifiée.</div>
+    <?php endif; ?>
+    <?php if (isset($_GET['history_deleted'])): ?>
+        <div class="alert alert-success" role="alert">Ligne d'historique supprimée définitivement.</div>
     <?php endif; ?>
     <?php if ($errorMessage !== ''): ?>
         <div class="alert alert-danger" role="alert">
@@ -266,6 +312,7 @@ $statut_name = $ticket_statuses[$ticket->getStatusId()] ?? '—';
                     <tr>
                         <th>Date</th>
                         <th>Action</th>
+                        <?php if (is_admin()): ?><th class="col-actions">Corriger</th><?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
@@ -273,7 +320,42 @@ $statut_name = $ticket_statuses[$ticket->getStatusId()] ?? '—';
                         <tr>
                             <td><?= htmlspecialchars($h->getCreatedAtFormatted(), ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars($h->getAction(), ENT_QUOTES, 'UTF-8') ?></td>
+                            <?php if (is_admin()): ?>
+                                <td class="col-actions">
+                                    <button type="button" class="btn-row-action"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#edit-history-<?= $h->getId() ?>"
+                                            aria-label="Modifier la ligne">
+                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                    </button>
+                                    <form method="POST" action="admin_ticket_detail.php?id=<?= $ticket->getId() ?>"
+                                          style="display: inline;"
+                                          onsubmit="return confirm('Supprimer définitivement cette ligne ?');">
+                                        <input type="hidden" name="action" value="delete_history">
+                                        <input type="hidden" name="ticket_id" value="<?= $ticket->getId() ?>">
+                                        <input type="hidden" name="history_id" value="<?= $h->getId() ?>">
+                                        <button type="submit" class="btn-row-action" aria-label="Supprimer la ligne">
+                                            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            <?php endif; ?>
                         </tr>
+                        <?php if (is_admin()): ?>
+                            <tr class="collapse" id="edit-history-<?= $h->getId() ?>">
+                                <td colspan="3">
+                                    <form method="POST" action="admin_ticket_detail.php?id=<?= $ticket->getId() ?>"
+                                          style="display: flex; gap: .5rem;">
+                                        <input type="hidden" name="action" value="update_history">
+                                        <input type="hidden" name="ticket_id" value="<?= $ticket->getId() ?>">
+                                        <input type="hidden" name="history_id" value="<?= $h->getId() ?>">
+                                        <input type="text" class="input-admin" name="history_action" maxlength="255" required
+                                               value="<?= htmlspecialchars($h->getAction(), ENT_QUOTES, 'UTF-8') ?>">
+                                        <button type="submit" class="btn-publish">Enregistrer</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </tbody>
             </table>

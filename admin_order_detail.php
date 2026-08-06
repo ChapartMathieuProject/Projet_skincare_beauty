@@ -1,7 +1,7 @@
 <?php
 require_once "public/includes/db.php";
 require_once "public/includes/auth.php";
-require_sav();
+require_admin();
 
 $id = (isset($_GET['id']) && ctype_digit($_GET['id'])) ? (int) $_GET['id'] : 0;
 
