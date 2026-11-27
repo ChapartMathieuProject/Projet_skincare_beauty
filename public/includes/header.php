@@ -21,6 +21,8 @@ $userEmail  = $_SESSION['user_mail'] ?? '';
 $userTypeId = (int) ($_SESSION['user_type_id'] ?? 0);
 $isAdmin    = $userTypeId === 2;
 $isSavAgent = $userTypeId === 3;
+// Terme de recherche réaffiché dans le champ (ignoré s'il n'est pas une chaîne, ex. q[]=…)
+$searchQuery = is_string($_GET['q'] ?? null) ? trim($_GET['q']) : '';
 ?>
 
 <!DOCTYPE html>
@@ -43,9 +45,6 @@ $isSavAgent = $userTypeId === 3;
         <div class="container">
             <a class="navbar-brand brand-logo" href="<?= url('/') ?>">SkinCareBeauty</a>
             <div class="d-flex align-items-center order-lg-last">
-                <button class="btn-icon" type="button" aria-label="Rechercher">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </button>
                 <button class="btn-icon" type="button" aria-label="Mon compte" data-bs-toggle="modal" data-bs-target="#userModal">
                     <i class="fa-regular fa-user"></i>
                 </button>
@@ -59,6 +58,16 @@ $isSavAgent = $userTypeId === 3;
                     <span class="navbar-toggler-icon"></span>
                 </button>
             </div>
+            <!-- Recherche produits : toujours visible (pleine largeur sous le logo sur mobile) -->
+            <form class="site-search order-lg-1" role="search" method="get" action="<?= url('/produits') ?>">
+                <label for="site-search-input" class="visually-hidden">Rechercher un produit</label>
+                <input type="search" id="site-search-input" name="q" class="form-control site-search-input"
+                    maxlength="50" placeholder="Rechercher un produit…"
+                    value="<?= htmlspecialchars($searchQuery, ENT_QUOTES, 'UTF-8') ?>">
+                <button class="btn-icon site-search-btn" type="submit" aria-label="Rechercher">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                </button>
+            </form>
             <div class="collapse navbar-collapse" id="menuPrincipal">
                 <ul class="navbar-nav ms-lg-4">
                     <li class="nav-item"><a class="nav-link" href="<?= url('/produits?filter=nouveautes') ?>">Nouveautés</a></li>
@@ -89,11 +98,7 @@ $isSavAgent = $userTypeId === 3;
                 </div>
                 <div class="modal-footer">
                     <?php if ($isLoggedIn): ?>
-                        <?php if ($isAdmin): ?>
-                            <a href="<?= url('/admin_dashboard.php') ?>" class="btn-rose">Tableau de bord admin</a>
-                        <?php elseif ($isSavAgent): ?>
-                            <a href="<?= url('/admin_tickets.php') ?>" class="btn-rose">Gestion des retours</a>
-                        <?php else: ?>
+                        <?php if (!$isAdmin && !$isSavAgent): ?>
                             <a href="<?= url('/users.php') ?>" class="btn-rose">Mon profil</a>
                         <?php endif; ?>
                         <a href="<?= url('/logout.php') ?>" class="btn-rose">Déconnexion</a>

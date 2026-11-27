@@ -4,6 +4,33 @@ require_once "public/includes/db.php";
 require_once "public/includes/auth.php";
 require_admin();
 
+// --- Suppression d'un produit (physique si jamais commandé, sinon désactivation) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_product') {
+    if (!csrf_is_valid(is_string($_POST['csrf'] ?? null) ? $_POST['csrf'] : null)) {
+        http_response_code(403);
+        exit('Requête refusée.');
+    }
+
+    $productId = filter_var($_POST['product_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $result    = $productId === false
+        ? ['status' => 'not_found', 'pictures' => []]
+        : (new ProductDAO($pdo))->deleteOrDeactivate($productId);
+
+    // Fichiers effacés seulement après validation de la transaction, et uniquement
+    // les images téléversées par l'admin (jamais les images du jeu de démo).
+    foreach ($result['pictures'] as $picturePath) {
+        if (preg_match('#\Aimages/prod_[0-9a-f]{12}\.[a-z0-9]+\z#', $picturePath)) {
+            $file = __DIR__ . '/' . $picturePath;
+            if (is_file($file)) {
+                unlink($file);
+            }
+        }
+    }
+
+    header('Location: admin_products.php?' . $result['status'] . '=1');
+    exit;
+}
+
 $q = trim($_GET['q'] ?? '');
 
 $sql    = "SELECT product_id, product_name, product_slug,
@@ -123,6 +150,25 @@ function prix_vente($buy, $margin)
         </div>
     </header>
     <div class="admin-content">
+        <?php if (!empty($_GET['saved'])): ?>
+            <div class="profile-alert profile-alert--success" role="status">
+                <i class="fa-solid fa-check" aria-hidden="true"></i> Produit enregistré avec succès.
+            </div>
+        <?php elseif (!empty($_GET['deleted'])): ?>
+            <div class="profile-alert profile-alert--success" role="status">
+                <i class="fa-solid fa-check" aria-hidden="true"></i> Produit supprimé définitivement.
+            </div>
+        <?php elseif (!empty($_GET['deactivated'])): ?>
+            <div class="profile-alert profile-alert--success" role="status">
+                <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                Ce produit figure dans des commandes : il a été désactivé (retiré du catalogue)
+                au lieu d'être supprimé, pour conserver l'historique des commandes et factures.
+            </div>
+        <?php elseif (!empty($_GET['not_found'])): ?>
+            <div class="profile-alert profile-alert--error" role="alert">
+                <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> Produit introuvable.
+            </div>
+        <?php endif; ?>
         <section class="admin-card">
             <form method="get" class="orders-toolbar">
                 <div class="search-admin">
@@ -198,6 +244,16 @@ function prix_vente($buy, $margin)
                                             aria-label="Modifier le produit">
                                             <i class="fa-solid fa-pen"></i>
                                         </a>
+                                        <form method="post" action="admin_products.php" class="d-inline"
+                                            onsubmit="return confirm('Supprimer ce produit ? Action irréversible.');">
+                                            <input type="hidden" name="action" value="delete_product">
+                                            <input type="hidden" name="product_id" value="<?= (int) $prod["product_id"] ?>">
+                                            <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                                            <button type="submit" class="btn-row-action"
+                                                aria-label="Supprimer le produit <?= e($prod["product_name"]) ?>">
+                                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

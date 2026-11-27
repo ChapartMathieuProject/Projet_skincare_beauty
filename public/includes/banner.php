@@ -15,4 +15,5 @@
     </div>
 </div>
 
-<script src="<?= url('/public/scripts/banner.js') ?>"></script>
+<?php // ?v= date de modification : un script modifié est toujours rechargé (pas de vieille version en cache). ?>
+<script src="<?= url('/public/scripts/banner.js') ?>?v=<?= (int) @filemtime(__DIR__ . '/../scripts/banner.js') ?>"></script>

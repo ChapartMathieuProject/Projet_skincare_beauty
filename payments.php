@@ -2,6 +2,8 @@
 // Accès réservé : on évite qu'un visiteur non connecté consulte des moyens de paiement.
 session_start();
 
+require_once 'public/includes/payment_validation.php';
+
 //if (!isset($_SESSION['user_id'])) {
    // header('Location: login.php');
    // exit;
@@ -62,6 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         // Validation du format de la date d'expiration (MM/AA)
         elseif (!preg_match('/^(0[1-9]|1[0-2])\/[2-3][0-9]$/', $expiryDate)) {
             $errorMessage = 'La date d\'expiration est invalide. Format attendu : MM/AA (ex : 09/27).';
+        }
+        // Refus d'une carte expirée (valable jusqu'à la fin de son mois d'expiration)
+        elseif (!is_card_expiry_valid($expiryDate, new DateTimeImmutable('now', new DateTimeZone('Europe/Paris')))) {
+            $errorMessage = 'La carte est expirée.';
         }
         // Validation du CVV : uniquement des chiffres, longueur de 3 ou 4 caractères
         elseif (!ctype_digit($cardCvv) || strlen($cardCvv) < 3 || strlen($cardCvv) > 4) {

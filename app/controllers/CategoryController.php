@@ -37,13 +37,19 @@ class CategoryController extends Controller
         }
 
         // --- Aiguillage : quel filtre appliquer ? ---
+        // Recherche (?q=) prioritaire sur cat et filter ; limitée à 50 caractères comme le champ du header
+        $q      = is_string($_GET["q"] ?? null) ? mb_substr(trim($_GET["q"]), 0, 50) : "";
         $cat    = isset($_GET["cat"])    ? trim($_GET["cat"])    : "";
         $filter = isset($_GET["filter"]) ? trim($_GET["filter"]) : "";
 
         $page_title = "Tous nos produits";
         $products   = [];
 
-        if ($cat !== "") {
+        if ($q !== "") {
+            $page_title = "Recherche : « " . $q . " »";
+            $products   = $productDAO->searchActiveByName($q);
+
+        } elseif ($cat !== "") {
             $type_id_active = null;
             foreach ($product_types as $id => $type) {
                 if ($type->getSlug() === $cat) {

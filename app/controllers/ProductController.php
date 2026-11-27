@@ -13,7 +13,7 @@ class ProductController extends Controller
     public function show(string $slug): void
     {
         $productDAO = new ProductDAO($this->pdo);
-        $product = $productDAO->findBySlug($slug);
+        $product = $productDAO->findActiveBySlug($slug);
 
         if ($product === null) {
             http_response_code(404);
