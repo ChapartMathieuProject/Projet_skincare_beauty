@@ -51,12 +51,18 @@ mot de passe, notifications de fidélité). Aucun message n'est réellement envo
 
 ### Comptes de test
 
-| Rôle          | E-mail                  | Mot de passe   |
-|---------------|-------------------------|----------------|
-| Administrateur| admin@skincare.com      | *(voir SQL)*   |
-| Client        | sophie.martin@email.com | `Client1234!`  |
-| Client        | lucas.dupont@email.com  | `Client1234!`  |
-| Client        | emma.bernard@email.com  | `Client1234!`  |
+Mots de passe de démonstration uniquement (base locale).
+
+| Rôle          | E-mail                  | Mot de passe     | Portail de connexion                    |
+|---------------|-------------------------|------------------|-----------------------------------------|
+| Administrateur| admin@skincare.com      | `Admin1234!`     | http://localhost:8080/admin_login.php   |
+| Agent SAV     | agent.sav@skincare.com  | `Agent1234!`     | http://localhost:8080/admin_login.php   |
+| Client        | sophie.martin@email.com | `Sophie-Demo26!` | http://localhost:8080/login.php         |
+| Client        | lucas.dupont@email.com  | `Lucas-Demo26!`  | http://localhost:8080/login.php         |
+| Client        | emma.bernard@email.com  | `Emma-Demo26!`   | http://localhost:8080/login.php         |
+
+Les comptes administrateur et SAV sont refusés sur `/login.php` (portail client) ;
+les comptes clients sont refusés sur `/admin_login.php`.
 
 ## Ports utilisés
 

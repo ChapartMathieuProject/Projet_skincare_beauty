@@ -27,3 +27,4 @@ require_once __DIR__ . '/../public/includes/classes/Service/MailerInterface.php'
 require_once __DIR__ . '/../public/includes/classes/Service/LoyaltyService.php';
 
 require_once __DIR__ . '/../public/includes/auth.php';
+require_once __DIR__ . '/../public/includes/payment_validation.php';

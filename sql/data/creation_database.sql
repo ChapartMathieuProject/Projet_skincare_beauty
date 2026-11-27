@@ -559,9 +559,9 @@ INSERT INTO user_types (user_type_name) VALUES
  
 INSERT INTO users (user_mail, user_type_id, user_password) VALUES
     ('admin@skincare.com',      '2', '$2y$10$ARRxmgoMjHjvmo3wvfD77eQlP63SVS1VBISVCjRSz3MiEWEl6rhk6'),
-    ('sophie.martin@email.com', '1', '$2y$10$fWyz/d1Bd8RjbXzBsNv3JeBhEklEtmRS/sLJsRdMlq2sTwsAlUSsy'),
-    ('lucas.dupont@email.com',  '1', '$2y$10$fWyz/d1Bd8RjbXzBsNv3JeBhEklEtmRS/sLJsRdMlq2sTwsAlUSsy'),
-    ('emma.bernard@email.com',  '1', '$2y$10$fWyz/d1Bd8RjbXzBsNv3JeBhEklEtmRS/sLJsRdMlq2sTwsAlUSsy'),
+    ('sophie.martin@email.com', '1', '$2y$10$e1PkhQ5pZkG9rpPyluFrG.7jX2vQunOsn/nHgctFz1.slOKb2MzEa'),
+    ('lucas.dupont@email.com',  '1', '$2y$10$UCal6PmX9fgNLBRV/EpUqulKXdtPJQ7RkSUO8HhEGkZ6hNELz68Bq'),
+    ('emma.bernard@email.com',  '1', '$2y$10$JTpFAiCO8ohxkpAZz/MiCerC2hylJeCiOjtwSpqlDQ.vV8mK7dPsy'),
     ('agent.sav@skincare.com',  '3', '$2y$10$iqgmbhUnrA7oVHFix/s79eV3DdVBHhIEs5Kf71yDIxCpsFOFk.Zl.');
  
 INSERT INTO genders (gender_name) VALUES
