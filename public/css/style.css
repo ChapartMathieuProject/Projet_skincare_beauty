@@ -141,7 +141,7 @@
   }
 }
 
-/* Photo carrée entière (pas rognée) sur fond blanc, carte délimitée ; le badge reste par-dessus */
+/* Photo carrée entière (pas rognée) sur fond blanc, sans contour ; le badge reste par-dessus */
 .flash-item img {
   display: block;
   width: 100%;
@@ -149,8 +149,6 @@
   aspect-ratio: 1 / 1;
   object-fit: contain;
   background-color: #fff;
-  border: 1px solid var(--admin-border);
-  border-radius: .5rem;
 }
 
 .badge-flash {
