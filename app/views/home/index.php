@@ -139,4 +139,5 @@ $resolveImage = function (?string $path): string {
   </div>
 </section>
 
+<script src="<?= url('/public/scripts/index.js') ?>"></script>
 <?php require __DIR__ . '/../../../public/includes/footer.php'; ?>
