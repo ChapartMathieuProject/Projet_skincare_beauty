@@ -154,11 +154,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
 
-                $stmt = $pdo->prepare("SELECT product_slug FROM products WHERE product_id = ?");
-                $stmt->execute([$saved_id]);
-                $slug = $stmt->fetchColumn();
-
-                header("Location: " . url('/produit/' . $slug));
+                // On reste dans l'espace d'administration après l'enregistrement.
+                header("Location: admin_products.php?saved=1");
                 exit;
             } catch (PDOException $e) {
                 if ($e->getCode() === '23000') {

@@ -1,5 +1,15 @@
 <?php
 $menu_actif = $menu_actif ?? '';
+
+// Identité affichée dans la barre latérale : celle du compte connecté (e-mail pour un admin / SAV).
+$adminDisplayName = (string) ($_SESSION['user_name'] ?? '');
+$adminRoleLabel   = is_admin() ? 'Administrateur' : 'Agent SAV';
+$adminNameBase    = strstr($adminDisplayName, '@', true) ?: $adminDisplayName;
+$adminNameParts   = preg_split('/[\s._-]+/', $adminNameBase, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+$adminInitials    = count($adminNameParts) >= 2
+    ? mb_substr($adminNameParts[0], 0, 1) . mb_substr($adminNameParts[1], 0, 1)
+    : mb_substr($adminNameParts[0] ?? '', 0, 2);
+$adminInitials    = mb_strtoupper($adminInitials);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,13 +47,13 @@ $menu_actif = $menu_actif ?? '';
                     <a href="admin_setting.php" class="<?= $menu_actif === 'reglages'   ? 'active' : '' ?>">Réglages</a>
                 <?php endif; ?>
                 <hr class="admin-nav-separator">
-                <a href="index.php" class="admin-back-site"><i class="fa-solid fa-arrow-left"></i> Retour au site</a>
+                <a href="logout.php" class="admin-back-site"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Déconnexion</a>
             </nav>
             <div class="admin-user">
-                <span class="avatar">AL</span>
+                <span class="avatar" aria-hidden="true"><?= htmlspecialchars($adminInitials, ENT_QUOTES, 'UTF-8') ?></span>
                 <div>
-                    <div class="name-admin">Camil CR7</div>
-                    <div class="role">Gérant</div>
+                    <div class="name-admin"><?= htmlspecialchars($adminDisplayName, ENT_QUOTES, 'UTF-8') ?></div>
+                    <div class="role"><?= htmlspecialchars($adminRoleLabel, ENT_QUOTES, 'UTF-8') ?></div>
                 </div>
             </div>
         </aside>

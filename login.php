@@ -1,11 +1,20 @@
 <?php
-// On redirige un utilisateur déjà connecté : pas de raison de lui remontrer le formulaire.
+// Portail de connexion CLIENT : les comptes administrateur et SAV passent par admin_login.php.
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-if (isset($_SESSION['user_id'])) {
-    header('Location: users.php');
+require_once 'public/includes/auth.php';
+
+// On redirige un utilisateur déjà connecté vers son espace : pas de raison de lui remontrer le formulaire.
+if (is_logged()) {
+    if (is_admin()) {
+        header('Location: admin_dashboard.php');
+    } elseif (is_sav()) {
+        header('Location: admin_tickets.php');
+    } else {
+        header('Location: users.php');
+    }
     exit;
 }
 
@@ -14,93 +23,33 @@ require_once 'public/includes/db.php';
 $errorMessage = '';
 $email        = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-  if ($_POST['action'] === 'login') {
-    $email      = trim($_POST['email'] ?? '');
-    $password   = $_POST['password'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'login') {
+    $email      = trim((string) ($_POST['email'] ?? ''));
+    $password   = (string) ($_POST['password'] ?? '');
     $rememberMe = isset($_POST['remember_me']);
 
-    if (empty($email) || empty($password)) {
-      $errorMessage = 'Veuillez renseigner votre e-mail et votre mot de passe.';
+    if ($email === '' || $password === '') {
+        $errorMessage = 'Veuillez renseigner votre e-mail et votre mot de passe.';
     } else {
-      // On joint customers pour récupérer le nom/prénom du client.
-      // LEFT JOIN car un compte administrateur n'a pas forcément de ligne dans customers.
-      $stmt = $pdo->prepare(
-        'SELECT users.user_id, users.user_mail, users.user_password, users.user_type_id,
-            customers.customer_name, customers.customer_firstname
-     FROM users
-     LEFT JOIN customers ON customers.user_id = users.user_id
-     WHERE users.user_mail = :email'
-      );
-      $stmt->execute(['email' => $email]);
-      $user = $stmt->fetch();
+        // Seuls les clients sont acceptés ici. On reste volontairement vague en cas d'échec
+        // (compte inconnu, mauvais mot de passe ou compte admin/SAV) pour ne pas faciliter
+        // l'énumération des comptes existants.
+        $user = authenticate($pdo, $email, $password, [USER_TYPE_CLIENT]);
 
-      if ($user && password_verify($password, $user['user_password'])) {
-        session_regenerate_id(true);
+        if ($user !== null) {
+            login_user($user);
 
-        $_SESSION['user_id']      = $user['user_id'];
-        $_SESSION['user_mail']    = $user['user_mail'];
-        $_SESSION['user_type_id'] = $user['user_type_id'];
-
-        // On construit un nom d'affichage. Si customer_firstname est vide (cas admin
-        // sans ligne dans customers), on retombe sur l'e-mail pour éviter un nom vide.
-        if (!empty($user['customer_firstname'])) {
-          $_SESSION['user_name'] = $user['customer_firstname'] . ' ' . $user['customer_name'];
-        } else {
-            // On joint customers pour récupérer le nom/prénom du client.
-            // LEFT JOIN car un compte administrateur n'a pas forcément de ligne dans customers.
-            $stmt = $pdo->prepare(
-                'SELECT users.user_id, users.user_mail, users.user_password, users.user_type_id,
-                        customers.customer_name, customers.customer_firstname
-                 FROM users
-                 LEFT JOIN customers ON customers.user_id = users.user_id
-                 WHERE users.user_mail = :email'
-            );
-            $stmt->execute(['email' => $email]);
-            $user = $stmt->fetch();
-
-            // On reste volontairement vague : on ne précise jamais si c'est l'e-mail ou le mot de passe
-            // qui est faux, pour ne pas faciliter l'énumération des comptes existants.
-            if ($user && password_verify($password, $user['user_password'])) {
-                session_regenerate_id(true);
-
-                $_SESSION['user_id']      = $user['user_id'];
-                $_SESSION['user_mail']    = $user['user_mail'];
-                $_SESSION['user_type_id'] = $user['user_type_id'];
-
-                // On construit un nom d'affichage. Si customer_firstname est vide (cas admin
-                // sans ligne dans customers), on retombe sur l'e-mail pour éviter un nom vide.
-                if (!empty($user['customer_firstname'])) {
-                    $_SESSION['user_name'] = $user['customer_firstname'] . ' ' . $user['customer_name'];
-                } else {
-                    $_SESSION['user_name'] = $user['user_mail'];
-                }
-
-                if ($rememberMe) {
-                    // TODO (CB) : générer un token aléatoire, le stocker en BDD (table remember_tokens)
-                    // et poser un cookie longue durée contenant ce token (jamais le mot de passe)
-                }
-
-                header('Location: users.php');
-                exit;
+            if ($rememberMe) {
+                // TODO (CB) : générer un token aléatoire, le stocker en BDD (table remember_tokens)
+                // et poser un cookie longue durée contenant ce token (jamais le mot de passe)
             }
 
-            $errorMessage = 'E-mail ou mot de passe incorrect.';
+            header('Location: index.php');
+            exit;
         }
 
-        if ($rememberMe) {
-          // TODO (CB) : générer un token aléatoire, le stocker en BDD (table remember_tokens)
-          // et poser un cookie longue durée contenant ce token (jamais le mot de passe)
-        }
-
-
-        header('Location: index.php');
-        exit;
-      }
-
-      $errorMessage = 'E-mail ou mot de passe incorrect.';
+        $errorMessage = 'E-mail ou mot de passe incorrect.';
     }
-  }
 }
 
 include 'public/includes/header.php';
