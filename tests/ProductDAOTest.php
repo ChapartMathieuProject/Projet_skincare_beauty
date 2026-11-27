@@ -54,6 +54,37 @@ class ProductDAOTest extends TestCase
         $this->assertNull($produit);
     }
 
+    public function testFindActiveBySlugFiltreLesProduitsActifs(): void
+    {
+        $this->pdo->expects($this->once())
+            ->method('prepare')
+            ->with($this->logicalAnd(
+                $this->stringContains('product_slug = :slug'),
+                $this->stringContains('product_is_status = 1')
+            ))
+            ->willReturn($this->stmt);
+        $this->stmt->expects($this->once())->method('execute')->with([':slug' => 'c-e-ferulic'])->willReturn(true);
+        $this->stmt->method('fetch')->willReturn([
+            'product_id' => 1, 'product_name' => 'C.E Ferulic', 'product_slug' => 'c-e-ferulic', 'product_is_status' => 1,
+        ]);
+
+        $produit = $this->dao->findActiveBySlug('c-e-ferulic');
+
+        $this->assertInstanceOf(Product::class, $produit);
+        $this->assertSame('c-e-ferulic', $produit->getSlug());
+        $this->assertTrue($produit->isStatus());
+    }
+
+    public function testFindActiveBySlugRetourneNullPourUnProduitDesactiveOuInconnu(): void
+    {
+        // La requête filtre product_is_status = 1 : un produit désactivé ne renvoie aucune ligne.
+        $this->pdo->method('prepare')->willReturn($this->stmt);
+        $this->stmt->method('execute')->willReturn(true);
+        $this->stmt->method('fetch')->willReturn(false);
+
+        $this->assertNull($this->dao->findActiveBySlug('produit-desactive'));
+    }
+
     public function testFindAllActiveRetourneUnTableauDeProduits(): void
     {
         $lignes = [

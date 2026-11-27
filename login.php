@@ -19,6 +19,7 @@ if (is_logged()) {
 }
 
 require_once 'public/includes/db.php';
+require_once 'public/includes/login_throttle.php';
 
 $errorMessage = '';
 $email        = '';
@@ -28,16 +29,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'login
     $password   = (string) ($_POST['password'] ?? '');
     $rememberMe = isset($_POST['remember_me']);
 
+    $clientIp = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+    $now      = time();
+
     if ($email === '' || $password === '') {
         $errorMessage = 'Veuillez renseigner votre e-mail et votre mot de passe.';
     } else {
+        // Blocage vérifié AVANT l'authentification, le tout sérialisé par e-mail et par IP.
         // Seuls les clients sont acceptés ici. On reste volontairement vague en cas d'échec
         // (compte inconnu, mauvais mot de passe ou compte admin/SAV) pour ne pas faciliter
         // l'énumération des comptes existants.
-        $user = authenticate($pdo, $email, $password, [USER_TYPE_CLIENT]);
+        $attempt = login_attempt(
+            $pdo,
+            LOGIN_PORTAL_CLIENT,
+            $email,
+            $clientIp,
+            $now,
+            fn () => authenticate($pdo, $email, $password, [USER_TYPE_CLIENT])
+        );
 
-        if ($user !== null) {
-            login_user($user);
+        if ($attempt['status'] === 'ok') {
+            login_user($attempt['user']);
 
             if ($rememberMe) {
                 // TODO (CB) : générer un token aléatoire, le stocker en BDD (table remember_tokens)
@@ -48,7 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'login
             exit;
         }
 
-        $errorMessage = 'E-mail ou mot de passe incorrect.';
+        // Message identique que le compte existe ou non.
+        $errorMessage = login_attempt_message($attempt);
     }
 }
 

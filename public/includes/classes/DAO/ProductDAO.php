@@ -35,6 +35,17 @@ class ProductDAO extends DAO
         $row = $stmt->fetch();
         return $row !== false ? new Product($row) : null;
     }
+
+    // --- Produit actif par slug (fiche publique : un produit désactivé est introuvable) ---
+    public function findActiveBySlug(string $slug): ?Product
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM products WHERE product_slug = :slug AND product_is_status = 1"
+        );
+        $stmt->execute([':slug' => $slug]);
+        $row = $stmt->fetch();
+        return $row !== false ? new Product($row) : null;
+    }
     // --- Tous les produits actifs uniquement ---
     public function findAllActive(): array
     {

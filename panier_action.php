@@ -9,6 +9,7 @@ if (!defined('BASE_PATH')) {
     define('BASE_PATH', $base === '/' ? '' : $base);
 }
 require_once __DIR__ . '/app/core/helpers.php';
+require_once __DIR__ . '/public/includes/cart_redirect.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -77,8 +78,9 @@ function cart_payload(PDO $pdo): array
 
 function redirect_to(string $path): never
 {
-    if ($path === '' || $path[0] !== '/' || str_starts_with($path, '//')) {
-        $path = '/cart.php';
+    // Le panier est une modale présente sur chaque page : pas de page dédiée, repli sur l'accueil.
+    if (!is_safe_local_path($path)) {
+        $path = '/';
     }
     header('Location: ' . url($path));
     exit;
@@ -128,8 +130,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && is_ajax() && ($_GET['action'] ?? '')
     exit;
 }
 
+// Sans JavaScript, retour à la page d'origine : champ « redirect » sûr, sinon Referer du même hôte, sinon « / ».
+$redirect = cart_redirect_target(
+    is_string($_POST['redirect'] ?? null) ? $_POST['redirect'] : null,
+    is_string($_SERVER['HTTP_REFERER'] ?? null) ? $_SERVER['HTTP_REFERER'] : null,
+    (string) ($_SERVER['HTTP_HOST'] ?? ''),
+    BASE_PATH
+);
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect_to('/cart.php');
+    redirect_to($redirect);
 }
 
 
@@ -137,7 +147,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $action   = $_POST['action']   ?? '';
 $id       = (int) ($_POST['id'] ?? 0);
 $quantity = (int) ($_POST['quantity'] ?? 1);
-$redirect = $_POST['redirect'] ?? '/cart.php';
 
 
 if (!isset($_SESSION['cart'])) {

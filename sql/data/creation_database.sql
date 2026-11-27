@@ -26,7 +26,7 @@ CREATE TABLE genders (
 CREATE TABLE companies (
     company_id_account INT PRIMARY KEY AUTO_INCREMENT,
     company_name_account VARCHAR(20) NOT NULL,
-    company_password_account VARCHAR(50) NOT NULL,
+    company_password_account VARCHAR(255) NOT NULL,
     company_name VARCHAR(50) NOT NULL,
     company_adress_1 VARCHAR(50) NOT NULL,
     company_adress_2 VARCHAR(50),
@@ -217,7 +217,19 @@ CREATE TABLE password_resets (
     reset_expires_at    DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
- 
+
+-- Échecs de connexion (limitation des essais par e-mail et par IP, par portail)
+CREATE TABLE login_attempts (
+    login_attempt_id     INT PRIMARY KEY AUTO_INCREMENT,
+    login_attempt_portal VARCHAR(10) NOT NULL,
+    login_attempt_email  VARCHAR(255) NOT NULL,
+    login_attempt_ip     VARCHAR(45) NOT NULL,
+    login_attempt_at     DATETIME NOT NULL,
+    INDEX idx_login_attempts_email (login_attempt_portal, login_attempt_email, login_attempt_at),
+    INDEX idx_login_attempts_ip (login_attempt_portal, login_attempt_ip, login_attempt_at),
+    INDEX idx_login_attempts_at (login_attempt_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 DROP TABLE IF EXISTS cart_items;
 DROP TABLE IF EXISTS carts;
  
@@ -572,7 +584,7 @@ INSERT INTO companies (
     company_adress_1, company_adress_2, company_adress_3, company_adress_4,
     company_postcode, company_city, company_country
 ) VALUES
-    ('loreal', 'company1234', 'Camil SA', '123 Rue de Paris', '17 mai',
+    ('loreal', '$2y$10$DEVVun428VxI8dVHLnDSb.jIaQzTXMTGVdfG.9vrMmfspkmGKzESS', 'Camil SA', '123 Rue de Paris', '17 mai',
      'Bâtiment A', '2ème étage', '75001', 'Paris', 'France');
  
 INSERT INTO delivery_types (delivery_type_name) VALUES

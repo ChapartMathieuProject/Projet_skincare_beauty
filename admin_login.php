@@ -14,6 +14,7 @@ if (is_sav()) {
 }
 
 require_once 'public/includes/db.php';
+require_once 'public/includes/login_throttle.php';
 
 $errorMessage = '';
 $email        = '';
@@ -22,19 +23,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'admin
     $email    = trim((string) ($_POST['email'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
 
+    $clientIp = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+    $now      = time();
+
     if ($email === '' || $password === '') {
         $errorMessage = 'Veuillez renseigner votre e-mail et votre mot de passe.';
     } else {
-        // Même message neutre que le compte soit inconnu, le mot de passe faux ou le compte client.
-        $user = authenticate($pdo, $email, $password, [USER_TYPE_ADMIN, USER_TYPE_SAV]);
+        // Blocage vérifié AVANT l'authentification, le tout sérialisé par e-mail et par IP.
+        $attempt = login_attempt(
+            $pdo,
+            LOGIN_PORTAL_ADMIN,
+            $email,
+            $clientIp,
+            $now,
+            fn () => authenticate($pdo, $email, $password, [USER_TYPE_ADMIN, USER_TYPE_SAV])
+        );
 
-        if ($user !== null) {
+        if ($attempt['status'] === 'ok') {
+            $user = $attempt['user'];
             login_user($user);
             header('Location: ' . ((int) $user['user_type_id'] === USER_TYPE_ADMIN ? 'admin_dashboard.php' : 'admin_tickets.php'));
             exit;
         }
 
-        $errorMessage = 'E-mail ou mot de passe incorrect.';
+        // Même message neutre que le compte soit inconnu, le mot de passe faux ou le compte client.
+        $errorMessage = login_attempt_message($attempt);
     }
 }
 ?>
