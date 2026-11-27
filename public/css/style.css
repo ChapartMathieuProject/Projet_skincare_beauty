@@ -112,21 +112,44 @@
   color: var(--rose);
 }
 
+/* Bande bord à bord : seule la piste déborde, masquée ici (pas de défilement horizontal de la page) */
+.flash-section {
+  overflow: hidden;
+}
+
+.flash-viewport {
+  width: 100%;
+  overflow: hidden;
+}
+
 .flash-track {
   display: inline-flex;
   white-space: nowrap;
   will-change: transform;
 }
 
+/* Cartes serrées : 150 px sur mobile, 180 px à partir de 768 px, 12 px entre deux cartes */
 .flash-item {
-  width: 280px;
-  padding: 0 .5rem;
+  flex: 0 0 auto;
+  width: 150px;
+  padding: 0 .375rem;
 }
 
+@media (min-width: 768px) {
+  .flash-item {
+    width: 180px;
+  }
+}
+
+/* Photo carrée entière (pas rognée) sur fond blanc, carte délimitée ; le badge reste par-dessus */
 .flash-item img {
+  display: block;
   width: 100%;
-  height: 12rem;
-  object-fit: cover;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  background-color: #fff;
+  border: 1px solid var(--admin-border);
   border-radius: .5rem;
 }
 

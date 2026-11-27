@@ -40,25 +40,26 @@ $resolveImage = function (?string $path): string {
 </section>
 
 <?php if (!empty($flash_products)): ?>
-  <section class="py-4 bg-white">
+  <section class="flash-section py-4 bg-white">
     <div class="container">
       <h2 class="flash-title h4 text-center mb-4">⚡ Promotions Flash</h2>
-      <div class="overflow-hidden">
-        <div class="flash-track">
-          <?php for ($pass = 0; $pass < 2; $pass++): ?>
-            <?php foreach ($flash_products as $fp): ?>
-              <?php $img_flash = $resolveImage($pictures[$fp->getId()] ?? null); ?>
-              <div class="flash-item"<?= $pass === 1 ? ' aria-hidden="true"' : '' ?>>
-                <div class="position-relative">
-                  <a href="<?= url('/produit/' . $fp->getSlug()) ?>">
-                    <img src="<?= htmlspecialchars($img_flash) ?>" alt="<?= htmlspecialchars($fp->getName()) ?>">
-                  </a>
-                  <span class="badge badge-flash position-absolute top-0 end-0 m-2">-<?= (int) $promotions[$fp->getId()] ?>%</span>
-                </div>
+    </div>
+    <!-- Bande pleine largeur (bord à bord), hors du .container -->
+    <div class="flash-viewport">
+      <div class="flash-track">
+        <?php for ($pass = 0; $pass < 2; $pass++): ?>
+          <?php foreach ($flash_products as $fp): ?>
+            <?php $img_flash = $resolveImage($pictures[$fp->getId()] ?? null); ?>
+            <div class="flash-item"<?= $pass === 1 ? ' aria-hidden="true"' : '' ?>>
+              <div class="position-relative">
+                <a href="<?= url('/produit/' . $fp->getSlug()) ?>"<?= $pass === 1 ? ' tabindex="-1"' : '' ?>>
+                  <img src="<?= htmlspecialchars($img_flash) ?>" alt="<?= htmlspecialchars($fp->getName()) ?>">
+                </a>
+                <span class="badge badge-flash position-absolute top-0 end-0 m-2">-<?= (int) $promotions[$fp->getId()] ?>%</span>
               </div>
-            <?php endforeach; ?>
-          <?php endfor; ?>
-        </div>
+            </div>
+          <?php endforeach; ?>
+        <?php endfor; ?>
       </div>
     </div>
   </section>
@@ -139,5 +140,5 @@ $resolveImage = function (?string $path): string {
   </div>
 </section>
 
-<script src="<?= url('/public/scripts/index.js') ?>"></script>
+<script src="<?= url('/public/scripts/index.js') ?>?v=<?= (int) @filemtime(__DIR__ . '/../../../public/scripts/index.js') ?>"></script>
 <?php require __DIR__ . '/../../../public/includes/footer.php'; ?>
